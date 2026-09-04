@@ -1,0 +1,6 @@
+{
+  "name": "Pythor",
+  "description": "Interactive Python 3.12 learning platform and official Python Institute certification preparation: PCAP-31-03 (Certified Associate, Chapters 1.1 to 5.5, 40-question simulator) and PCEP-30-02 (Certified Entry-Level, Chapters 1.1 to 4.4, 30-question simulator), IDE Studio, and SRS flashcards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
