@@ -19,6 +19,7 @@ import {
   Lightbulb,
   ArrowLeft,
 } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface IdeStudioViewProps {
   challenge: CodingChallenge;
@@ -34,6 +35,7 @@ export const IdeStudioView: React.FC<IdeStudioViewProps> = ({
   onNavigateBack,
   previousViewTitle = 'Previous View',
 }) => {
+  const { t, lang } = useI18n();
   const [activeTab, setActiveTab] = useState<'main.py' | 'test_solution.py'>('main.py');
   const [mode, setMode] = useState<'free' | 'blanks'>('free');
   const [code, setCode] = useState(challenge.starterCode);
@@ -138,7 +140,7 @@ if __name__ == "__main__":
   };
 
   return (
-    <div className="w-full h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden bg-[#0A0A0A] text-[#F5F5F5]">
+    <div className="w-full h-[calc(100vh-102px)] xl:h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden bg-[#0A0A0A] text-[#F5F5F5]">
       {/* LEFT PANEL: Pedagogy, Challenge Briefing & SRS Hints (35%) */}
       <aside className="w-full lg:w-[36%] xl:w-[34%] flex flex-col bg-[#141414] border-r border-[#262626] overflow-y-auto">
         {/* Top Meta Bar & Breadcrumb */}
@@ -149,10 +151,10 @@ if __name__ == "__main__":
               onClick={onNavigateBack}
               id="ide-return-button"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1C1C1C] hover:bg-[#262626] border border-[#2D2D2D] hover:border-[#454545] text-xs text-[#E5E5E5] hover:text-white font-medium transition-all group shadow-sm"
-              title={`Return to ${previousViewTitle} (Alt+←)`}
+              title={`${t.nav.returnTo} ${previousViewTitle} (Alt+←)`}
             >
               <ArrowLeft className="w-3.5 h-3.5 text-[#A0A0A0] group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
-              <span>Return to {previousViewTitle}</span>
+              <span>{t.nav.returnTo} {previousViewTitle}</span>
             </button>
             <span className="text-[10px] font-mono text-[#737373] hidden sm:inline">Alt+←</span>
           </div>
@@ -171,7 +173,7 @@ if __name__ == "__main__":
             <span>{challenge.category}</span>
             <ChevronRight className="w-3.5 h-3.5 text-[#737373]" />
             <span className="text-[#C5A059] font-semibold">
-              Challenge #{challenge.challengeNumber}
+              {lang === 'fr' ? `Défi #${challenge.challengeNumber}` : `Challenge #${challenge.challengeNumber}`}
             </span>
           </div>
 
@@ -208,7 +210,7 @@ if __name__ == "__main__":
               }`}
             >
               <Terminal className="w-4 h-4 text-[#C5A059]" />
-              <span>Free Code</span>
+              <span>{lang === 'fr' ? 'Code libre' : 'Free Code'}</span>
             </button>
             <button
               onClick={() => handleModeChange('blanks')}
@@ -219,7 +221,7 @@ if __name__ == "__main__":
               }`}
             >
               <CheckSquare className="w-4 h-4 text-[#DFC287]" />
-              <span>Fill-in-the-blanks</span>
+              <span>{lang === 'fr' ? 'Texte à trous' : 'Fill-in-the-blanks'}</span>
             </button>
           </div>
         </div>
@@ -230,7 +232,7 @@ if __name__ == "__main__":
           <section className="space-y-3">
             <h2 className="text-base font-serif font-medium text-[#F5F5F5] flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-[#C5A059]" />
-              <span>Pedagogical Objective</span>
+              <span>{lang === 'fr' ? 'Objectif pédagogique' : 'Pedagogical Objective'}</span>
             </h2>
             <p className="text-sm text-[#A0A0A0] leading-relaxed">
               {challenge.pedagogicalObjective}
@@ -239,7 +241,7 @@ if __name__ == "__main__":
             <div className="bg-[#181818] p-4 rounded-lg border border-[#262626] space-y-2">
               <div className="font-mono text-xs text-[#F5F5F5] font-semibold flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#C5A059]" />
-                <span>Specific Guidelines:</span>
+                <span>{lang === 'fr' ? 'Consignes spécifiques :' : 'Specific Guidelines:'}</span>
               </div>
               <ul className="text-xs text-[#A0A0A0] space-y-1.5 pl-4 list-disc marker:text-[#C5A059]">
                 {challenge.guidelines.map((g, i) => (
@@ -285,10 +287,12 @@ if __name__ == "__main__":
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-serif font-medium text-[#F5F5F5] flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#C5A059]" />
-                <span>Smart Hints (SRS)</span>
+                <span>{lang === 'fr' ? 'Indices intelligents (SRS)' : 'Smart Hints (SRS)'}</span>
               </h3>
               <span className="font-mono text-xs text-[#737373]">
-                Tier {hints.filter((h) => h.unlocked).length}/3 unlocked
+                {lang === 'fr'
+                  ? `Palier ${hints.filter((h) => h.unlocked).length}/3 débloqué`
+                  : `Tier ${hints.filter((h) => h.unlocked).length}/3 unlocked`}
               </span>
             </div>
 
@@ -299,7 +303,9 @@ if __name__ == "__main__":
                   <Unlock className="w-3.5 h-3.5 text-[#C5A059]" />
                   <span>{hints[0].title}</span>
                 </span>
-                <span className="font-mono text-[11px] text-[#737373]">Free</span>
+                <span className="font-mono text-[11px] text-[#737373]">
+                  {lang === 'fr' ? 'Gratuit' : 'Free'}
+                </span>
               </div>
               <p className="text-xs text-[#F5F5F5] leading-relaxed">
                 {hints[0].content}
@@ -329,7 +335,7 @@ if __name__ == "__main__":
                   className="w-full py-1.5 px-3 rounded-md bg-[#1C1C1C] hover:bg-[#222222] text-[#DFC287] hover:text-[#F5F5F5] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors border border-[#C5A059]/30"
                 >
                   <Key className="w-3.5 h-3.5" />
-                  <span>Reveal Hint 2 (-10 XP)</span>
+                  <span>{lang === 'fr' ? 'Révéler l’indice 2 (-10 XP)' : 'Reveal Hint 2 (-10 XP)'}</span>
                 </button>
               )}
             </div>
@@ -357,7 +363,7 @@ if __name__ == "__main__":
                   className="w-full py-1.5 px-3 rounded-md bg-[#1C1C1C] hover:bg-[#222222] text-[#A0A0A0] hover:text-[#F5F5F5] text-xs flex items-center justify-center gap-1.5 transition-colors border border-[#262626]"
                 >
                   <Key className="w-3.5 h-3.5" />
-                  <span>Unlock Solution (-50 XP)</span>
+                  <span>{lang === 'fr' ? 'Débloquer la solution (-50 XP)' : 'Unlock Solution (-50 XP)'}</span>
                 </button>
               )}
             </div>
@@ -375,10 +381,12 @@ if __name__ == "__main__":
               onClick={onNavigateBack}
               id="ide-editor-tab-return"
               className="h-8 px-2.5 rounded-md bg-[#1C1C1C] hover:bg-[#252525] border border-[#2D2D2D] hover:border-[#404040] text-xs text-[#E5E5E5] hover:text-white flex items-center gap-1.5 transition-all shrink-0 mr-1"
-              title={`Return to ${previousViewTitle}`}
+              title={`${t.nav.returnTo} ${previousViewTitle}`}
             >
               <ArrowLeft className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-wider">Return</span>
+              <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-wider">
+                {t.nav.return}
+              </span>
             </button>
 
             {/* main.py Tab */}
@@ -443,7 +451,7 @@ if __name__ == "__main__":
               title="Run code in local sandbox (⌘R)"
             >
               <Play className={`w-3.5 h-3.5 text-[#C5A059] ${isRunning ? 'animate-spin' : ''}`} />
-              <span>Run</span>
+              <span>{lang === 'fr' ? 'Exécuter' : 'Run'}</span>
               <kbd className="hidden md:inline text-[10px] font-mono text-[#737373] px-1 py-0.2 bg-[#0A0A0A] rounded border border-[#262626]">
                 ⌘R
               </kbd>
@@ -463,17 +471,17 @@ if __name__ == "__main__":
               {validationSuccess ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  <span>Passed (+{challenge.xpReward} XP)</span>
+                  <span>{lang === 'fr' ? `Validé (+${challenge.xpReward} XP)` : `Passed (+${challenge.xpReward} XP)`}</span>
                 </>
               ) : isValidating ? (
                 <>
                   <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Verifying...</span>
+                  <span>{lang === 'fr' ? 'Vérification...' : 'Verifying...'}</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Submit Solution</span>
+                  <span>{lang === 'fr' ? 'Soumettre' : 'Submit Solution'}</span>
                   <kbd className="hidden md:inline text-[10px] font-mono px-1 bg-black/15 text-[#0A0A0A] rounded">
                     ⌘↵
                   </kbd>
@@ -484,7 +492,7 @@ if __name__ == "__main__":
         </div>
 
         {/* Editor Core Surface */}
-        <div className="flex-1 flex overflow-hidden bg-[#0A0A0A] font-mono leading-6 relative">
+        <div className="flex-1 flex overflow-hidden bg-[#0A0A0A] font-mono leading-6 relative ide-editor-surface">
           {activeTab === 'main.py' ? (
             <div className="flex-1 flex overflow-hidden">
               {/* Line Numbers */}
@@ -515,7 +523,7 @@ if __name__ == "__main__":
               </div>
               <pre
                 style={{ fontSize: `${fontSize}px` }}
-                className="flex-1 p-3 text-[#A0A0A0] font-mono overflow-auto leading-6 select-text"
+                className="flex-1 p-3 text-[#A0A0A0] font-mono overflow-auto leading-6 select-text bg-transparent"
               >
                 {testFileCode}
               </pre>
@@ -537,7 +545,7 @@ if __name__ == "__main__":
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4 text-[#C5A059]" />
-                <span>Console & Unit Tests</span>
+                <span>{lang === 'fr' ? 'Console & Tests unitaires' : 'Console & Unit Tests'}</span>
                 <span className="px-1.5 py-0.2 bg-[#C5A059]/20 text-[#C5A059] font-mono text-[10px] rounded-full">
                   3/3
                 </span>
@@ -555,7 +563,7 @@ if __name__ == "__main__":
                 }`}
               >
                 <Terminal className="w-4 h-4 text-[#DFC287]" />
-                <span>Live Terminal</span>
+                <span>{lang === 'fr' ? 'Terminal interactif' : 'Live Terminal'}</span>
                 {bottomTab === 'terminal' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C5A059]" />
                 )}
@@ -626,7 +634,7 @@ if __name__ == "__main__":
 
           {/* Tab 2 Body: Raw Interactive Terminal */}
           {bottomTab === 'terminal' && (
-            <div className="flex-1 p-4 font-mono text-xs bg-[#0A0A0A] text-[#F5F5F5] overflow-y-auto space-y-2 select-text">
+            <div className="flex-1 p-4 font-mono text-xs bg-[#0F172A] text-[#F8FAFC] overflow-y-auto space-y-2 select-text terminal-window preserve-dark">
               {terminalOutput.map((line, idx) => (
                 <div
                   key={idx}

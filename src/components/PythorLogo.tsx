@@ -106,7 +106,7 @@ export const PythorLogo: React.FC<PythorLogoProps> = ({
             Pythor
           </span>
           {versionBadge && (
-            <span className="px-1.5 py-0.5 bg-[#141414] rounded border border-[#C5A059]/40 font-mono text-[10px] tracking-wider text-[#DFC287]">
+            <span className="hidden sm:inline-block px-1.5 py-0.5 bg-[#141414] rounded border border-[#C5A059]/40 font-mono text-[10px] tracking-wider text-[#DFC287]">
               {versionBadge}
             </span>
           )}

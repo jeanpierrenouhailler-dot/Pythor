@@ -41,14 +41,14 @@ export const CertificationTrackCard: React.FC<CertificationTrackCardProps> = ({
         {/* Python Institute Official-Style Circular Emblem Badge */}
         <div className="relative flex-shrink-0">
           <div
-            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center p-1.5 shadow-xl transition-transform duration-300 group-hover:scale-105 ${
+            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center p-1.5 shadow-xl transition-transform duration-300 group-hover:scale-105 official-emblem ${
               isPcap
                 ? 'bg-gradient-to-b from-[#1E3A8A] via-[#172554] to-[#0A1128] border-2 border-white/80 ring-2 ring-[#2563EB]/60'
                 : 'bg-gradient-to-b from-[#3B2F15] via-[#241D0D] to-[#120F07] border-2 border-[#DFC287] ring-2 ring-[#C5A059]/60'
             }`}
           >
             {/* Top curved/small label */}
-            <span className="text-[7px] sm:text-[8px] font-mono uppercase tracking-wider text-white/90 font-bold text-center leading-none">
+            <span className="text-[7px] sm:text-[8px] font-mono uppercase tracking-wider text-white font-bold text-center leading-none">
               PYTHON INST.
             </span>
 
@@ -64,7 +64,7 @@ export const CertificationTrackCard: React.FC<CertificationTrackCardProps> = ({
             </div>
 
             {/* Sub-label inside badge */}
-            <span className="text-[6px] sm:text-[7px] text-white/80 uppercase tracking-tight text-center leading-none px-0.5">
+            <span className="text-[6px] sm:text-[7px] text-white/90 uppercase tracking-tight text-center leading-none px-0.5">
               {isPcap ? 'Associate' : 'Entry-Level'}
             </span>
 
@@ -88,8 +88,12 @@ export const CertificationTrackCard: React.FC<CertificationTrackCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <h3
-              className={`text-xl sm:text-2xl font-bold tracking-tight text-white ${
-                isActive ? (isPcap ? 'text-blue-100' : 'text-amber-100') : 'text-neutral-200'
+              className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                isActive
+                  ? isPcap
+                    ? 'text-blue-600 dark:text-blue-100'
+                    : 'text-amber-700 dark:text-amber-100'
+                  : 'text-slate-800 dark:text-neutral-200'
               }`}
             >
               {track.code}
@@ -102,37 +106,37 @@ export const CertificationTrackCard: React.FC<CertificationTrackCardProps> = ({
                 Active
               </span>
             ) : (
-              <span className="text-xs text-neutral-400 font-medium px-2 py-0.5 rounded bg-white/5 border border-white/10">
+              <span className="text-xs text-slate-600 dark:text-neutral-400 font-medium px-2 py-0.5 rounded bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10">
                 Switch Track
               </span>
             )}
           </div>
 
-          <p className="text-sm sm:text-base font-medium text-white/95 leading-snug mt-0.5">
+          <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white/95 leading-snug mt-0.5">
             {track.subtitle.split(' ')[0]} {track.subtitle.split(' ')[1]} {track.subtitle.split(' ')[2]}
             <br />
             {track.subtitle.split(' ').slice(3).join(' ')}
           </p>
 
-          <p className="text-xs text-neutral-400 mt-1 line-clamp-2">
+          <p className="text-xs text-slate-600 dark:text-neutral-400 mt-1 line-clamp-2">
             {track.description}
           </p>
         </div>
       </div>
 
       {/* Footer Specs Row */}
-      <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-        <div className="flex items-center gap-3 text-neutral-300">
+      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+        <div className="flex items-center gap-3 text-slate-600 dark:text-neutral-300">
           <span className="flex items-center gap-1">
-            <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
-            <strong className="text-white">{track.sectionsCount}</strong> Sections ({track.chaptersRange})
+            <BookOpen className="w-3.5 h-3.5 text-slate-500 dark:text-neutral-400" />
+            <strong className="text-slate-900 dark:text-white">{track.sectionsCount}</strong> Sections ({track.chaptersRange})
           </span>
-          <span className="text-neutral-600">•</span>
+          <span className="text-slate-400 dark:text-neutral-600">•</span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-neutral-400" />
+            <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-neutral-400" />
             {track.examDurationMinutes} min
           </span>
-          <span className="text-neutral-600">•</span>
+          <span className="text-slate-400 dark:text-neutral-600">•</span>
           <span>{track.examQuestionsCount} Qs (Pass {track.passingScorePercent}%)</span>
         </div>
 
@@ -140,14 +144,14 @@ export const CertificationTrackCard: React.FC<CertificationTrackCardProps> = ({
           {isActive ? (
             <span
               className={`text-[11px] font-semibold flex items-center gap-1 ${
-                isPcap ? 'text-blue-400' : 'text-amber-400'
+                isPcap ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
               }`}
             >
               Current Learning Syllabus
               <ChevronRight className="w-3.5 h-3.5" />
             </span>
           ) : (
-            <span className="text-[11px] text-neutral-400 flex items-center gap-1 group-hover:text-white transition-colors">
+            <span className="text-[11px] text-slate-500 dark:text-neutral-400 flex items-center gap-1 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
               Click to activate
               <ChevronRight className="w-3.5 h-3.5" />
             </span>

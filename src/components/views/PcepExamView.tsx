@@ -27,6 +27,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface PcepExamViewProps {
   user: UserProfile;
@@ -55,6 +56,7 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
   previousViewTitle = 'Dashboard',
 }) => {
   const isPcap = activeTrack === 'pcap-31-03';
+  const { t, lang } = useI18n();
   const defaultModules = isPcap ? pcapModulesData : pcepModulesData;
   const modules = propModules || defaultModules;
   const defaultQuestions = isPcap ? pcapMockExamQuestions : pcepMockExamQuestions;
@@ -262,10 +264,12 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
                 onClick={onNavigateBack}
                 id="exam-return-button"
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#141414] hover:bg-[#202020] border border-[#2D2D2D] hover:border-[#454545] text-xs text-[#E5E5E5] hover:text-white font-medium transition-all group shadow-sm shrink-0"
-                title={previousViewTitle ? `Return to ${previousViewTitle} (Alt+←)` : 'Return to previous screen (Alt+←)'}
+                title={previousViewTitle ? `${t.nav.returnTo} ${previousViewTitle} (Alt+←)` : `${t.palette.returnToPrev} (Alt+←)`}
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-[#A0A0A0] group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
-                <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">Return</span>
+                <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">
+                  {t.nav.return}
+                </span>
                 {previousViewTitle && (
                   <span className="text-neutral-400 font-normal">
                     • {previousViewTitle}
@@ -290,7 +294,7 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
                     isPcap ? 'text-blue-400' : 'text-[#C5A059]'
                   }`}
                 >
-                  Python Institute Official Certification
+                  {lang === 'fr' ? 'Certification officielle Python Institute' : 'Python Institute Official Certification'}
                 </span>
                 <span
                   className={`px-2 py-0.5 rounded font-mono text-[10px] border ${
@@ -311,7 +315,9 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
                     onClick={() => onSelectTrack(isPcap ? 'pcep-30-02' : 'pcap-31-03')}
                     className="text-[11px] font-sans text-neutral-400 hover:text-white px-2 py-0.5 rounded bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center gap-1"
                   >
-                    Switch to {isPcap ? 'PCEP-30-02' : 'PCAP-31-03'}
+                    {lang === 'fr'
+                      ? `Passer à ${isPcap ? 'PCEP-30-02' : 'PCAP-31-03'}`
+                      : `Switch to ${isPcap ? 'PCEP-30-02' : 'PCAP-31-03'}`}
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 )}
@@ -323,8 +329,12 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
               </h1>
               <p className="text-xs text-[#A0A0A0] mt-0.5">
                 {isPcap
-                  ? 'Full official syllabus from Chapter 1.1 to 5.5 • 40-question exam simulation • 65 minutes • 70% required to pass'
-                  : 'Full official syllabus from Chapter 1.1 to 4.4 • 30-question exam simulation • 45 minutes • 70% required to pass'}
+                  ? lang === 'fr'
+                    ? 'Programme officiel complet chapitres 1.1 à 5.5 • 40 questions en simulation d’examen • 65 minutes • 70% requis'
+                    : 'Full official syllabus from Chapter 1.1 to 5.5 • 40-question exam simulation • 65 minutes • 70% required to pass'
+                  : lang === 'fr'
+                    ? 'Programme officiel complet chapitres 1.1 à 4.4 • 30 questions en simulation d’examen • 45 minutes • 70% requis'
+                    : 'Full official syllabus from Chapter 1.1 to 4.4 • 30-question exam simulation • 45 minutes • 70% required to pass'}
               </p>
             </div>
           </div>
@@ -342,7 +352,11 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
               }`}
             >
               <BookOpen className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-              <span>{isPcap ? 'Syllabus & 22 Chapters' : 'Syllabus & 16 Chapters'}</span>
+              <span>
+                {isPcap
+                  ? lang === 'fr' ? 'Programme & 22 chapitres' : 'Syllabus & 22 Chapters'
+                  : lang === 'fr' ? 'Programme & 16 chapitres' : 'Syllabus & 16 Chapters'}
+              </span>
               <span
                 className={`px-1.5 py-0.2 rounded font-mono text-[10px] ${
                   isPcap ? 'bg-blue-950 text-blue-300' : 'bg-[#2E2E2E] text-[#DFC287]'
@@ -368,9 +382,11 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
               }`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Exam Simulation</span>
+              <span>{lang === 'fr' ? 'Simulation d’examen' : 'Exam Simulation'}</span>
               <span className="px-1.5 py-0.2 bg-black/20 rounded font-mono text-[10px]">
-                {isPcap ? '40 Qs • 65m' : '30 Qs • 45m'}
+                {isPcap
+                  ? (lang === 'fr' ? '40 Qs • 65 min' : '40 Qs • 65m')
+                  : (lang === 'fr' ? '30 Qs • 45 min' : '30 Qs • 45m')}
               </span>
             </button>
 
@@ -385,7 +401,7 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
               }`}
             >
               <Sparkles className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-              <span>Cheat Sheet & Traps</span>
+              <span>{lang === 'fr' ? 'Fiche mémo & Pièges' : 'Cheat Sheet & Traps'}</span>
             </button>
           </div>
         </div>
@@ -773,9 +789,11 @@ export const PcepExamView: React.FC<PcepExamViewProps> = ({
                     </h3>
 
                     {currentQ.codeSnippet && (
-                      <pre className="p-4 bg-[#0A0A0A] rounded-xl border border-[#262626] font-mono text-xs sm:text-[13px] text-[#DFC287] overflow-x-auto leading-relaxed my-2">
-                        <code>{currentQ.codeSnippet}</code>
-                      </pre>
+                      <div className="my-2 bg-[#0F172A] rounded-xl border border-[#334155] p-4 font-mono text-xs sm:text-[13px] overflow-x-auto preserve-dark shadow-inner">
+                        <pre className="text-[#FDE68A] leading-relaxed">
+                          <code>{currentQ.codeSnippet}</code>
+                        </pre>
+                      </div>
                     )}
                   </div>
 

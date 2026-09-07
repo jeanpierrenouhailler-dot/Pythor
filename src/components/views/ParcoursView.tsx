@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SkillModule, SkillNode, TrackId } from '../../types';
 import { CertificationTrackSelector } from '../CertificationTrackSelector';
 import { ParcoursDetailsPanel } from '../ParcoursDetailsPanel';
+import { useI18n } from '../../context/I18nContext';
 import {
   Terminal,
   PlayCircle,
@@ -47,6 +48,7 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
   previousViewTitle = 'Dashboard',
 }) => {
   const isPcap = activeTrack === 'pcap-31-03';
+  const { t } = useI18n();
   const [filter, setFilter] = useState<'all' | 'active' | 'mastered' | 'locked'>('all');
 
   // Default selected node: first node or default chapter
@@ -151,9 +153,9 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
   const overallReadyPercent = Math.round((masteredChapters / Math.max(1, totalChapters)) * 100);
 
   return (
-    <div className="w-full bg-[#0A0A0A] text-[#F5F5F5] min-h-[calc(100vh-4rem)] pb-16">
+    <div className="w-full bg-[#0A0A0A] text-[#F5F5F5] min-h-[calc(100vh-102px)] xl:min-h-[calc(100vh-4rem)] pb-16">
       {/* Sub-Header Status & Track Bar */}
-      <section className="w-full bg-[#0A0A0A]/90 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-4 border-b border-[#262626] sticky top-16 z-20">
+      <section className="w-full bg-[#0A0A0A]/90 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-4 border-b border-[#262626] sticky top-[102px] xl:top-16 z-20">
         <div className="max-w-[1720px] mx-auto flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
           {/* Return Button & Track Meta */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
@@ -162,10 +164,12 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
                 onClick={onNavigateBack}
                 id="parcours-return-button"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141414] hover:bg-[#202020] border border-[#2D2D2D] hover:border-[#454545] text-xs text-[#E5E5E5] hover:text-white font-medium transition-all group shadow-sm shrink-0"
-                title={previousViewTitle ? `Return to ${previousViewTitle} (Alt+←)` : 'Return to previous screen (Alt+←)'}
+                title={previousViewTitle ? `${t.nav.returnTo} ${previousViewTitle} (Alt+←)` : `${t.nav.return} (Alt+←)`}
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-[#A0A0A0] group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
-                <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">Return</span>
+                <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">
+                  {t.nav.return}
+                </span>
                 {previousViewTitle && (
                   <span className="text-neutral-400 font-normal">
                     • {previousViewTitle}
@@ -234,7 +238,7 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
                   isPcap ? 'text-blue-400' : 'text-[#C5A059]'
                 }`}
               >
-                {Math.max(25, overallReadyPercent)}% Ready
+                {Math.max(25, overallReadyPercent)}% {t.parcours.ready}
               </span>
             </div>
           </div>
@@ -244,10 +248,10 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
             {/* Filter Pills */}
             <div className="flex items-center bg-[#141414] p-1 rounded-lg border border-[#262626] shadow-sm">
               {[
-                { id: 'all', label: `All (${totalChapters})` },
-                { id: 'mastered', label: 'Mastered' },
-                { id: 'active', label: 'In Progress' },
-                { id: 'locked', label: 'To Prepare' },
+                { id: 'all', label: `${t.parcours.filterAll} (${totalChapters})` },
+                { id: 'mastered', label: t.parcours.filterMastered },
+                { id: 'active', label: t.parcours.filterProgress },
+                { id: 'locked', label: t.parcours.filterToPrepare },
               ].map((f) => (
                 <button
                   key={f.id}
@@ -270,7 +274,7 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
               <div className="flex items-center bg-[#141414] p-1 rounded-lg border border-[#262626] shadow-sm">
                 <button
                   onClick={() => setDisplayMode('drawer')}
-                  title="Instant Slide-Over Drawer (Opens right on screen without scrolling)"
+                  title={t.parcours.slideOverSheet}
                   className={`px-2.5 py-1 rounded text-xs transition-all flex items-center gap-1.5 ${
                     displayMode === 'drawer'
                       ? isPcap
@@ -280,14 +284,14 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
                   }`}
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Slide-Over Sheet</span>
+                  <span className="hidden sm:inline">{t.parcours.slideOverSheet}</span>
                 </button>
                 <button
                   onClick={() => {
                     setDisplayMode('docked');
                     setTimeout(scrollToDockedPanel, 100);
                   }}
-                  title="Docked Split Screen (Auto-scrolls directly to details panel)"
+                  title={t.parcours.dockedPanel}
                   className={`px-2.5 py-1 rounded text-xs transition-all flex items-center gap-1.5 ${
                     displayMode === 'docked'
                       ? isPcap
@@ -297,7 +301,7 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
                   }`}
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Docked Panel</span>
+                  <span className="hidden sm:inline">{t.parcours.dockedPanel}</span>
                 </button>
               </div>
 
@@ -309,10 +313,10 @@ export const ParcoursView: React.FC<ParcoursViewProps> = ({
                       ? 'bg-blue-950/60 hover:bg-blue-900/60 border-blue-500/40 text-blue-200'
                       : 'bg-[#1C1C1C] hover:bg-[#252525] border-[#C5A059]/40 text-[#DFC287]'
                   }`}
-                  title="Inspect Chapter Details (Esc to close)"
+                  title={`${t.parcours.inspectChapter} (Esc)`}
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Inspect: {selectedNode.pcepCode}</span>
+                  <span>{t.parcours.inspectChapter}: {selectedNode.pcepCode}</span>
                 </button>
               )}
 

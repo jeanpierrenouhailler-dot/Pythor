@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SkillModule, SkillNode } from '../types';
+import { useI18n } from '../context/I18nContext';
 import {
   PlayCircle,
   CheckCircle2,
@@ -51,6 +52,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
   onScrollToSection,
 }) => {
   const [copiedCode, setCopiedCode] = useState(false);
+  const { t, lang } = useI18n();
 
   const handleCopyCode = () => {
     if (node.codeSnippet) {
@@ -157,7 +159,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
       <div className="grid grid-cols-3 gap-2.5 bg-[#0E0E0E] p-3 rounded-xl border border-[#262626] shadow-inner text-center">
         <div className="flex flex-col">
           <span className="font-mono text-[10px] text-[#737373] uppercase tracking-wider">
-            DURATION
+            {t.parcours.duration}
           </span>
           <span className="text-xs font-medium text-[#F5F5F5] mt-0.5">
             {node.duration}
@@ -165,7 +167,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
         </div>
         <div className="flex flex-col">
           <span className="font-mono text-[10px] text-[#737373] uppercase tracking-wider">
-            REWARD
+            {t.parcours.reward}
           </span>
           <div
             className={`flex items-center justify-center gap-1 mt-0.5 ${
@@ -178,7 +180,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
         </div>
         <div className="flex flex-col">
           <span className="font-mono text-[10px] text-[#737373] uppercase tracking-wider">
-            MASTERY
+            {t.parcours.mastery}
           </span>
           <span
             className={`text-xs font-semibold mt-0.5 ${
@@ -189,7 +191,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
                 : 'text-[#DFC287]'
             }`}
           >
-            {node.status === 'mastered' ? 'Mastered ✓' : `${node.progressPercent}% Ready`}
+            {node.status === 'mastered' ? t.parcours.masteredTag : `${node.progressPercent}% ${t.parcours.ready}`}
           </span>
         </div>
       </div>
@@ -199,14 +201,14 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
         <div className="flex items-center justify-between">
           <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400 font-semibold flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 text-neutral-400" />
-            Syllabus Core Objective
+            {t.parcours.coreObjective}
           </span>
           {onScrollToSection && (
             <button
               onClick={onScrollToSection}
               className="text-[10px] font-mono text-neutral-400 hover:text-white underline transition-colors"
             >
-              Locate in tree ↓
+              {t.parcours.locateInTree}
             </button>
           )}
         </div>
@@ -220,7 +222,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
         <div className="flex flex-col gap-2">
           <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-300 font-semibold flex items-center gap-1.5">
             <Target className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-            Official Exam Requirements:
+            {t.parcours.examRequirements}
           </span>
           <ul className="space-y-1.5 text-xs text-neutral-300 font-sans bg-[#0E0E0E] p-3 rounded-xl border border-[#222]">
             {node.syllabusItems.map((item, idx) => (
@@ -243,7 +245,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
           <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
             <span className="flex items-center gap-1 text-neutral-300">
               <Code className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-              Python 3.12 Syntax Reference
+              {t.parcours.pythonSyntax}
             </span>
             <button
               onClick={handleCopyCode}
@@ -252,17 +254,17 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
               {copiedCode ? (
                 <>
                   <Check className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
+                  <span className="text-emerald-400">{t.parcours.copied}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3 h-3" />
-                  <span>Copy</span>
+                  <span>{t.parcours.copy}</span>
                 </>
               )}
             </button>
           </div>
-          <pre className="p-3.5 bg-[#090D16] rounded-xl border border-blue-900/30 text-xs font-mono text-blue-200 overflow-x-auto leading-relaxed max-h-48 shadow-inner">
+          <pre className="p-3.5 bg-[#0F172A] rounded-xl border border-blue-900/40 text-xs font-mono text-blue-200 overflow-x-auto leading-relaxed max-h-48 shadow-inner preserve-dark">
             <code>{node.codeSnippet}</code>
           </pre>
         </div>
@@ -272,7 +274,7 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
       {node.exercises && node.exercises.length > 0 && (
         <div className="flex flex-col gap-2 pt-2 border-t border-[#262626]">
           <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400 font-semibold flex items-center justify-between">
-            <span>Exercises in this chapter:</span>
+            <span>{t.parcours.exercisesInChapter}</span>
             <span className="text-neutral-500 font-normal">
               {node.exercises.filter((e) => e.completed).length}/{node.exercises.length} Complete
             </span>
@@ -322,12 +324,12 @@ export const ParcoursDetailsPanel: React.FC<ParcoursDetailsPanelProps> = ({
           }`}
         >
           <PlayCircle className="w-4 h-4" />
-          <span>Launch Chapter Practice in IDE Studio</span>
+          <span>{t.parcours.launchPractice}</span>
         </button>
 
         <div className="flex items-center justify-between px-1 text-[11px] text-neutral-500 font-mono">
-          <span>Keyboard: Press Enter to launch</span>
-          {onClose && <span>Esc to close</span>}
+          <span>{t.parcours.pressEnter}</span>
+          {onClose && <span>{t.parcours.escToClose}</span>}
         </div>
       </div>
     </div>

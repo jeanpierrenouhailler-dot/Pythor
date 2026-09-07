@@ -24,6 +24,7 @@ import {
   Award,
   ArrowLeft,
 } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface DashboardViewProps {
   user: UserProfile;
@@ -57,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   previousViewTitle,
 }) => {
   const isPcap = activeTrack === 'pcap-31-03';
+  const { t, lang } = useI18n();
 
   // Generate a mock 30-day GitHub-style commit heatmap for Python practice
   const heatmapDays = Array.from({ length: 35 }, (_, i) => {
@@ -92,10 +94,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   onClick={onNavigateBack}
                   id="dashboard-return-button"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141414] hover:bg-[#1E1E1E] border border-[#2D2D2D] hover:border-[#454545] text-xs text-[#E5E5E5] hover:text-white font-medium transition-all group shadow-sm"
-                  title={`Return to ${previousViewTitle} (Alt+←)`}
+                  title={`${t.nav.returnTo} ${previousViewTitle} (Alt+←)`}
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-[#A0A0A0] group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
-                  <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">Return</span>
+                  <span className="font-semibold text-[11px] uppercase tracking-wider text-neutral-300 group-hover:text-white">
+                    {t.nav.return}
+                  </span>
                   <span className="text-neutral-400 font-normal">• {previousViewTitle}</span>
                 </button>
               </div>
@@ -107,7 +111,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Python 3.12 Engine
               </span>
               <span className="text-xs text-[#737373]">•</span>
-              <span className="text-xs text-[#A0A0A0]">Active session ongoing</span>
+              <span className="text-xs text-[#A0A0A0]">
+                {lang === 'fr' ? 'Session active en cours' : 'Active session ongoing'}
+              </span>
 
               {/* Track Switcher */}
               {onSelectTrack && (
@@ -136,12 +142,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-serif font-light tracking-wide text-[#F5F5F5]">
-              Hello {user.name.split(' ')[0]}, ready to code?
+              {lang === 'fr'
+                ? `Bonjour ${user.name.split(' ')[0]}, prêt à coder ?`
+                : `Hello ${user.name.split(' ')[0]}, ready to code?`}
             </h1>
             <p className="text-sm text-[#A0A0A0] mt-1">
               {isPcap
-                ? 'Targeting PCAP-31-03 Associate: 5 official sections (1.1 → 5.5), 24 modules, 40-question exam simulation.'
-                : 'Targeting PCEP-30-02 Certified Entry-Level: 4 official sections (1.1 → 4.4), 16 modules, 30-question exam simulation.'}
+                ? lang === 'fr'
+                  ? 'Programme PCAP-31-03 Associate : 5 sections officielles (1.1 → 5.5), 24 modules, examen simulé de 40 questions.'
+                  : 'Targeting PCAP-31-03 Associate: 5 official sections (1.1 → 5.5), 24 modules, 40-question exam simulation.'
+                : lang === 'fr'
+                  ? 'Programme PCEP-30-02 Certified Entry-Level : 4 sections officielles (1.1 → 4.4), 16 modules, examen simulé de 30 questions.'
+                  : 'Targeting PCEP-30-02 Certified Entry-Level: 4 official sections (1.1 → 4.4), 16 modules, 30-question exam simulation.'}
             </p>
           </div>
 
@@ -151,36 +163,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="p-3 bg-[#141414] rounded-lg border border-[#262626] flex flex-col">
               <span className="font-mono text-[10px] text-[#737373] uppercase flex items-center gap-1">
                 <Flame className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#DFC287]'}`} />
-                <span>Streak</span>
+                <span>{t.dashboard.streak}</span>
               </span>
               <span className={`text-lg font-bold mt-0.5 ${isPcap ? 'text-blue-400' : 'text-[#DFC287]'}`}>
-                {user.streakDays} days
+                {user.streakDays} {lang === 'fr' ? 'jours' : 'days'}
               </span>
-              <span className="text-[10px] text-[#737373]">Max consistency</span>
+              <span className="text-[10px] text-[#737373]">{lang === 'fr' ? 'Régularité max' : 'Max consistency'}</span>
             </div>
 
             {/* Stat 2: Total XP */}
             <div className="p-3 bg-[#141414] rounded-lg border border-[#262626] flex flex-col">
               <span className="font-mono text-[10px] text-[#737373] uppercase flex items-center gap-1">
                 <Zap className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-                <span>Experience</span>
+                <span>{t.dashboard.experience}</span>
               </span>
               <span className={`text-lg font-bold mt-0.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`}>
                 {user.totalXp.toLocaleString()} XP
               </span>
-              <span className={`text-[10px] ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`}>+{user.weeklyXp} this week</span>
+              <span className={`text-[10px] ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`}>
+                +{user.weeklyXp} {lang === 'fr' ? 'cette semaine' : 'this week'}
+              </span>
             </div>
 
             {/* Stat 3: Challenges */}
             <div className="p-3 bg-[#141414] rounded-lg border border-[#262626] flex flex-col">
               <span className="font-mono text-[10px] text-[#737373] uppercase flex items-center gap-1">
                 <CheckCircle2 className={`w-3.5 h-3.5 ${isPcap ? 'text-blue-400' : 'text-[#C5A059]'}`} />
-                <span>Challenges</span>
+                <span>{t.dashboard.challenges}</span>
               </span>
               <span className="text-lg font-bold text-[#F5F5F5] mt-0.5">
-                {user.completedChallenges} solved
+                {user.completedChallenges} {lang === 'fr' ? 'résolus' : 'solved'}
               </span>
-              <span className="text-[10px] text-[#737373]">{user.firstTryPassRate}% on 1st try</span>
+              <span className="text-[10px] text-[#737373]">
+                {user.firstTryPassRate}% {lang === 'fr' ? 'au 1er essai' : 'on 1st try'}
+              </span>
             </div>
 
             {/* Stat 4: Track Progress */}
@@ -193,7 +209,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {isPcap ? '18/24' : '12/16'}
               </span>
               <span className={`text-[10px] ${isPcap ? 'text-blue-400' : 'text-[#DFC287]'}`}>
-                {isPcap ? '75% completed' : '75% completed'}
+                {isPcap ? '75% ' + (lang === 'fr' ? 'complété' : 'completed') : '75% ' + (lang === 'fr' ? 'complété' : 'completed')}
               </span>
             </div>
           </div>
@@ -296,7 +312,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   className="px-5 py-2.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 border border-blue-600/40 text-blue-200 font-semibold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition-all shrink-0"
                 >
                   <Play className="w-4 h-4 fill-blue-300" />
-                  <span>Open in IDE</span>
+                  <span>{t.dashboard.openInIde}</span>
                 </button>
               </div>
             ) : (
@@ -320,7 +336,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   className="px-5 py-2.5 rounded-lg bg-[#1C1C1C] hover:bg-[#262626] border border-[#C5A059]/40 text-[#DFC287] font-semibold text-xs uppercase tracking-wider shadow-md flex items-center gap-2 transition-all shrink-0"
                 >
                   <Play className="w-4 h-4 fill-[#DFC287]" />
-                  <span>Open in IDE</span>
+                  <span>{t.dashboard.openInIde}</span>
                 </button>
               </div>
             )}
@@ -332,11 +348,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-[#C5A059]" />
                   <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Past 30 Days Activity
+                    {t.dashboard.past30Days}
                   </h3>
                 </div>
                 <span className="font-mono text-xs text-[#C5A059]">
-                  Active streak: {user.streakDays} consecutive days
+                  {lang === 'fr'
+                    ? `Série active : ${user.streakDays} jours consécutifs`
+                    : `Active streak: ${user.streakDays} consecutive days`}
                 </span>
               </div>
 
@@ -365,13 +383,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="pt-4 border-t border-[#262626] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Key Domain Mastery
+                    {lang === 'fr' ? 'Maîtrise des domaines clés' : 'Key Domain Mastery'}
                   </span>
                   <button
                     onClick={onOpenParcours}
                     className="text-xs text-[#C5A059] hover:underline font-mono"
                   >
-                    View full skill tree &rarr;
+                    {lang === 'fr' ? 'Voir tout le parcours →' : 'View full skill tree →'}
                   </button>
                 </div>
 
@@ -403,11 +421,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center gap-2">
                   <Terminal className="w-5 h-5 text-[#C5A059]" />
                   <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Recent Challenges &amp; Submissions
+                    {t.dashboard.recentSubmissions}
                   </h3>
                 </div>
                 <span className="text-xs text-[#737373] font-mono">
-                  {submissions.length} recent
+                  {submissions.length} {lang === 'fr' ? 'récents' : 'recent'}
                 </span>
               </div>
 
@@ -455,10 +473,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#DFC287]" />
                   <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Real-World Projects (Portfolio)
+                    {t.dashboard.realProjects}
                   </h3>
                 </div>
-                <span className="text-xs text-[#737373] font-mono">3 Integrated Projects</span>
+                <span className="text-xs text-[#737373] font-mono">
+                  {lang === 'fr' ? '3 projets intégrés' : '3 Integrated Projects'}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -498,7 +518,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           onClick={() => onOpenChallenge('challenge-42')}
                           className="w-full py-1.5 rounded bg-[#1C1C1C] hover:bg-[#222222] text-[#C5A059] hover:text-[#F5F5F5] text-xs font-semibold flex items-center justify-center gap-1 transition-colors border border-[#C5A059]/30"
                         >
-                          <span>Continue</span>
+                          <span>{lang === 'fr' ? 'Continuer' : 'Continue'}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -517,11 +537,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#DFC287]" />
                   <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Daily Quests
+                    {t.dashboard.dailyQuests}
                   </h3>
                 </div>
                 <span className="font-mono text-[11px] text-[#C5A059]">
-                  2/3 completed
+                  {lang === 'fr' ? '2/3 terminées' : '2/3 completed'}
                 </span>
               </div>
 
@@ -566,11 +586,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-[#C5A059]" />
                   <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                    Diamond League (Top 5)
+                    {t.dashboard.leaderboard}
                   </h3>
                 </div>
                 <span className="font-mono text-[10px] text-[#DFC287] px-2 py-0.5 bg-[#1C1C1C] rounded border border-[#262626]">
-                  Ends in: 2d
+                  {lang === 'fr' ? 'Fin dans : 2j' : 'Ends in: 2d'}
                 </span>
               </div>
 
@@ -628,17 +648,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-[#C5A059]" />
                 <h3 className="text-xs font-semibold text-[#F5F5F5] uppercase tracking-[1.5px]">
-                  Flashcards &amp; SRS
+                  {t.nav.flashcards}
                 </h3>
               </div>
               <p className="text-xs text-[#A0A0A0] leading-relaxed">
-                8 cards scheduled for today based on the SM-2 spaced repetition algorithm.
+                {lang === 'fr'
+                  ? '8 cartes programmées aujourd’hui avec l’algorithme de répétition espacée SM-2.'
+                  : '8 cards scheduled for today based on the SM-2 spaced repetition algorithm.'}
               </p>
               <button
                 onClick={onOpenSrs}
                 className="w-full py-2 bg-[#1C1C1C] hover:bg-[#222222] text-[#C5A059] hover:text-[#F5F5F5] border border-[#C5A059]/40 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
               >
-                <span>Start session (8 cards)</span>
+                <span>{lang === 'fr' ? 'Démarrer la session (8 cartes)' : 'Start session (8 cards)'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

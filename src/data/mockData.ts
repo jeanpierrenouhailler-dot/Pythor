@@ -20,6 +20,9 @@ import {
   pcapChallengesData,
   pcapFlashcardsData,
   pcapMockExamQuestions,
+  pcapSection1Flashcards,
+  pcapSection2Flashcards,
+  pcapSection3Flashcards,
 } from './pcapData';
 
 export {
@@ -32,6 +35,9 @@ export {
   pcapChallengesData,
   pcapFlashcardsData,
   pcapMockExamQuestions,
+  pcapSection1Flashcards,
+  pcapSection2Flashcards,
+  pcapSection3Flashcards,
 };
 
 export const allChallenges: Record<string, CodingChallenge> = {

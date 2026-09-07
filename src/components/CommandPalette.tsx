@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ViewType } from '../types';
-import { Search, Code2, BookOpen, Brain, LayoutDashboard, Award, X, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Search, Code2, BookOpen, Brain, LayoutDashboard, Award, X, ChevronRight, ArrowLeft, Sun, Moon, Languages } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { useI18n } from '../context/I18nContext';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -29,6 +31,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   previousViewTitle,
 }) => {
   const [query, setQuery] = useState('');
+  const { theme, toggleTheme } = useTheme();
+  const { lang, toggleLang, t } = useI18n();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,8 +58,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const returnItem: PaletteItem[] = onNavigateBack ? [{
     id: 'return-back',
     type: 'action',
-    title: `Return to ${previousViewTitle || 'Previous View'}`,
-    category: 'Navigation History (Alt+Left)',
+    title: `${t.nav.returnTo} ${previousViewTitle || t.nav.return}`,
+    category: 'Navigation (Alt+Left)',
     customAction: () => {
       onNavigateBack();
       onClose();
@@ -63,8 +67,34 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     icon: ArrowLeft,
   }] : [];
 
+  const preferencesItems: PaletteItem[] = [
+    {
+      id: 'toggle-theme',
+      type: 'action',
+      title: theme === 'dark' ? t.nav.themeLight : t.nav.themeDark,
+      category: t.palette.actions,
+      customAction: () => {
+        toggleTheme();
+        onClose();
+      },
+      icon: theme === 'dark' ? Sun : Moon,
+    },
+    {
+      id: 'toggle-language',
+      type: 'action',
+      title: lang === 'en' ? 'Passer en Français (French)' : 'Switch to English (Anglais)',
+      category: t.palette.actions,
+      customAction: () => {
+        toggleLang();
+        onClose();
+      },
+      icon: Languages,
+    },
+  ];
+
   const rawItems: PaletteItem[] = [
     ...returnItem,
+    ...preferencesItems,
     {
       id: 'pcap-exam-sim',
       type: 'exam',
@@ -171,7 +201,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           <Search className="w-5 h-5 text-[#C5A059]" />
           <input
             type="text"
-            placeholder="Search a topic, challenge, flashcard, exam question..."
+            placeholder={t.palette.placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -189,7 +219,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="max-h-80 overflow-y-auto p-2 space-y-1">
           {items.length === 0 ? (
             <div className="py-8 text-center text-xs text-[#737373] font-mono">
-              No results found for "{query}"
+              {t.palette.noResults} "{query}"
             </div>
           ) : (
             items.map((item) => {
