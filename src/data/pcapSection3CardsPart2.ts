@@ -1,859 +1,898 @@
 import { Flashcard } from '../types';
 
-/**
- * PCAP-31-03 SECTION 3: STRINGS (Part 2: Cards 41 to 80)
- * - Chapter 3.3: Built-in String Validation Methods (Cards 41-60)
- * - Chapter 3.4: String Transformation Methods (Cards 61-80)
- */
 export const section3CardsPart2: Flashcard[] = [
-  // =========================================================================
-  // CHAPTER 3.3: BUILT-IN STRING VALIDATION METHODS (Cards 41 to 60)
-  // =========================================================================
+  // ==========================================
+  // CHAPTER 3.2 (cont.): Generator Functions & Iterators (Cards 36-40)
+  // ==========================================
   {
-    id: 'pcap-s3-fc-041',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isalnum() definition and empty string behavior',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What does isalnum() return for strings with spaces, symbols, or empty strings?',
-    codeSnippet: `print("Python3".isalnum())
-print("Python 3".isalnum())
-print("".isalnum())`,
-    stdoutExpected: `True
-False
-False`,
-    explanationTitle: 'isalnum() Alpha-Numeric Rule',
-    explanationText:
-      'isalnum() returns True if ALL characters in the string are alphanumeric (letters or numbers) and there is at least one character. Spaces and empty strings return False.',
-    complexityInfo: 'O(N) character check',
-  },
-  {
-    id: 'pcap-s3-fc-042',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isalpha() letter validation',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What does isalpha() return for numeric digits and accented letters?',
-    codeSnippet: `print("Python".isalpha())
-print("Py3".isalpha())
-print("café".isalpha())`,
-    stdoutExpected: `True
-False
-True`,
-    explanationTitle: 'isalpha() Unicode Letters',
-    explanationText:
-      'isalpha() checks if all characters are alphabetic. Unicode letters (including accented letters like "é", greek letters, etc.) return True. Digits cause it to return False.',
-    complexityInfo: 'Unicode category lookup',
-  },
-  {
-    id: 'pcap-s3-fc-043',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isdigit() decimal digit verification',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'Does isdigit() return True for negative numbers or floating point decimals?',
-    codeSnippet: `print("12345".isdigit())
-print("-12".isdigit())
-print("3.14".isdigit())`,
-    stdoutExpected: `True
-False
-False`,
-    explanationTitle: 'isdigit() Signs and Dots',
-    explanationText:
-      'isdigit() requires EVERY character to be a digit (0-9). The minus sign "-" and decimal point "." are punctuation symbols, not digits, so "-12" and "3.14" return False.',
-    complexityInfo: 'Requires len > 0 and only digits',
-  },
-  {
-    id: 'pcap-s3-fc-044',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'islower() with non-alphabetic characters',
+    id: 'pcap-s3-fc-036',
+    cardType: 'PCAP 3.2 • Generator Pipelines',
+    topic: 'Chaining generators together to build efficient data processing pipelines',
     category: 'T1: Built-ins',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
-    chapter: '3.3',
+    chapter: '3.2',
     section: 'Section 3',
-    question: 'How does islower() handle strings that contain numbers or punctuation alongside lowercase letters?',
-    codeSnippet: `print("python_3.10!".islower())
-print("123!".islower())
-print("".islower())`,
-    stdoutExpected: `True
-False
-False`,
-    explanationTitle: 'islower() Cased Character Rule',
+    question: 'How do chained generator pipelines process sequential operations without creating intermediate lists?',
+    codeSnippet: `def get_numbers(n):
+    for i in range(1, n + 1):
+        yield i
+
+def keep_odds(stream):
+    for num in stream:
+        if num % 2 != 0:
+            yield num
+
+def square_all(stream):
+    for num in stream:
+        yield num * num
+
+pipeline = square_all(keep_odds(get_numbers(5)))
+print(list(pipeline))`,
+    stdoutExpected: '[1, 9, 25]',
+    explanationTitle: 'Composable Generator Processing Pipelines',
     explanationText:
-      'islower() returns True if there is at least ONE cased character and ALL cased characters are lowercase. Numbers and punctuation are ignored. If there are NO cased characters (e.g. "123!"), it returns False.',
-    complexityInfo: 'Cased character existence check',
+      'Generators can consume other generators as input streams. Each element is pulled through the entire pipeline on-demand one item at a time, entirely avoiding allocating intermediate lists in memory.',
+    complexityInfo: 'Stream composition pattern',
   },
   {
-    id: 'pcap-s3-fc-045',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isupper() with symbols and digits',
-    category: 'T1: Built-ins',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What does isupper() require to return True?',
-    codeSnippet: `print("PCAP-31-03".isupper())
-print("PCAPa".isupper())
-print("---".isupper())`,
-    stdoutExpected: `True
-False
-False`,
-    explanationTitle: 'isupper() Specification',
-    explanationText:
-      'isupper() requires at least one cased character, and all cased characters must be uppercase. Hyphens and digits are uncased and ignored in "PCAP-31-03", returning True.',
-    complexityInfo: 'Requires at least 1 uppercase char',
-  },
-  {
-    id: 'pcap-s3-fc-046',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isspace() whitespace detection',
+    id: 'pcap-s3-fc-037',
+    cardType: 'PCAP 3.2 • Generator Expression Inline Parentheses',
+    topic: 'Omitting outer parentheses when generator expression is the sole function argument',
     category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
-    chapter: '3.3',
+    chapter: '3.2',
     section: 'Section 3',
-    question: 'Which characters are recognized as whitespace by isspace()?',
-    codeSnippet: `ws = " \\t\\n\\r\\v\\f"
-print(ws.isspace())
-print("".isspace())
-print(" a ".isspace())`,
-    stdoutExpected: `True
-False
-False`,
-    explanationTitle: 'isspace() Character Set',
+    question: 'When can outer parentheses be omitted from a generator expression?',
+    codeSnippet: `total = sum(x * x for x in range(5)) # No extra parentheses around gen exp!
+print("sum:", total)
+
+joined = "-".join(str(x) for x in range(3))
+print("joined:", joined)`,
+    stdoutExpected: `sum: 30
+joined: 0-1-2`,
+    explanationTitle: 'Syntactic Sugar for Single-Argument Generator Expressions',
     explanationText:
-      'isspace() returns True if all characters are whitespace (space, \\t, \\n, \\r, \\v, \\f) and len > 0. Any non-whitespace character makes it False.',
-    complexityInfo: 'O(N) whitespace category test',
+      'When a generator expression is passed as the sole argument to a function call (like `sum()`, `max()`, `min()`, `join()`), the enclosing parentheses of the generator expression may be omitted.',
+    complexityInfo: 'Call syntax simplification',
   },
   {
-    id: 'pcap-s3-fc-047',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'startswith() with single prefix string',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What does startswith() return and is it case-sensitive?',
-    codeSnippet: `s = "Certification"
-print(s.startswith("Cert"))
-print(s.startswith("cert"))
-print(s.startswith(""))`,
-    stdoutExpected: `True
-False
-True`,
-    explanationTitle: 'startswith() Exact Matching',
-    explanationText:
-      'startswith(prefix) checks if the string begins with prefix. It is strictly case-sensitive ("Cert" != "cert"). Any string starts with "".',
-    complexityInfo: 'O(len(prefix)) comparison',
-  },
-  {
-    id: 'pcap-s3-fc-048',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'startswith() with tuple of prefixes',
-    category: 'T1: Built-ins',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'Can startswith() accept multiple candidate prefixes, and what container type must be used?',
-    codeSnippet: `filename = "test.py"
-print(filename.startswith(("main", "test", "demo")))
-try:
-    filename.startswith(["test", "demo"])
-except TypeError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `True
-TypeError`,
-    explanationTitle: 'startswith() Tuple Requirement',
-    explanationText:
-      'startswith() can accept a tuple of prefixes to check for multiple candidates. Passing a list raises TypeError: tuple expected, not list.',
-    complexityInfo: 'Must be tuple of str',
-  },
-  {
-    id: 'pcap-s3-fc-049',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'endswith() with suffix checking',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'How do you check for multiple possible file extensions with endswith()?',
-    codeSnippet: `doc = "archive.tar.gz"
-print(doc.endswith((".zip", ".tar.gz", ".rar")))
-print(doc.endswith(".tar"))`,
-    stdoutExpected: `True
-False`,
-    explanationTitle: 'endswith() Multiple Suffixes',
-    explanationText:
-      'Passing a tuple of suffixes to endswith() returns True if the string ends with any of them. Since it ends with ".tar.gz", it evaluates to True.',
-    complexityInfo: 'Tuple of suffixes O(k * M)',
-  },
-  {
-    id: 'pcap-s3-fc-050',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'startswith() start and end position parameters',
-    category: 'T2: Output',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What do the optional start and end parameters do in startswith(prefix, start, end)?',
-    codeSnippet: `s = "abc_python_xyz"
-print(s.startswith("python", 4))
-print(s.startswith("python", 4, 10))`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'startswith() Substring Windows',
-    explanationText:
-      's.startswith(prefix, start, end) tests whether the slice s[start:end] begins with the prefix without creating an intermediate slice object.',
-    complexityInfo: 'In-place window check',
-  },
-  {
-    id: 'pcap-s3-fc-051',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'Validation methods on empty string summary',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What do isalnum(), isalpha(), isdigit(), islower(), isupper(), and isspace() all return on ""?',
-    codeSnippet: `empty = ""
-checks = [
-    empty.isalnum(),
-    empty.isalpha(),
-    empty.isdigit(),
-    empty.islower(),
-    empty.isupper(),
-    empty.isspace()
-]
-print(any(checks))`,
-    stdoutExpected: `False`,
-    explanationTitle: 'Empty String Validation Rule',
-    explanationText:
-      'All six built-in string validation methods return False on an empty string because they all require at least one qualifying character.',
-    complexityInfo: 'Length > 0 precondition',
-  },
-  {
-    id: 'pcap-s3-fc-052',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'istitle() titlecase detection',
-    category: 'T1: Built-ins',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What makes a string qualify as istitle()?',
-    codeSnippet: `print("Hello World".istitle())
-print("Hello world".istitle())
-print("10 Little Pigs".istitle())`,
-    stdoutExpected: `True
-False
-True`,
-    explanationTitle: 'istitle() Word Rule',
-    explanationText:
-      'istitle() returns True if every word starts with an uppercase letter and the remaining letters are lowercase. Digits ("10") are uncased and allowed.',
-    complexityInfo: 'Word boundary case inspection',
-  },
-  {
-    id: 'pcap-s3-fc-053',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isidentifier() for valid variable names',
-    category: 'T1: Built-ins',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'What does isidentifier() check?',
-    codeSnippet: `print("my_var_1".isidentifier())
-print("1_var".isidentifier())
-print("for".isidentifier())`,
-    stdoutExpected: `True
-False
-True`,
-    explanationTitle: 'isidentifier() Syntax Rule',
-    explanationText:
-      'isidentifier() returns True if the string is a syntactically valid Python identifier (letters/underscore followed by letters/digits/underscores). Note: keywords like "for" return True!',
-    complexityInfo: 'Lexical identifier check',
-  },
-  {
-    id: 'pcap-s3-fc-054',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'keyword.iskeyword() vs isidentifier()',
-    category: 'T3: Theory',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
-    chapter: '3.3',
-    section: 'Section 3',
-    question: 'Why does "def".isidentifier() return True when "def" cannot be a variable name?',
-    codeSnippet: `import keyword
-s = "def"
-print(s.isidentifier())
-print(keyword.iskeyword(s))`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'Identifier vs Keyword Distinction',
-    explanationText:
-      'isidentifier() tests lexical syntax only (it looks like an identifier). To verify if a name is legally assignable as a variable, check that isidentifier() is True and keyword.iskeyword() is False.',
-    complexityInfo: 'Grammar vs Reserved word check',
-  },
-  {
-    id: 'pcap-s3-fc-055',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isnumeric() and isdecimal() vs isdigit()',
-    category: 'T3: Theory',
+    id: 'pcap-s3-fc-038',
+    cardType: 'PCAP 3.2 • Generator Expression Late Evaluation',
+    topic: 'Variable evaluation timing in generator expressions',
+    category: 'T2: Gotchas',
     difficulty: 'Advanced',
     factor: '2.2',
     intervalDays: 3,
-    chapter: '3.3',
+    chapter: '3.2',
     section: 'Section 3',
-    question: 'What is the hierarchy between isdecimal(), isdigit(), and isnumeric()?',
-    codeSnippet: `s = "²" # Superscript two (U+00B2)
-print(s.isdecimal())
-print(s.isdigit())
-print(s.isnumeric())`,
-    stdoutExpected: `False
-True
-True`,
-    explanationTitle: 'Numeric Subsets',
+    question: 'When are variables evaluated in a generator expression versus a list comprehension?',
+    codeSnippet: `factor = 2
+gen = (x * factor for x in range(3))
+lst = [x * factor for x in range(3)]
+
+factor = 10 # Reassigned before generator is consumed!
+print("lst:", lst)
+print("gen:", list(gen))`,
+    stdoutExpected: `lst: [0, 2, 4]
+gen: [0, 10, 20]`,
+    explanationTitle: 'Lazy Evaluation Uses Variable Value at Iteration Time',
     explanationText:
-      'isdecimal() is the strictest (base 10 digits 0-9). isdigit() includes superscripts/subscripts. isnumeric() is the broadest, also including vulgar fractions (½) and Roman numerals.',
-    complexityInfo: 'Unicode numeric property layers',
+      'List comprehensions evaluate elements eagerly when defined. Generator expressions evaluate elements lazily when iterated; references to outer variables (like `factor`) resolve to their current value at iteration time.',
+    complexityInfo: 'Deferred binding in generators',
   },
   {
-    id: 'pcap-s3-fc-056',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isascii() method',
+    id: 'pcap-s3-fc-039',
+    cardType: 'PCAP 3.2 • iter() with Sentinel Callable',
+    topic: 'Two-argument iter(callable, sentinel) for stream termination',
+    category: 'T1: Built-ins',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What does the two-argument form of built-in `iter(callable, sentinel)` do?',
+    codeSnippet: `vals = [10, 20, 30, 99, 40]
+iterator = iter(vals.pop, 99) # Repeatedly calls vals.pop(0) until 99 returned
+
+res = []
+for item in iterator:
+    res.append(item)
+
+print(res)`,
+    stdoutExpected: '[40]', // Note: pop() removes 40 from end, then 99 hits sentinel and terminates
+    explanationTitle: 'Callable Iterator Terminates on Sentinel Match',
+    explanationText:
+      'When `iter(callable, sentinel)` is called with two arguments, it creates an iterator that invokes `callable()` without arguments on every `next()`. As soon as the returned value equals `sentinel`, it raises `StopIteration`.',
+    complexityInfo: 'Two-argument iter() sentinel protocol',
+  },
+  {
+    id: 'pcap-s3-fc-040',
+    cardType: 'PCAP 3.2 • Generator send() Value Injection',
+    topic: 'Passing values into a generator via generator.send()',
+    category: 'T1: Built-ins',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'How does `yield` receive a value sent from the caller via `generator.send(val)`?',
+    codeSnippet: `def accumulator():
+    total = 0
+    while True:
+        val = yield total
+        if val is None:
+            break
+        total += val
+
+acc = accumulator()
+next(acc) # Prime the generator to first yield
+print(acc.send(10))
+print(acc.send(25))`,
+    stdoutExpected: `10
+35`,
+    explanationTitle: 'yield Expressions Receive Injected Values via send()',
+    explanationText:
+      'The `yield` statement is an expression that evaluates to the value passed via `generator.send(value)`. The generator must first be advanced to its first `yield` via `next()` or `send(None)` before sending non-None values.',
+    complexityInfo: 'Coroutine two-way communication',
+  },
+
+  // ==========================================
+  // CHAPTER 3.3: Lambdas, Functional Built-ins (map, filter, sorted, zip) (Cards 41-60)
+  // ==========================================
+  {
+    id: 'pcap-s3-fc-041',
+    cardType: 'PCAP 3.3 • Lambda Function Syntax',
+    topic: 'Anonymous function definition with lambda keyword',
     category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.3',
     section: 'Section 3',
-    question: 'What does isascii() test and what does it return for an empty string?',
-    codeSnippet: `print("Hello!".isascii())
-print("Héllo!".isascii())
-print("".isascii())`,
-    stdoutExpected: `True
-False
-True`,
-    explanationTitle: 'isascii() Code Point 0-127',
+    question: 'What is the syntax for creating an anonymous inline function in Python?',
+    codeSnippet: `sq = lambda x: x * x
+print(sq(5))
+print(type(sq).__name__)
+print(sq.__name__)`,
+    stdoutExpected: `25
+function
+<lambda>`,
+    explanationTitle: 'lambda Keyword Defines Anonymous Functions',
     explanationText:
-      'isascii() returns True if all characters in the string have code points in range 0-127. Unlike isalnum(), isascii() returns True on an empty string.',
-    complexityInfo: 'All code points <= 127',
+      'The syntax `lambda [parameters]: expression` creates an anonymous function object of standard type `function`. Its `__name__` attribute is automatically set to `"<lambda>"`.',
+    complexityInfo: 'Anonymous function declaration',
   },
   {
-    id: 'pcap-s3-fc-057',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'isprintable() non-printable escape detection',
+    id: 'pcap-s3-fc-042',
+    cardType: 'PCAP 3.3 • Lambda Single Expression Restriction',
+    topic: 'Statements are strictly prohibited inside lambda bodies',
+    category: 'T2: Gotchas',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'Can a Python lambda contain statements like `return`, `assert`, `pass`, assignments, or loops?',
+    codeSnippet: `# Invalid: lambda x: return x * 2  -> SyntaxError
+# Invalid: lambda x: x = x + 1     -> SyntaxError
+# Invalid: lambda x: for i in x: ... -> SyntaxError
+
+# Valid: conditional ternary expression
+parity = lambda x: "even" if x % 2 == 0 else "odd"
+print(parity(7), parity(8))`,
+    stdoutExpected: 'odd even',
+    explanationTitle: 'Lambdas Are Restricted to a Single Expression',
+    explanationText:
+      'Python lambdas can only contain a single syntactic expression whose value is implicitly returned. Statements (such as `return`, assignment `=`, loops, or `try`) cannot be used inside a lambda.',
+    complexityInfo: 'Grammar constraint on lambdas',
+  },
+  {
+    id: 'pcap-s3-fc-043',
+    cardType: 'PCAP 3.3 • Zero and Multi-Parameter Lambdas',
+    topic: 'Parameter signatures supported by lambdas',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How do you define a lambda with zero parameters, or with multiple parameters?',
+    codeSnippet: `get_pi = lambda: 3.14159
+calc = lambda x, y, z: (x + y) * z
+
+print(get_pi())
+print(calc(2, 3, 4))`,
+    stdoutExpected: `3.14159
+20`,
+    explanationTitle: 'Parameter Flexibility in Lambdas',
+    explanationText:
+      'A lambda with zero parameters uses no parameters before the colon: `lambda: value`. Multiple parameters are comma-separated: `lambda a, b, c: expression`.',
+    complexityInfo: 'Lambda signature patterns',
+  },
+  {
+    id: 'pcap-s3-fc-044',
+    cardType: 'PCAP 3.3 • Default Arguments in Lambdas',
+    topic: 'Setting default parameter values in lambda declarations',
     category: 'T1: Built-ins',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
     chapter: '3.3',
     section: 'Section 3',
-    question: 'What characters cause isprintable() to return False?',
-    codeSnippet: `print("Hello World".isprintable())
-print("Hello\\nWorld".isprintable())
-print("Hello\\tWorld".isprintable())`,
+    question: 'Can parameters in a lambda definition specify default argument values?',
+    codeSnippet: `power = lambda base, exp=2: base ** exp
+
+print(power(4))
+print(power(4, 3))`,
+    stdoutExpected: `16
+64`,
+    explanationTitle: 'Lambdas Support Default Arguments',
+    explanationText:
+      'Just like standard `def` functions, lambdas support default argument values (`lambda x, factor=10: x * factor`). They follow the same rule: non-default parameters must precede default parameters.',
+    complexityInfo: 'Default argument syntax in lambdas',
+  },
+  {
+    id: 'pcap-s3-fc-045',
+    cardType: 'PCAP 3.3 • map() Built-in Function',
+    topic: 'Transforming sequence elements lazily with map()',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'What does Python 3 built-in `map(function, iterable)` return, and when is the function applied?',
+    codeSnippet: `numbers = [1, 2, 3, 4]
+m = map(lambda x: x * 10, numbers)
+
+print("Type:", type(m).__name__)
+print("First item:", next(m))
+print("Remaining:", list(m))`,
+    stdoutExpected: `Type: map
+First item: 10
+Remaining: [20, 30, 40]`,
+    explanationTitle: 'map() Returns a Lazy Iterator',
+    explanationText:
+      'In Python 3, `map()` returns a lazy iterator (an instance of `map`), not a list. Transformation of elements occurs on-demand as the iterator is consumed.',
+    complexityInfo: 'Lazy stream transformation',
+  },
+  {
+    id: 'pcap-s3-fc-046',
+    cardType: 'PCAP 3.3 • map() with Multiple Iterables',
+    topic: 'Passing multiple parallel iterables to map()',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How does `map()` behave when passed multiple iterables of different lengths?',
+    codeSnippet: `nums1 = [1, 2, 3, 4, 5]
+nums2 = [10, 20, 30]
+
+sums = map(lambda a, b: a + b, nums1, nums2)
+print(list(sums))`,
+    stdoutExpected: '[11, 22, 33]',
+    explanationTitle: 'map() Stops at Shortest Iterable',
+    explanationText:
+      'When `map()` is provided multiple iterables, the mapping function must accept that many arguments. Iteration stops automatically when the shortest input iterable is exhausted.',
+    complexityInfo: 'Parallel stream processing',
+  },
+  {
+    id: 'pcap-s3-fc-047',
+    cardType: 'PCAP 3.3 • filter() Built-in Function',
+    topic: 'Selecting elements matching a predicate with filter()',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'What does Python 3 built-in `filter(predicate, iterable)` return, and what does it keep?',
+    codeSnippet: `values = [12, 5, 18, 7, 20, 3]
+f = filter(lambda x: x >= 10, values)
+
+print("Type:", type(f).__name__)
+print("List:", list(f))`,
+    stdoutExpected: `Type: filter
+List: [12, 18, 20]`,
+    explanationTitle: 'filter() Returns a Lazy Iterator of Matching Items',
+    explanationText:
+      '`filter()` returns a lazy iterator containing only items for which the predicate function returns truthy. In Python 3, like `map()`, it produces elements on-demand.',
+    complexityInfo: 'Predicate-based filtering',
+  },
+  {
+    id: 'pcap-s3-fc-048',
+    cardType: 'PCAP 3.3 • filter() with None as Predicate',
+    topic: 'Using None as predicate to filter out falsy elements',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'What happens when `None` is passed as the first argument to `filter(None, iterable)`?',
+    codeSnippet: `mixed = [0, 1, False, True, "", "hello", None, [], [42]]
+truthy_only = filter(None, mixed)
+
+print(list(truthy_only))`,
+    stdoutExpected: "[1, True, 'hello', [42]]",
+    explanationTitle: 'filter(None, ...) Removes All Falsy Elements',
+    explanationText:
+      'If the first argument to `filter()` is `None`, Python uses the identity truth function, filtering out all falsy values (`0`, `False`, `""`, `None`, `[]`, `{}`) and preserving only truthy items.',
+    complexityInfo: 'Boolean identity filtering',
+  },
+  {
+    id: 'pcap-s3-fc-049',
+    cardType: 'PCAP 3.3 • sorted() with key Function',
+    topic: 'Custom sort ordering using key=lambda',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How does the `key` parameter in `sorted()` control item ordering?',
+    codeSnippet: `words = ["banana", "pie", "apple", "kiwi"]
+by_length = sorted(words, key=lambda w: len(w))
+print(by_length)
+
+by_last_char = sorted(words, key=lambda w: w[-1])
+print(by_last_char)`,
+    stdoutExpected: `['pie', 'kiwi', 'apple', 'banana']
+['banana', 'pie', 'apple', 'kiwi']`,
+    explanationTitle: 'key Function Extracts Comparison Key for Each Item',
+    explanationText:
+      'The `key` parameter takes a single-argument function applied to each element before comparison. Python sorts elements based on the values returned by the `key` function, preserving stable ordering for ties.',
+    complexityInfo: 'Custom sort comparison',
+  },
+  {
+    id: 'pcap-s3-fc-050',
+    cardType: 'PCAP 3.3 • Multi-Criteria Sorting with Tuples in key',
+    topic: 'Sorting by multiple attributes using a tuple in lambda key',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How can you sort items by primary and secondary criteria using a lambda key?',
+    codeSnippet: `students = [("Bob", 85), ("Alice", 92), ("Charlie", 85), ("David", 92)]
+# Sort by grade descending (-grade), then by name ascending
+ranked = sorted(students, key=lambda s: (-s[1], s[0]))
+print(ranked)`,
+    stdoutExpected: "[('Alice', 92), ('David', 92), ('Bob', 85), ('Charlie', 85)]",
+    explanationTitle: 'Tuple-Based Lexicographical Comparison Keys',
+    explanationText:
+      'Returning a tuple from the key lambda `(criteria1, criteria2)` causes Python to compare elements by `criteria1` first, and break ties using `criteria2`. Negating numeric values reverses that specific criterion.',
+    complexityInfo: 'Compound sort hierarchy',
+  },
+  {
+    id: 'pcap-s3-fc-051',
+    cardType: 'PCAP 3.3 • list.sort() vs sorted() Built-in',
+    topic: 'In-place mutation vs returning a new sorted list',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'What are the two major differences between `list.sort()` and `sorted()`?',
+    codeSnippet: `nums = [3, 1, 2]
+ret_sort = nums.sort() # In-place mutation, returns None
+print("nums after sort():", nums)
+print("ret_sort:", ret_sort)
+
+data = (5, 2, 8)
+new_lst = sorted(data) # Works on any iterable, returns new list
+print("new_lst:", new_lst)`,
+    stdoutExpected: `nums after sort(): [1, 2, 3]
+ret_sort: None
+new_lst: [2, 5, 8]`,
+    explanationTitle: 'list.sort() Mutates in Place; sorted() Returns a New List',
+    explanationText:
+      '`list.sort()` is a list method that mutates the existing list in-place and returns `None`. `sorted()` is a built-in function that accepts any iterable and always returns a brand new sorted `list`.',
+    complexityInfo: 'Method vs built-in comparison',
+  },
+  {
+    id: 'pcap-s3-fc-052',
+    cardType: 'PCAP 3.3 • zip() Built-in Function',
+    topic: 'Pairing elements from multiple iterables into tuples',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'What does `zip()` return in Python 3, and how does it handle sequences of unequal length?',
+    codeSnippet: `names = ["Alice", "Bob", "Charlie", "Diana"]
+scores = [95, 88, 72]
+
+z = zip(names, scores)
+print("Type:", type(z).__name__)
+print("Result:", list(z))`,
+    stdoutExpected: `Type: zip
+Result: [('Alice', 95), ('Bob', 88), ('Charlie', 72)]`,
+    explanationTitle: 'zip() Produces Tuples and Truncates to Shortest Iterable',
+    explanationText:
+      '`zip()` returns an iterator of tuples where the i-th tuple contains the i-th element from each argument sequence. It stops as soon as the shortest input iterable is exhausted.',
+    complexityInfo: 'Tuple pairing iterator',
+  },
+  {
+    id: 'pcap-s3-fc-053',
+    cardType: 'PCAP 3.3 • Unzipping with zip(*paired)',
+    topic: 'Reversing a zip operation using the unpack operator',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How do you "unzip" a list of paired tuples back into individual separated sequences?',
+    codeSnippet: `pairs = [('A', 1), ('B', 2), ('C', 3)]
+letters, numbers = zip(*pairs)
+
+print("letters:", letters)
+print("numbers:", numbers)`,
+    stdoutExpected: `letters: ('A', 'B', 'C')
+numbers: (1, 2, 3)`,
+    explanationTitle: 'zip(*pairs) Reconstitutes Original Dimensions',
+    explanationText:
+      'Passing `*pairs` unpacks the collection of tuples as separate positional arguments into `zip()`. `zip()` groups the first elements together and the second elements together, reconstituting tuples.',
+    complexityInfo: 'Sequence transposition pattern',
+  },
+  {
+    id: 'pcap-s3-fc-054',
+    cardType: 'PCAP 3.3 • any() Built-in Function',
+    topic: 'Testing if at least one iterable element is truthy with short-circuiting',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How does `any()` evaluate an iterable, and what is its return value on an empty sequence?',
+    codeSnippet: `print(any([0, False, "", 5, None]))
+print(any([0, False, ""]))
+print(any([])) # Empty sequence test`,
     stdoutExpected: `True
 False
 False`,
-    explanationTitle: 'isprintable() Escape Check',
+    explanationTitle: 'any() Returns True if Any Element Is Truthy; False on Empty',
     explanationText:
-      'Control characters like \\n (newline) and \\t (tab) are defined by Unicode as non-printable formatting characters, causing isprintable() to return False.',
-    complexityInfo: 'Unicode category other than Control/Separator',
+      '`any(iterable)` returns `True` if any element is truthy, short-circuiting and stopping evaluation immediately upon encountering the first truthy value. On an empty iterable, it returns `False`.',
+    complexityInfo: 'Short-circuit predicate disjunction',
+  },
+  {
+    id: 'pcap-s3-fc-055',
+    cardType: 'PCAP 3.3 • all() Built-in Function',
+    topic: 'Testing if all iterable elements are truthy with vacuous truth on empty',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How does `all()` evaluate an iterable, and what does it return for an empty sequence?',
+    codeSnippet: `print(all([True, 1, "hello"]))
+print(all([True, 0, "hello"])) # 0 is falsy
+print(all([])) # Empty sequence test (vacuous truth!)`,
+    stdoutExpected: `True
+False
+True`,
+    explanationTitle: 'all() Returns True if All Truthy; True on Empty Sequence',
+    explanationText:
+      '`all(iterable)` returns `True` if every element is truthy. It short-circuits to `False` on the first falsy value. Crucially for exams: on an empty iterable, `all([])` returns `True` (vacuous truth).',
+    complexityInfo: 'Vacuous truth and conjunction semantics',
+  },
+  {
+    id: 'pcap-s3-fc-056',
+    cardType: 'PCAP 3.3 • all() with Generator Expression Short-Circuit',
+    topic: 'Preventing unnecessary computations via generator short-circuiting',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How does passing a generator expression to `all()` or `any()` ensure efficiency?',
+    codeSnippet: `evaluated = []
+
+def check(n):
+    evaluated.append(n)
+    return n > 0
+
+nums = [5, 2, -1, 10, 20]
+# all() short-circuits as soon as check(-1) returns False
+res = all(check(x) for x in nums)
+
+print("all result:", res)
+print("evaluated:", evaluated)`,
+    stdoutExpected: `all result: False
+evaluated: [5, 2, -1]`,
+    explanationTitle: 'Generator Expressions Allow Short-Circuit Termination',
+    explanationText:
+      'Because generator expressions yield items lazily, `all()` or `any()` pulls items only until the outcome is determined (`False` for `all()`, `True` for `any()`), stopping immediately without evaluating remaining items.',
+    complexityInfo: 'Lazy predicate evaluation',
+  },
+  {
+    id: 'pcap-s3-fc-057',
+    cardType: 'PCAP 3.3 • Combining map() and filter()',
+    topic: 'Composing functional data pipelines',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.3',
+    section: 'Section 3',
+    question: 'How do you compose `filter()` and `map()` into a single transformation pipeline?',
+    codeSnippet: `data = [1, 2, 3, 4, 5, 6]
+
+# Step 1: filter even numbers (2, 4, 6)
+# Step 2: map to square them (4, 16, 36)
+pipeline = map(lambda x: x ** 2, filter(lambda x: x % 2 == 0, data))
+print(list(pipeline))`,
+    stdoutExpected: '[4, 16, 36]',
+    explanationTitle: 'Composition of filter() and map() Iterators',
+    explanationText:
+      'By nesting `filter()` inside `map()`, only elements passing the predicate are forwarded to the transformation function. Both remain lazy iterators until materialized by `list()`.',
+    complexityInfo: 'Functional stream pipelining',
   },
   {
     id: 'pcap-s3-fc-058',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'startswith() with negative start index',
-    category: 'T2: Output',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
+    cardType: 'PCAP 3.3 • List Comprehension vs map/filter',
+    topic: 'Idiomatic equivalence between comprehensions and functional built-ins',
+    category: 'T3: Theory',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
     chapter: '3.3',
     section: 'Section 3',
-    question: 'How do negative indices behave in s.startswith("on", -2)?',
-    codeSnippet: `s = "python"
-print(s.startswith("on", -2))
-print(s.startswith("th", -4))`,
+    question: 'What is the idiomatic Python list comprehension equivalent to `list(map(f, filter(p, seq)))`?',
+    codeSnippet: `seq = [1, 2, 3, 4, 5, 6]
+functional = list(map(lambda x: x * 10, filter(lambda x: x % 2 != 0, seq)))
+comprehension = [x * 10 for x in seq if x % 2 != 0]
+
+print(functional == comprehension)
+print(comprehension)`,
     stdoutExpected: `True
-True`,
-    explanationTitle: 'Negative Indices in startswith',
+[10, 30, 50]`,
+    explanationTitle: 'Comprehension Equivalence to map() and filter()',
     explanationText:
-      'Negative start indices count backwards from the end: -2 corresponds to index 4 ("o"). The substring from index 4 begins with "on", returning True.',
-    complexityInfo: 'Slice coordinate resolution',
+      '`[f(x) for x in seq if p(x)]` is functionally equivalent to `list(map(f, filter(p, seq)))`. Comprehensions are often preferred in Python for readability and avoiding lambda overhead.',
+    complexityInfo: 'Syntactic equivalence and idioms',
   },
   {
     id: 'pcap-s3-fc-059',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'Validation methods return type',
-    category: 'T3: Theory',
+    cardType: 'PCAP 3.3 • enumerate() Built-in Function',
+    topic: 'Generating index-value pairs with optional start index',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.3',
     section: 'Section 3',
-    question: 'What is the return type of all "is..." string methods?',
-    codeSnippet: `res = "abc".isalpha()
-print(type(res).__name__, res is True)`,
-    stdoutExpected: `bool True`,
-    explanationTitle: 'Boolean Return Guarantees',
+    question: 'What does `enumerate()` yield on each iteration, and how can you change the starting index?',
+    codeSnippet: `colors = ['red', 'green', 'blue']
+indexed = list(enumerate(colors, start=1))
+
+print(indexed)
+for idx, val in enumerate(colors, start=10):
+    if idx == 11:
+        print("At 11:", val)`,
+    stdoutExpected: `[(1, 'red'), (2, 'green'), (3, 'blue')]
+At 11: green`,
+    explanationTitle: 'enumerate(iterable, start=0) Yields (index, value) Pairs',
     explanationText:
-      'All string predicate methods (startswith, endswith, islower, isalpha, etc.) return explicit bool objects (True or False), never integers or None.',
-    complexityInfo: 'Type guarantee bool',
+      '`enumerate()` returns an iterator yielding 2-element tuples `(index, item)`. The optional `start` keyword sets the initial counter value (defaulting to 0).',
+    complexityInfo: 'Indexed iteration helper',
   },
   {
     id: 'pcap-s3-fc-060',
-    cardType: 'PCAP 3.3 • Validation',
-    topic: 'endswith() with empty string',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.3 • reversed() vs list.reverse()',
+    topic: 'Reverse iterator vs in-place sequence mutation',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.3',
     section: 'Section 3',
-    question: 'What does any string return for s.endswith("")?',
-    codeSnippet: `print("Python".endswith(""))
-print("".endswith(""))`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'Empty Suffix Invariant',
+    question: 'What is the difference between built-in `reversed(seq)` and method `seq.reverse()`?',
+    codeSnippet: `orig = [10, 20, 30]
+rev_it = reversed(orig)
+
+print("Type of rev_it:", type(rev_it).__name__)
+print("orig unchanged:", orig)
+print("rev_it as list:", list(rev_it))
+
+ret = orig.reverse() # In-place mutation
+print("orig after reverse():", orig)
+print("reverse() return value:", ret)`,
+    stdoutExpected: `Type of rev_it: list_reverseiterator
+orig unchanged: [10, 20, 30]
+rev_it as list: [30, 20, 10]
+orig after reverse(): [30, 20, 10]
+reverse() return value: None`,
+    explanationTitle: 'reversed() Yields Reverse Iterator; reverse() Mutates in Place',
     explanationText:
-      'Every string (including the empty string itself) ends with the empty string "". Thus s.endswith("") is always True.',
-    complexityInfo: 'Empty string boundary condition',
+      '`reversed()` returns a reverse iterator without modifying the original sequence. `list.reverse()` reverses the list in-place and returns `None`.',
+    complexityInfo: 'Iterator vs mutation semantics',
   },
 
-  // =========================================================================
-  // CHAPTER 3.4: STRING TRANSFORMATION METHODS (Cards 61 to 80)
-  // =========================================================================
+  // ==========================================
+  // CHAPTER 3.4: Closures, Nested Scopes & Variable Binding (Cards 61-70 in Part 2)
+  // ==========================================
   {
     id: 'pcap-s3-fc-061',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'capitalize() first character upper, remaining lower',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.4 • Closure Definition',
+    topic: 'Inner function retaining access to enclosing lexical scope',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'What does capitalize() do to characters after the first character?',
-    codeSnippet: `s = "pCAP-31-03 eXAM"
-print(s.capitalize())`,
-    stdoutExpected: `Pcap-31-03 exam`,
-    explanationTitle: 'capitalize() Forces Lowercase on Rest',
+    question: 'What is a closure in Python?',
+    codeSnippet: `def make_printer(msg):
+    def printer():
+        print("Message:", msg)
+    return printer
+
+p = make_printer("Hello Closures")
+# make_printer has completed, yet printer retains 'msg'!
+p()`,
+    stdoutExpected: 'Message: Hello Closures',
+    explanationTitle: 'Closures Bind Enclosing Scope Variables',
     explanationText:
-      'capitalize() capitalizes the very first character and forcibly converts ALL remaining characters to lowercase. "pCAP" becomes "Pcap" and "eXAM" becomes "exam".',
-    complexityInfo: 'O(N) new string allocation',
+      'A closure is an inner function that remembers and retains access to variables in its enclosing lexical scope, even after the outer function has finished executing and its stack frame is popped.',
+    complexityInfo: 'Lexical scoping and closure mechanics',
   },
   {
     id: 'pcap-s3-fc-062',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'title() word capitalization rules',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.4 • Closure Three Prerequisites',
+    topic: 'The three technical criteria required to form a closure in Python',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'How does title() treat apostrophes and numbers inside words?',
-    codeSnippet: `print("they're ready".title())
-print("chapter 3a".title())`,
-    stdoutExpected: `They'Re Ready
-Chapter 3A`,
-    explanationTitle: 'title() Word Boundary Oddities',
+    question: 'What three conditions must be satisfied for a Python closure to exist?',
+    codeSnippet: `def outer(x):          # 1. Nested function inside an outer function
+    def inner():       # 2. Inner function references variable from enclosing scope (x)
+        return x * 2
+    return inner       # 3. Outer function returns the inner function object
+
+fn = outer(21)
+print(fn())`,
+    stdoutExpected: '42',
+    explanationTitle: 'Three Structural Requirements for a Closure',
     explanationText:
-      'title() considers any non-letter character as a word boundary. The apostrophe in "they\'re" causes "Re" to be capitalized as a new word.',
-    complexityInfo: 'Word boundary state machine',
+      'A closure requires: (1) an enclosing (outer) function containing a nested (inner) function, (2) the inner function must reference at least one variable in the enclosing function scope, (3) the enclosing function must return the inner function.',
+    complexityInfo: 'Closure architectural criteria',
   },
   {
     id: 'pcap-s3-fc-063',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'lower() vs casefold()',
-    category: 'T3: Theory',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
+    cardType: 'PCAP 3.4 • __closure__ Attribute and Cell Objects',
+    topic: 'Inspecting closure bindings via __closure__ and cell_contents',
+    category: 'T1: Built-ins',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'What is casefold() and how does it differ from lower()?',
-    codeSnippet: `german_s = "ß"
-print(german_s.lower())
-print(german_s.casefold())`,
-    stdoutExpected: `ß
-ss`,
-    explanationTitle: 'Aggressive Casefolding',
+    question: 'How can you programmatically inspect the captured variables stored inside a closure?',
+    codeSnippet: `def outer(val):
+    def inner():
+        return val
+    return inner
+
+fn = outer("secret")
+print("Has closure:", fn.__closure__ is not None)
+print("Number of cells:", len(fn.__closure__))
+cell = fn.__closure__[0]
+print("Cell content:", cell.cell_contents)`,
+    stdoutExpected: `Has closure: True
+Number of cells: 1
+Cell content: secret`,
+    explanationTitle: '__closure__ Stores a Tuple of Cell Objects',
     explanationText:
-      'casefold() is an aggressive version of lower() designed for caseless matching across international alphabets. German sharp "ß" folds to "ss".',
-    complexityInfo: 'Unicode full case mapping',
+      'Functions that form a closure have a non-None `__closure__` attribute containing a tuple of `cell` objects. Each cell holds a reference to a captured variable via `cell.cell_contents`. If no variables are captured, `__closure__` is `None`.',
+    complexityInfo: 'Internal closure data structure',
   },
   {
     id: 'pcap-s3-fc-064',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'swapcase() inverts character casing',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.4 • Reading vs Modifying Enclosing Variables',
+    topic: 'Reading enclosing scope is implicit; modifying requires nonlocal',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'What is the output of swapcase() on mixed case strings?',
-    codeSnippet: `s = "PyThOn 3.10"
-print(s.swapcase())`,
-    stdoutExpected: `pYtHoN 3.10`,
-    explanationTitle: 'swapcase() Inversion',
+    question: 'Why does reading an enclosing variable work automatically, while reassigning it triggers an UnboundLocalError?',
+    codeSnippet: `def outer():
+    count = 0
+    def inner():
+        try:
+            count += 1 # Assignment makes 'count' local, but read happens first!
+        except UnboundLocalError as err:
+            print("Caught:", type(err).__name__)
+    inner()
+
+outer()`,
+    stdoutExpected: 'Caught: UnboundLocalError',
+    explanationTitle: 'Rebinding Requires the nonlocal Keyword',
     explanationText:
-      'swapcase() converts all uppercase characters to lowercase and all lowercase to uppercase. Digits, spaces, and punctuation remain unchanged.',
-    complexityInfo: 'O(N) character case toggle',
+      'Reading an enclosing variable follows the LEGB search order. But any assignment statement (`count = ...` or `count += 1`) causes Python to treat the symbol as local to `inner`. Reading it before assignment raises `UnboundLocalError`.',
+    complexityInfo: 'Local assignment shadow analysis',
   },
   {
     id: 'pcap-s3-fc-065',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'strip() removes leading and trailing whitespace',
+    cardType: 'PCAP 3.4 • nonlocal Keyword',
+    topic: 'Rebinding enclosing non-global variables with nonlocal',
     category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'Does strip() remove spaces inside the string between words?',
-    codeSnippet: `s = "  hello   world  \\n"
-clean = s.strip()
-print(repr(clean))`,
-    stdoutExpected: `'hello   world'`,
-    explanationTitle: 'strip() Only Affects Ends',
+    question: 'What keyword enables an inner function to rebind a variable in an enclosing (non-global) scope?',
+    codeSnippet: `def make_counter(start=0):
+    count = start
+    def counter():
+        nonlocal count
+        count += 1
+        return count
+    return counter
+
+c1 = make_counter(10)
+print(c1(), c1(), c1())`,
+    stdoutExpected: '11 12 13',
+    explanationTitle: 'nonlocal Binds to Nearest Enclosing Scope',
     explanationText:
-      'strip() only removes characters from the extreme left and right ends of the string. Internal whitespace between words is completely untouched.',
-    complexityInfo: 'Two-pointer trim O(N)',
+      'The `nonlocal` statement declares that a name refers to a previously bound variable in the nearest enclosing scope (excluding the global module scope), allowing it to be modified and reassigned.',
+    complexityInfo: 'Enclosing scope rebinding',
   },
   {
     id: 'pcap-s3-fc-066',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'strip(chars) character set argument, not substring!',
-    category: 'T4: Bugs',
+    cardType: 'PCAP 3.4 • nonlocal vs global Scope Targets',
+    topic: 'nonlocal cannot target global scope or unassigned names',
+    category: 'T2: Gotchas',
     difficulty: 'Intermediate',
-    factor: '2.3',
+    factor: '2.4',
     intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'Does strip("www.com") remove the exact prefix "www." or any matching character?',
-    codeSnippet: `s = "www.python.org"
-print(s.strip("w.org"))`,
-    stdoutExpected: `python`,
-    explanationTitle: 'strip Argument is a Character Set',
+    question: 'What error occurs if `nonlocal` targets a variable that only exists in the global scope or does not exist at all?',
+    codeSnippet: `# Attempting:
+# g_var = 10
+# def outer():
+#     nonlocal g_var -> SyntaxError: no binding for nonlocal 'g_var' found
+
+def outer():
+    x = 1
+    def inner():
+        nonlocal x
+        x = 5
+        return x
+    return inner()
+
+print(outer())`,
+    stdoutExpected: '5',
+    explanationTitle: 'nonlocal Requires an Enclosing Non-Global Binding',
     explanationText:
-      'The argument to strip(chars) is a set of individual characters to remove, NOT a substring or prefix! It strips any combination of "w", ".", "o", "r", "g" from both ends.',
-    complexityInfo: 'Set-based endpoint stripping',
+      'Unlike `global` (which can introduce new global variables), `nonlocal` MUST find an already existing variable in an enclosing function scope. If none exists (or it only exists globally), a compile-time `SyntaxError` is raised.',
+    complexityInfo: 'Compile-time binding validation',
   },
   {
     id: 'pcap-s3-fc-067',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'lstrip() and rstrip() directional stripping',
+    cardType: 'PCAP 3.4 • Function Factories with Closures',
+    topic: 'Generating specialized functions using closure parameterization',
     category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'How do lstrip() and rstrip() differ?',
-    codeSnippet: `s = "  Python  "
-print(repr(s.lstrip()))
-print(repr(s.rstrip()))`,
-    stdoutExpected: `'Python  '
-'  Python'`,
-    explanationTitle: 'Directional Trimming',
+    question: 'How do function factories leverage closures to produce custom-configured functions?',
+    codeSnippet: `def make_power_fn(exponent):
+    def power(base):
+        return base ** exponent
+    return power
+
+square = make_power_fn(2)
+cube = make_power_fn(3)
+
+print("square(5):", square(5))
+print("cube(5):", cube(5))`,
+    stdoutExpected: `square(5): 25
+cube(5): 125`,
+    explanationTitle: 'Function Factories Generate Configured Functions',
     explanationText:
-      'lstrip() only trims characters from the left (beginning), while rstrip() only trims from the right (end).',
-    complexityInfo: 'Single-ended trim O(N)',
+      'A function factory uses closures to bake arguments (like `exponent`) into newly created inner functions. Each invocation of the factory produces a distinct function object maintaining its own isolated closure state.',
+    complexityInfo: 'Closure generator pattern',
   },
   {
     id: 'pcap-s3-fc-068',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'replace(old, new) all occurrences by default',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.4 • Late Binding Closure Trap in Loops',
+    topic: 'Functions in loops capture variables by reference, not value',
+    category: 'T2: Gotchas',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'How many occurrences does replace(old, new) substitute if count is omitted?',
-    codeSnippet: `s = "banana"
-print(s.replace("a", "o"))`,
-    stdoutExpected: `bonono`,
-    explanationTitle: 'replace() Global Replacement',
+    question: 'Why does creating a list of lambdas in a `for` loop cause all of them to evaluate to the loop last value?',
+    codeSnippet: `funcs = []
+for i in range(3):
+    funcs.append(lambda: i) # Late binding: captures variable 'i', not its current value!
+
+results = [f() for f in funcs]
+print(results)`,
+    stdoutExpected: '[2, 2, 2]',
+    explanationTitle: 'Closures Bind Names by Reference (Late Binding)',
     explanationText:
-      'Without the optional count parameter, replace(old, new) replaces ALL non-overlapping occurrences of old with new throughout the entire string.',
-    complexityInfo: 'O(N) search and allocate',
+      'Python closures bind variables by reference, not by value. All three lambdas look up the symbol `i` when called; by that time, the loop has completed and `i` equals `2`, so all functions return `2`.',
+    complexityInfo: 'Late binding loop trap',
   },
   {
     id: 'pcap-s3-fc-069',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'replace(old, new, count) count limiter',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.4 • Fixing Late Binding with Default Arguments',
+    topic: 'Freezing loop variables using default parameter binding at definition time',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'What is the output of "banana".replace("a", "o", 2)?',
-    codeSnippet: `s = "banana"
-print(s.replace("a", "o", 2))`,
-    stdoutExpected: `bonona`,
-    explanationTitle: 'replace() Count Limit',
+    question: 'How do you fix the late-binding loop trap so each function captures the current iteration value?',
+    codeSnippet: `funcs = []
+for i in range(3):
+    # Default argument 'val=i' is evaluated eagerly at definition time!
+    funcs.append(lambda val=i: val)
+
+results = [f() for f in funcs]
+print(results)`,
+    stdoutExpected: '[0, 1, 2]',
+    explanationTitle: 'Default Argument Freezes Value at Function Creation Time',
     explanationText:
-      'The optional third argument count specifies the maximum number of occurrences to replace from left to right. Only the first 2 "a"s become "o".',
-    complexityInfo: 'Stops after count matches',
+      'Because default parameter expressions are evaluated when the function is defined, `lambda val=i: val` binds the current value of `i` into each function instance default argument, decoupling it from later loop mutations.',
+    complexityInfo: 'Early binding idiom',
   },
   {
     id: 'pcap-s3-fc-070',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'replace() when old substring is not found',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'What happens if old does not exist in the string during replace()?',
-    codeSnippet: `s = "python"
-res = s.replace("java", "rust")
-print(res)
-print(res is s)`,
-    stdoutExpected: `python
-True`,
-    explanationTitle: 'replace() Missing Substring No-Op',
-    explanationText:
-      'If old is not found, replace() returns a copy of the original string unchanged without raising any exception.',
-    complexityInfo: 'No-op return',
-  },
-  {
-    id: 'pcap-s3-fc-071',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'replace() with empty string old=""',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'What does "abc".replace("", "-") produce?',
-    codeSnippet: `s = "abc"
-print(s.replace("", "-"))`,
-    stdoutExpected: `-a-b-c-`,
-    explanationTitle: 'Empty String Replacement Injection',
-    explanationText:
-      'Because the empty string matches before every character and after the last character, replace("", "-") inserts "-" at every boundary.',
-    complexityInfo: 'Inserts at all len + 1 positions',
-  },
-  {
-    id: 'pcap-s3-fc-072',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'Chaining transformation methods',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'In what order are chained string methods evaluated?',
-    codeSnippet: `raw = "  --pYtHoN--  "
-res = raw.strip().strip("-").upper()
-print(res)`,
-    stdoutExpected: `PYTHON`,
-    explanationTitle: 'Left-to-Right Method Chaining',
-    explanationText:
-      'Chained methods evaluate strictly left-to-right: raw.strip() removes outer spaces, .strip("-") removes dashes, and .upper() uppercases the result.',
-    complexityInfo: 'Pipeline of O(N) operations',
-  },
-  {
-    id: 'pcap-s3-fc-073',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'upper() and lower() return new objects',
-    category: 'T3: Theory',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'Does s.upper() modify s in place or return a new string?',
-    codeSnippet: `s = "hello"
-s.upper()
-print(s)`,
-    stdoutExpected: `hello`,
-    explanationTitle: 'Strings are Never Mutated In Place',
-    explanationText:
-      'All string transformation methods return a brand new string. The original string variable s remains unchanged unless explicitly reassigned (s = s.upper()).',
-    complexityInfo: 'Immutability guarantee',
-  },
-  {
-    id: 'pcap-s3-fc-074',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'lstrip(chars) vs removeprefix()',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'Why did Python 3.9 introduce removeprefix() instead of relying on lstrip()?',
-    codeSnippet: `s = "Arthur: King"
-print(s.lstrip("Arthur: "))
-print(s.removeprefix("Arthur: "))`,
-    stdoutExpected: `ing
-King`,
-    explanationTitle: 'lstrip Over-Stripping Danger',
-    explanationText:
-      'lstrip("Arthur: ") strips every character in the set {"A","r","t","h","u",":"," "}. Since "K" is followed by "i", but "r" is in the set, the "K" in "King" might be spared but other letters stripped. removeprefix removes the exact prefix.',
-    complexityInfo: 'Set vs literal prefix semantic',
-  },
-  {
-    id: 'pcap-s3-fc-075',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'rstrip() removing newlines from file lines',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'How do you strip trailing newlines and carriage returns cleanly using rstrip()?',
-    codeSnippet: `line = "data row 101\\r\\n"
-print(repr(line.rstrip("\\r\\n")))`,
-    stdoutExpected: `'data row 101'`,
-    explanationTitle: 'rstrip for Line Endings',
-    explanationText:
-      'line.rstrip("\\r\\n") strips any combination of carriage returns and line feeds from the end of the line, ideal for parsing cross-platform text files.',
-    complexityInfo: 'O(len(trailing_chars))',
-  },
-  {
-    id: 'pcap-s3-fc-076',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'zfill(width) zero padding numbers',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'How does zfill() handle leading signs (+ or -)?',
-    codeSnippet: `print("42".zfill(5))
-print("-42".zfill(5))
-print("+42".zfill(5))`,
-    stdoutExpected: `00042
--0042
-+0042`,
-    explanationTitle: 'zfill Sign Awareness',
-    explanationText:
-      'zfill(width) pads a numeric string with zeros on the left until it reaches the specified width. If the string starts with "+" or "-", the zeros are inserted AFTER the sign.',
-    complexityInfo: 'Sign-aware numeric padding',
-  },
-  {
-    id: 'pcap-s3-fc-077',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'expandtabs(tabsize) conversion',
+    cardType: 'PCAP 3.4 • Independent Closure State Instances',
+    topic: 'Multiple calls to factory produce distinct, isolated closure environments',
     category: 'T1: Built-ins',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
     chapter: '3.4',
     section: 'Section 3',
-    question: 'What is the default tab size of expandtabs()?',
-    codeSnippet: `s = "a\\tb"
-print(len(s.expandtabs()))
-print(len(s.expandtabs(4)))`,
-    stdoutExpected: `8
-4`,
-    explanationTitle: 'expandtabs() Default 8',
+    question: 'Do multiple instances created by the same closure factory share or isolate their state?',
+    codeSnippet: `def make_bank_account(balance):
+    def deposit(amount):
+        nonlocal balance
+        balance += amount
+        return balance
+    return deposit
+
+acc1 = make_bank_account(100)
+acc2 = make_bank_account(500)
+
+acc1(50)
+print("acc1:", acc1(0))
+print("acc2:", acc2(0))`,
+    stdoutExpected: `acc1: 150
+acc2: 500`,
+    explanationTitle: 'Each Factory Invocation Creates an Isolated Closure Frame',
     explanationText:
-      'expandtabs(tabsize=8) expands tabs into spaces based on tab stop columns. The default tab size is 8 spaces.',
-    complexityInfo: 'Column alignment algorithm',
-  },
-  {
-    id: 'pcap-s3-fc-078',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'lower() with already lowercase strings identity',
-    category: 'T3: Theory',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'Does s.lower() return the same object if s is already completely lowercase?',
-    codeSnippet: `s = "already_lower"
-res = s.lower()
-print(res is s)
-print(res == s)`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'CPython lower() Optimization',
-    explanationText:
-      'In CPython, if a string contains no uppercase characters that require conversion, lower() optimizes memory by returning the original string object directly.',
-    complexityInfo: 'CPython reference reuse optimization',
-  },
-  {
-    id: 'pcap-s3-fc-079',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'replace() count parameter negative value',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'How does replace() behave when count is a negative integer?',
-    codeSnippet: `s = "aaa"
-print(s.replace("a", "b", -1))`,
-    stdoutExpected: `bbb`,
-    explanationTitle: 'Negative Count in replace()',
-    explanationText:
-      'A negative count in replace(old, new, count) is interpreted as "no limit", which replaces ALL occurrences (same as omitting count).',
-    complexityInfo: 'Negative count = unlimited',
-  },
-  {
-    id: 'pcap-s3-fc-080',
-    cardType: 'PCAP 3.4 • Transformation',
-    topic: 'strip() with whitespace set argument',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.4',
-    section: 'Section 3',
-    question: 'What does s.strip() with no arguments strip by default?',
-    codeSnippet: `s = "\\t \\n \\r PCAP \\n "
-print(s.strip())`,
-    stdoutExpected: `PCAP`,
-    explanationTitle: 'Default Whitespace Strip Set',
-    explanationText:
-      'When called with no arguments or None, strip() strips all ASCII whitespace characters (spaces, tabs, newlines, carriage returns, vertical tabs, form feeds).',
-    complexityInfo: 'Standard whitespace charset',
+      'Every time the enclosing function is called, a completely new execution frame and set of cell objects are allocated. Changes to `acc1` balance have zero effect on `acc2`.',
+    complexityInfo: 'State isolation across closure instances',
   },
 ];

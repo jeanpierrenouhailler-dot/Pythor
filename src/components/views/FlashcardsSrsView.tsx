@@ -25,20 +25,28 @@ interface FlashcardsSrsViewProps {
   cards: Flashcard[];
   selectedSection: string;
   onSelectSection: (section: string) => void;
+  initialChapter?: string;
 }
 
 export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   cards,
   selectedSection,
   onSelectSection,
+  initialChapter,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [selectedChapter, setSelectedChapter] = useState<string>('all');
+  const [selectedChapter, setSelectedChapter] = useState<string>(initialChapter || 'all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
+
+  useEffect(() => {
+    if (initialChapter) {
+      setSelectedChapter(initialChapter);
+    }
+  }, [initialChapter]);
 
   // SRS State stored locally
   const [srsState, setSrsState] = useState<Record<string, CardSRSData>>(() => {
@@ -239,6 +247,12 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   ? 'Complete PCAP Bank'
                   : selectedSection === 'Section 4'
                   ? 'PCAP Section 4 • 100 Flashcards'
+                  : selectedSection === 'Section 1'
+                  ? 'PCAP Section 1 • 100 Flashcards'
+                  : selectedSection === 'Section 2'
+                  ? 'PCAP Section 2 • 100 Flashcards'
+                  : selectedSection === 'Section 3'
+                  ? 'PCAP Section 3 • 100 Flashcards'
                   : selectedSection}
               </span>
               <span className="text-xs text-slate-400">
@@ -248,11 +262,21 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
             <h1 className="text-xl sm:text-2xl font-bold text-white mt-1 tracking-tight">
               {selectedSection === 'Section 4'
                 ? 'Object-Oriented Programming (OOP) Deep Dive'
+                : selectedSection === 'Section 1'
+                ? 'Control and Evaluations: Modules, Packages & PIP Deep Dive'
+                : selectedSection === 'Section 2'
+                ? 'Data Aggregates, Strings & Exception Handling Deep Dive'
+                : selectedSection === 'Section 3'
+                ? 'Functions, Generators, Closures & File Streams Deep Dive'
                 : 'Interactive Active Recall & SRS Flashcards'}
             </h1>
             <p className="text-sm text-slate-400 mt-1 max-w-2xl">
               {selectedSection === 'Section 4'
                 ? 'Comprehensive coverage of 100 questions spanning all 5 exam chapters: paradigms, variable scopes, name mangling, dunders, operator overloading, and MRO.'
+                : selectedSection === 'Section 2'
+                ? '100 deep-dive questions on string immutability, ASCII/Unicode, 20+ methods, extended slicing, try-except-else-finally, exception hierarchy, and custom errors.'
+                : selectedSection === 'Section 3'
+                ? '100 comprehensive questions on function parameters (*args/**kwargs), LEGB scopes, generator yield execution suspension, iterator protocol, lambdas, closures, and file stream I/O.'
                 : 'Spaced repetition system designed for rapid mastery of Python syntax nuances, runtime exceptions, and PCAP-31-03 exam traps.'}
             </p>
           </div>
@@ -277,6 +301,114 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Section 1 Chapter Sub-Nav (if Section 1 is active) */}
+        {selectedSection === 'Section 1' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 1 (100 Cards)' },
+                { id: '1.1', label: '1.1 Import & Namespaces (1-20)' },
+                { id: '1.2', label: '1.2 sys.path & Bytecode (21-40)' },
+                { id: '1.3', label: '1.3 Packages & __all__ (41-60)' },
+                { id: '1.4', label: '1.4 math, random, platform (61-80)' },
+                { id: '1.5', label: '1.5 PIP & PyPI (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 2 Chapter Sub-Nav (if Section 2 is active) */}
+        {selectedSection === 'Section 2' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 2 (100 Cards)' },
+                { id: '2.1', label: '2.1 Characters & Encodings (1-20)' },
+                { id: '2.2', label: '2.2 String Methods (21-40)' },
+                { id: '2.3', label: '2.3 Slicing & Aggregates (41-60)' },
+                { id: '2.4', label: '2.4 Exception Flow (61-80)' },
+                { id: '2.5', label: '2.5 Exception Hierarchy & args (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 3 Chapter Sub-Nav (if Section 3 is active) */}
+        {selectedSection === 'Section 3' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 3 (100 Cards)' },
+                { id: '3.1', label: '3.1 Parameters & LEGB (1-20)' },
+                { id: '3.2', label: '3.2 Generators & yield (21-40)' },
+                { id: '3.3', label: '3.3 Lambdas & map/filter (41-60)' },
+                { id: '3.4', label: '3.4 Closures & Decorators (61-80)' },
+                { id: '3.5', label: '3.5 File Streams & bytearray (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Section 4 Chapter Sub-Nav (if Section 4 is active) */}
         {selectedSection === 'Section 4' && (

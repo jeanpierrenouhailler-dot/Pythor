@@ -1,865 +1,928 @@
 import { Flashcard } from '../types';
 
-/**
- * PCAP-31-03 SECTION 3: STRINGS (Part 1: Cards 1 to 40)
- * - Chapter 3.1: Character Representation & Encodings (Cards 1-20)
- * - Chapter 3.2: String Operations & Immutability (Cards 21-40)
- */
 export const section3CardsPart1: Flashcard[] = [
-  // =========================================================================
-  // CHAPTER 3.1: CHARACTER REPRESENTATION & ENCODINGS (Cards 1 to 20)
-  // =========================================================================
+  // ==========================================
+  // CHAPTER 3.1: Advanced Functions, Parameters, *args, **kwargs & LEGB Scope (Cards 1-20)
+  // ==========================================
   {
     id: 'pcap-s3-fc-001',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ASCII standard range and size',
-    category: 'T3: Theory',
+    cardType: 'PCAP 3.1 • Function Return Value',
+    topic: 'Default return value when return statement is omitted',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the exact range of integer code points defined by the standard 7-bit ASCII table?',
-    codeSnippet: `# Standard ASCII defines characters 0 to 127
-ascii_chars = [chr(i) for i in range(128)]
-print(len(ascii_chars))
-print(ord(ascii_chars[0]), ord(ascii_chars[-1]))`,
-    stdoutExpected: `128
-0 127`,
-    explanationTitle: 'ASCII 7-bit Standard',
+    question: 'What is returned by a Python function that terminates without an explicit return statement or with an empty return?',
+    codeSnippet: `def greet(name):
+    print("Hello", name)
+
+res = greet("Python")
+print(res is None)
+print(type(res).__name__)`,
+    stdoutExpected: `Hello Python
+True
+NoneType`,
+    explanationTitle: 'Implicit Return of None',
     explanationText:
-      'ASCII uses 7 bits to represent exactly 128 characters, spanning code points 0 to 127. Values 128 to 255 belong to Extended ASCII (code pages) and not original standard ASCII.',
-    complexityInfo: 'O(1) code point range',
+      'In Python, every function returns a value. If execution reaches the end of the function body without a return statement, or encounters a bare `return`, the built-in constant `None` (of type NoneType) is returned automatically.',
+    complexityInfo: 'Return value semantics',
   },
   {
     id: 'pcap-s3-fc-002',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ord() function return type and behavior',
+    cardType: 'PCAP 3.1 • Positional vs Keyword Arguments',
+    topic: 'Mixing positional and keyword arguments at call time',
     category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What does ord(c) return, and what error is raised if c is not a single character?',
-    codeSnippet: `print(ord('A'))
-try:
-    ord("AB")
-except TypeError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `65
-TypeError`,
-    explanationTitle: 'ord() Single Character Requirement',
+    question: 'What rule dictates the ordering of positional and keyword arguments during a function call, and what error occurs if violated?',
+    codeSnippet: `def compute(a, b, c):
+    return a + 2 * b + 3 * c
+
+# Valid: positional first, then keyword
+print(compute(1, c=3, b=2))
+
+# Invalid attempt:
+# compute(a=1, 2, c=3) -> SyntaxError: positional argument follows keyword argument`,
+    stdoutExpected: '14',
+    explanationTitle: 'Positional Arguments Precede Keyword Arguments',
     explanationText:
-      'ord(c) returns the integer code point for a 1-character string. Passing a string of length != 1 raises TypeError: ord() expected a character, but string of length 2 found.',
-    complexityInfo: 'O(1) lookup',
+      'In Python function calls, all positional arguments must precede any keyword arguments. Placing a positional argument after a keyword argument causes a compile-time `SyntaxError: positional argument follows keyword argument`.',
+    complexityInfo: 'Call-site argument syntax',
   },
   {
     id: 'pcap-s3-fc-003',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'chr() function inverse of ord()',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
+    cardType: 'PCAP 3.1 • Default Parameter Trap',
+    topic: 'Mutable default parameter persistence across function calls',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
     intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What does chr(i) do, and what exception is raised if i is out of range or not an integer?',
-    codeSnippet: `print(chr(97))
-try:
-    chr(1_114_112) # Beyond 0x10FFFF
-except ValueError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `a
-ValueError`,
-    explanationTitle: 'chr() Valid Range',
+    question: 'What is printed when a function with a default mutable argument (like a list) is repeatedly invoked without passing that argument?',
+    codeSnippet: `def append_item(val, target=[]):
+    target.append(val)
+    return target
+
+print(append_item(1))
+print(append_item(2))
+print(append_item(3, []))
+print(append_item(4))`,
+    stdoutExpected: `[1]
+[1, 2]
+[3]
+[1, 2, 4]`,
+    explanationTitle: 'Default Arguments Are Evaluated Once at Definition Time',
     explanationText:
-      'chr(i) returns the string representing a character whose Unicode code point is the integer i. The valid range is 0 to 1,114,111 (0x10FFFF). Out of range integers raise ValueError.',
-    complexityInfo: 'O(1) character lookup',
+      'In Python, default parameter expressions are evaluated once when the function is defined, NOT each time the function is called. A mutable object (list, dict, set) used as a default is shared across all subsequent invocations that do not provide an explicit argument.',
+    complexityInfo: 'Mutable default argument trap',
   },
   {
     id: 'pcap-s3-fc-004',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Case difference in ASCII: ord("a") - ord("A")',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.1 • Safe Default Argument Pattern',
+    topic: 'Using None sentinel for optional mutable parameters',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the numeric difference between lowercase and uppercase ASCII letters?',
-    codeSnippet: `diff = ord('a') - ord('A')
-print(diff)
-print(chr(ord('M') + diff))`,
-    stdoutExpected: `32
-m`,
-    explanationTitle: 'ASCII 32 Bit Offset',
+    question: 'What is the canonical idiomatic Python pattern to safely provide a fresh mutable default object on each function call?',
+    codeSnippet: `def append_safe(val, target=None):
+    if target is None:
+        target = []
+    target.append(val)
+    return target
+
+print(append_safe('a'))
+print(append_safe('b'))`,
+    stdoutExpected: `['a']
+['b']`,
+    explanationTitle: 'None Sentinel with Fresh Instantiation',
     explanationText:
-      'In ASCII, uppercase "A" is 65 and lowercase "a" is 97. The difference is exactly 32 (bit 5: 0x20). Adding 32 converts an uppercase ASCII letter to lowercase.',
-    complexityInfo: 'Arithmetic offset O(1)',
+      'To prevent mutable sharing across calls, idiomatic Python sets the default parameter value to `None`. Inside the body, `if target is None:` checks for the sentinel and instantiates a brand new list or dictionary for that invocation.',
+    complexityInfo: 'Defensive parameter initialization',
   },
   {
     id: 'pcap-s3-fc-005',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Unicode max code point',
-    category: 'T3: Theory',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
+    cardType: 'PCAP 3.1 • Parameter Definition Ordering',
+    topic: 'Ordering default and non-default parameters in def',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the maximum allowable Unicode code point in Python 3?',
-    codeSnippet: `max_cp = 0x10FFFF
-print(max_cp)
-print(len(chr(max_cp)))`,
-    stdoutExpected: `1114111
-1`,
-    explanationTitle: 'Unicode Range Limit',
+    question: 'Can a parameter without a default value follow a parameter with a default value in a function definition header?',
+    codeSnippet: `# Attempting: def calc(a=10, b): pass
+# Result: SyntaxError: non-default parameter follows default parameter
+
+def calc(b, a=10):
+    return b * a
+
+print(calc(5))
+print(calc(5, 2))`,
+    stdoutExpected: `50
+10`,
+    explanationTitle: 'Non-Default Parameters Must Precede Default Parameters',
     explanationText:
-      'The Unicode standard defines code points from 0 to 0x10FFFF (1,114,111 in decimal). Any integer above 0x10FFFF passed to chr() triggers a ValueError.',
-    complexityInfo: '1,114,112 possible code points',
+      'In Python function definitions, all non-default positional parameters must appear before any parameter with a default value. Violating this triggers `SyntaxError: non-default parameter follows default parameter`.',
+    complexityInfo: 'Function signature grammar',
   },
   {
     id: 'pcap-s3-fc-006',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Escape sequence \\n vs \\r vs \\t',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.1 • Variable Positional Arguments (*args)',
+    topic: 'Tuple packing with asterisk parameter syntax',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What are the ASCII integer values of \\t and \\n?',
-    codeSnippet: `print(ord('\\t'))
-print(ord('\\n'))
-print(ord('\\r'))`,
-    stdoutExpected: `9
-10
-13`,
-    explanationTitle: 'Control Character Code Points',
+    question: 'What data structure does `*args` pack positional arguments into inside the function body?',
+    codeSnippet: `def summarize(first, *args):
+    print("first:", first)
+    print("args type:", type(args).__name__)
+    print("args value:", args)
+
+summarize(10, 20, 30, 40)`,
+    stdoutExpected: `first: 10
+args type: tuple
+args value: (20, 30, 40)`,
+    explanationTitle: '*args Packs Positional Arguments into an Immutable Tuple',
     explanationText:
-      'Horizontal Tab (\\t) is 9, Line Feed / Newline (\\n) is 10, and Carriage Return (\\r) is 13 in the ASCII table.',
-    complexityInfo: 'Standard ASCII control codes',
+      'The `*` prefix in a parameter declaration collects any extra positional arguments into an immutable tuple. If no extra arguments are supplied, `args` evaluates to an empty tuple `()`.',
+    complexityInfo: 'Positional argument packing',
   },
   {
     id: 'pcap-s3-fc-007',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Raw string literal prefix r"" and escapes',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
+    cardType: 'PCAP 3.1 • Variable Keyword Arguments (**kwargs)',
+    topic: 'Dictionary packing with double-asterisk parameter syntax',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'How do raw string literals r"..." treat backslashes?',
-    codeSnippet: `s1 = "\\n"
-s2 = r"\\n"
-print(len(s1), len(s2))
-print(s2[0], s2[1])`,
-    stdoutExpected: `1 2
-\\ n`,
-    explanationTitle: 'Raw Strings and Backslashes',
+    question: 'What data structure does `**kwargs` pack arbitrary keyword arguments into inside the function body?',
+    codeSnippet: `def configure(name, **kwargs):
+    print("name:", name)
+    print("kwargs type:", type(kwargs).__name__)
+    print("items:", sorted(kwargs.items()))
+
+configure("app", host="localhost", port=8080)`,
+    stdoutExpected: `name: app
+kwargs type: dict
+items: [('host', 'localhost'), ('port', 8080)]`,
+    explanationTitle: '**kwargs Packs Keyword Arguments into a Dictionary',
     explanationText:
-      'In a raw string literal (prefixed with r or R), backslashes are treated as literal characters and not escape character introducers. Hence r"\\n" has length 2.',
-    complexityInfo: 'Lexer-level string processing',
+      'The `**` prefix in a parameter declaration collects any extra keyword arguments (key-value pairs) into a standard dictionary. Keys are converted to strings matching argument names.',
+    complexityInfo: 'Keyword argument packing',
   },
   {
     id: 'pcap-s3-fc-008',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'UTF-8 variable-length encoding principles',
-    category: 'T3: Theory',
+    cardType: 'PCAP 3.1 • Call-Site Unpacking (* and **)',
+    topic: 'Unpacking sequence into positional and dict into keyword arguments',
+    category: 'T1: Built-ins',
     difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'How many bytes does UTF-8 use to encode ASCII characters (0-127) versus accented characters?',
-    codeSnippet: `ascii_byte = 'A'.encode('utf-8')
-accent_byte = 'é'.encode('utf-8')
-print(len(ascii_byte), len(accent_byte))`,
-    stdoutExpected: `1 2`,
-    explanationTitle: 'UTF-8 Variable Width',
+    question: 'How do the `*` and `**` operators behave when applied at call time to iterables and dictionaries?',
+    codeSnippet: `def calculate(a, b, c, op="add"):
+    if op == "add":
+        return a + b + c
+    return a * b * c
+
+nums = [2, 3, 4]
+opts = {"op": "mul"}
+print(calculate(*nums, **opts))`,
+    stdoutExpected: '24',
+    explanationTitle: 'Call-Site Sequence and Mapping Unpacking',
     explanationText:
-      'UTF-8 is backward-compatible with ASCII: code points 0-127 use exactly 1 byte. Characters like "é" (U+00E9) require 2 bytes, while CJK and emoji require 3 or 4 bytes.',
-    complexityInfo: 'UTF-8 uses 1 to 4 bytes per character',
+      'At call time, `*iterable` unpacks sequence elements into separate positional arguments, while `**dict` unpacks key-value pairs into matching keyword arguments. Keys must match parameter names or `TypeError` is raised.',
+    complexityInfo: 'Call-site unpacking semantics',
   },
   {
     id: 'pcap-s3-fc-009',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ord() with digits: converting char to int without int()',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
+    cardType: 'PCAP 3.1 • Keyword-Only Parameters',
+    topic: 'Bare asterisk (*) parameter enforcing keyword-only arguments',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
     intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'How does subtracting ord("0") convert a numeric digit character into its integer value?',
-    codeSnippet: `ch = '7'
-val = ord(ch) - ord('0')
-print(val, type(val).__name__)`,
-    stdoutExpected: `7 int`,
-    explanationTitle: 'Digit Offset Arithmetic',
+    question: 'What does a bare asterisk `*` in a function parameter list enforce?',
+    codeSnippet: `def create_user(name, *, role="user", active=True):
+    return f"{name}:{role}:{active}"
+
+print(create_user("Alice", role="admin"))
+
+# Attempting: create_user("Bob", "admin")
+# Result: TypeError: create_user() takes 1 positional argument but 2 were given`,
+    stdoutExpected: 'Alice:admin:True',
+    explanationTitle: 'Bare Asterisk Enforces Keyword-Only Parameters',
     explanationText:
-      'In ASCII, digits "0" through "9" occupy contiguous code points from 48 to 57. Subtracting ord("0") (48) from ord("7") (55) yields the integer 7.',
-    complexityInfo: 'O(1) arithmetic conversion',
+      'Any parameters defined after a bare `*` (or after `*args`) must be supplied as keyword arguments at call time. Supplying them positionally raises `TypeError: function takes N positional argument but M were given`.',
+    complexityInfo: 'Keyword-only parameter constraint',
   },
   {
     id: 'pcap-s3-fc-010',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Unicode hexadecimal escape \\u and \\U',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.1 • Positional-Only Parameters (/)',
+    topic: 'Forward slash parameter syntax enforcing positional-only arguments',
+    category: 'T1: Built-ins',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the syntax for 16-bit and 32-bit Unicode escapes in string literals?',
-    codeSnippet: `s = "\\u0041\\u0042"
-print(s)
-print(ord(s[0]))`,
-    stdoutExpected: `AB
-65`,
-    explanationTitle: 'Unicode Escape Syntax',
+    question: 'What does a forward slash `/` in a function parameter list enforce in Python 3.8+?',
+    codeSnippet: `def divide(x, y, /):
+    return x // y
+
+print(divide(20, 4))
+
+# Attempting: divide(x=20, y=4)
+# Result: TypeError: divide() got some positional-only arguments passed as keyword arguments: 'x, y'`,
+    stdoutExpected: '5',
+    explanationTitle: 'Forward Slash Enforces Positional-Only Arguments',
     explanationText:
-      '\\u takes exactly 4 hexadecimal digits (16-bit), while \\U takes exactly 8 hex digits (32-bit). \\u0041 represents "A" (hex 0x41 = 65).',
-    complexityInfo: 'Hexadecimal code point representation',
+      'Parameters defined before a `/` are positional-only. They cannot be passed as keyword arguments. Calling them with keywords triggers `TypeError: got some positional-only arguments passed as keyword arguments`.',
+    complexityInfo: 'Positional-only parameter constraint',
   },
   {
     id: 'pcap-s3-fc-011',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ord() comparison between digits and uppercase letters',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • Parameter Ordering Hierarchy',
+    topic: 'Complete canonical parameter order in def signatures',
+    category: 'T3: Theory',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'Which has a lower code point: digits, uppercase letters, or lowercase letters?',
-    codeSnippet: `print(ord('9') < ord('A'))
-print(ord('Z') < ord('a'))`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'ASCII Ordering Hierarchy',
+    question: 'What is the full valid sequence order for all parameter types in a Python function definition header?',
+    codeSnippet: `def full_sig(pos_only, /, standard, default=1, *args, kw_only, kw_default=2, **kwargs):
+    return (pos_only, standard, default, args, kw_only, kw_default, kwargs)
+
+res = full_sig(10, 20, 30, 40, 50, kw_only=60, extra="val")
+print(res[0], res[1], res[2], res[3], res[4], res[5], res[6]["extra"])`,
+    stdoutExpected: '10 20 30 (40, 50) 60 2 val',
+    explanationTitle: 'Complete Formal Parameter Ordering',
     explanationText:
-      'In ASCII: digits (48..57) come first, followed by uppercase letters (65..90), and finally lowercase letters (97..122). Thus "9" < "A" and "Z" < "a".',
-    complexityInfo: 'Fundamental ASCII sort order',
+      'The strict parameter declaration order is: (1) positional-only parameters, (2) `/`, (3) standard positional-or-keyword, (4) default positional parameters, (5) `*args`, (6) keyword-only parameters (with or without defaults), (7) `**kwargs`.',
+    complexityInfo: 'Python language formal syntax',
   },
   {
     id: 'pcap-s3-fc-012',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Space character code point',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • LEGB Scope Rule',
+    topic: 'Namespace lookup hierarchy: Local, Enclosing, Global, Built-in',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the ASCII code point of the space character " "?',
-    codeSnippet: `sp = " "
-print(ord(sp))
-print(chr(32) == sp)`,
-    stdoutExpected: `32
-True`,
-    explanationTitle: 'Space Code Point 32',
+    question: 'What is the LEGB rule and in what exact order does Python search for variable names?',
+    codeSnippet: `x = "Global"
+
+def outer():
+    x = "Enclosing"
+    def inner():
+        x = "Local"
+        return x
+    return inner()
+
+print(outer())
+print(x)`,
+    stdoutExpected: `Local
+Global`,
+    explanationTitle: 'LEGB Namespace Search Order',
     explanationText:
-      'The standard space character is ASCII 32 (0x20). It is the lowest printable character in the standard ASCII set (0 to 31 are non-printable control characters).',
-    complexityInfo: 'ASCII 32 is first printable glyph',
+      'When resolving a name, Python searches scopes from inside out: (L)ocal -> (E)nclosing functions -> (G)lobal (module level) -> (B)uilt-in namespace. It uses the first match found and stops searching.',
+    complexityInfo: 'Name resolution semantics',
   },
   {
     id: 'pcap-s3-fc-013',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'String encode() and bytes decode()',
+    cardType: 'PCAP 3.1 • Global Keyword',
+    topic: 'Rebinding global module variables from inside a function',
     category: 'T1: Built-ins',
     difficulty: 'Intermediate',
-    factor: '2.3',
+    factor: '2.4',
     intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the return type of "hello".encode("utf-8") and b"hello".decode("utf-8")?',
-    codeSnippet: `b = "PCAP".encode("utf-8")
-s = b.decode("utf-8")
-print(type(b).__name__, type(s).__name__)`,
-    stdoutExpected: `bytes str`,
-    explanationTitle: 'encode() and decode() Dualism',
+    question: 'What keyword allows a function to modify and rebind a variable in the module-level global namespace?',
+    codeSnippet: `counter = 0
+
+def increment():
+    global counter
+    counter += 1
+
+increment()
+increment()
+print("counter:", counter)`,
+    stdoutExpected: 'counter: 2',
+    explanationTitle: 'global Keyword Enables Rebinding at Module Level',
     explanationText:
-      'str.encode(encoding) converts a Unicode string into a bytes object. bytes.decode(encoding) converts a bytes sequence back into a Unicode str.',
-    complexityInfo: 'str <-> bytes transformation',
+      'Without `global counter`, the assignment `counter += 1` treats `counter` as a local variable before assignment, causing `UnboundLocalError`. The `global` statement instructs Python to bind the symbol to the module-level global scope.',
+    complexityInfo: 'Global scope mutation',
   },
   {
     id: 'pcap-s3-fc-014',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Triple quoted strings and preserved newlines',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • UnboundLocalError Trap',
+    topic: 'Assignment makes variable local throughout entire function body',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'How do triple-quoted strings treat embedded physical newlines?',
-    codeSnippet: `s = """A
-B"""
-print(len(s))
-print([ord(c) for c in s])`,
-    stdoutExpected: `3
-[65, 10, 66]`,
-    explanationTitle: 'Triple Quote Multiline Behavior',
+    question: 'Why does accessing a global variable before reassigning it inside a function raise an UnboundLocalError?',
+    codeSnippet: `val = 100
+
+def test():
+    try:
+        print(val) # Triggers error because 'val = 200' exists below!
+        val = 200
+    except UnboundLocalError as err:
+        print("Caught:", type(err).__name__)
+
+test()`,
+    stdoutExpected: 'Caught: UnboundLocalError',
+    explanationTitle: 'Compile-Time Local Scope Determination',
     explanationText:
-      'Triple quotes (""" or \'\'\') preserve literal newlines as \\n characters (ASCII 10). The string """A\\nB""" has length 3: "A", "\\n", and "B".',
-    complexityInfo: 'Multi-line string parsing',
+      'Python inspects function bodies at compile time. Any variable assigned to anywhere within the function is flagged as a local variable for the ENTIRE function body. Reading it before the assignment statement executes raises `UnboundLocalError`.',
+    complexityInfo: 'Python compiler local symbol analysis',
   },
   {
     id: 'pcap-s3-fc-015',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'chr() with negative numbers error',
-    category: 'T4: Bugs',
+    cardType: 'PCAP 3.1 • Multiple Return Values',
+    topic: 'Returning comma-separated values as an implicit tuple',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
-    intervalDays: 2,
+    intervalDays: 1,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What happens when chr() is called with a negative integer?',
-    codeSnippet: `try:
-    chr(-1)
-except ValueError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `ValueError`,
-    explanationTitle: 'Negative Code Point Prohibition',
+    question: 'What Python object is actually produced when a function returns multiple values separated by commas?',
+    codeSnippet: `def stats(numbers):
+    return min(numbers), max(numbers), sum(numbers)
+
+res = stats([4, 1, 9, 2])
+print(type(res).__name__)
+print(res)
+
+low, high, total = stats([4, 1, 9, 2])
+print("low:", low, "high:", high, "total:", total)`,
+    stdoutExpected: `tuple
+(1, 9, 16)
+low: 1 high: 9 total: 16`,
+    explanationTitle: 'Comma-Separated Returns Pack into a Tuple',
     explanationText:
-      'chr() only accepts non-negative integers up to 0x10FFFF. Calling chr(-1) raises ValueError: chr() arg not in range(0x110000).',
-    complexityInfo: 'Range constraint [0, 0x10FFFF]',
+      'In Python, `return a, b, c` creates and returns a single 3-element `tuple`. The caller can receive the tuple directly as a single variable or unpack it into multiple matching variables.',
+    complexityInfo: 'Tuple packing and unpacking on return',
   },
   {
     id: 'pcap-s3-fc-016',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Double backslash escape \\\\',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • First-Class Functions',
+    topic: 'Passing functions as arguments and storing in data structures',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is the length and output of a string containing "\\\\\\\\"?',
-    codeSnippet: `s = "\\\\\\\\"
-print(len(s))
-print(s)`,
-    stdoutExpected: `2
-\\\\`,
-    explanationTitle: 'Backslash Escaping',
+    question: 'What does it mean that functions are "first-class citizens" in Python?',
+    codeSnippet: `def square(x): return x * x
+def cube(x): return x * x * x
+
+operations = [square, cube]
+for func in operations:
+    print(func.__name__, func(3))`,
+    stdoutExpected: `square 9
+cube 27`,
+    explanationTitle: 'Functions Are Objects with Identity and Attributes',
     explanationText:
-      'Each "\\" escapes the following character. In "\\\\\\\\", the first pair produces one literal backslash, and the second pair produces another, resulting in length 2.',
-    complexityInfo: 'O(1) escape sequence parsing',
+      'In Python, functions are first-class objects (instances of `function` type). They can be assigned to variables, stored in collections (lists, dicts), passed as arguments to other functions, and returned from functions.',
+    complexityInfo: 'First-class citizen semantics',
   },
   {
     id: 'pcap-s3-fc-017',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ord() on empty string error',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • Higher-Order Functions',
+    topic: 'Functions that take or return other functions',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What error does ord("") raise when given an empty string?',
-    codeSnippet: `try:
-    ord("")
-except TypeError as err:
-    print(type(err).__name__)`,
-    stdoutExpected: `TypeError`,
-    explanationTitle: 'ord() Empty String Guard',
+    question: 'What is a higher-order function in Python?',
+    codeSnippet: `def apply_twice(func, arg):
+    return func(func(arg))
+
+def add_five(n):
+    return n + 5
+
+print(apply_twice(add_five, 10))`,
+    stdoutExpected: '20',
+    explanationTitle: 'Higher-Order Functions Accept or Return Functions',
     explanationText:
-      'ord() requires a string of length exactly 1. Calling it with "" raises TypeError (not ValueError or IndexError).',
-    complexityInfo: 'Length validation prior to lookup',
+      'A higher-order function is any function that accepts one or more functions as arguments, or returns a function as its result. Classic standard built-in examples include `map()`, `filter()`, and `sorted()`.',
+    complexityInfo: 'Functional programming paradigm',
   },
   {
     id: 'pcap-s3-fc-018',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'chr(ord(c)) identity property',
-    category: 'T3: Theory',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
+    cardType: 'PCAP 3.1 • Function Annotations (__annotations__)',
+    topic: 'Type hints syntax and the __annotations__ dictionary attribute',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'Is chr(ord(c)) == c guaranteed to be True for any single-character string c in Python 3?',
-    codeSnippet: `test_chars = ['A', 'z', '3', '$', '€', '🐍']
-all_match = all(chr(ord(c)) == c for c in test_chars)
-print(all_match)`,
-    stdoutExpected: `True`,
-    explanationTitle: 'Reversibility of ord() and chr()',
+    question: 'Does Python enforce type annotations at runtime, and where are they stored?',
+    codeSnippet: `def multiply(a: int, b: float = 2.5) -> float:
+    return a * b
+
+print(multiply("Py", 3)) # Runtime does NOT enforce int/float!
+print(sorted(multiply.__annotations__.items()))`,
+    stdoutExpected: `PyPyPy
+[('a', <class 'int'>), ('b', <class 'float'>), ('return', <class 'float'>)]`,
+    explanationTitle: 'Annotations Are Stored in __annotations__ Without Runtime Enforcement',
     explanationText:
-      'In Python 3, all strings are native Unicode. ord() and chr() are exact mathematical inverses across the entire valid Unicode range.',
-    complexityInfo: 'Bijections across Unicode space',
+      'Python function annotations (type hints) are purely syntactic and are stored in the function attribute `__annotations__`. CPython does not enforce them at runtime; passing arguments of different types executes normally.',
+    complexityInfo: 'Runtime type hints inspection',
   },
   {
     id: 'pcap-s3-fc-019',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'Hex literal conversion to chr',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.1 • Recursion and RecursionError',
+    topic: 'Maximum recursion depth and sys.getrecursionlimit()',
+    category: 'T2: Gotchas',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'What is chr(0x41) and chr(0x61)?',
-    codeSnippet: `print(chr(0x41), chr(0x61))
-print(0x41 == 65, 0x61 == 97)`,
-    stdoutExpected: `A a
-True True`,
-    explanationTitle: 'Hexadecimal ASCII Values',
+    question: 'What exception is raised when a recursive function exceeds Python call stack depth limit?',
+    codeSnippet: `import sys
+
+def runaway(depth):
+    return runaway(depth + 1)
+
+try:
+    runaway(1)
+except RecursionError as err:
+    print("Caught:", type(err).__name__)
+    print("Limit is int:", isinstance(sys.getrecursionlimit(), int))`,
+    stdoutExpected: `Caught: RecursionError
+Limit is int: True`,
+    explanationTitle: 'RecursionError Protects C Stack Overflow',
     explanationText:
-      '0x41 is hex for 65 ("A"), and 0x61 is hex for 97 ("a"). Python integers can be written in hex notation 0x... anywhere.',
-    complexityInfo: 'Hexadecimal integer literals',
+      'Python guards against infinite recursion and C stack overflow by limiting call depth (default is typically 1000). Exceeding this limit raises `RecursionError` (which subclasses `RuntimeError`).',
+    complexityInfo: 'Call stack limits and safety',
   },
   {
     id: 'pcap-s3-fc-020',
-    cardType: 'PCAP 3.1 • Encoding',
-    topic: 'ASCII Caesar cipher shift mechanism',
-    category: 'T2: Output',
+    cardType: 'PCAP 3.1 • Pass-By-Assignment Semantics',
+    topic: 'Object reference sharing vs reassignment in function calls',
+    category: 'T3: Theory',
     difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
+    factor: '2.4',
+    intervalDays: 2,
     chapter: '3.1',
     section: 'Section 3',
-    question: 'How do you shift an uppercase character by 3 positions with wrap-around using ord and chr?',
-    codeSnippet: `ch = 'Z'
-shift = 3
-shifted = chr((ord(ch) - ord('A') + shift) % 26 + ord('A'))
-print(shifted)`,
-    stdoutExpected: `C`,
-    explanationTitle: 'Caesar Cipher Wrap-Around',
+    question: 'How does Python pass arguments to functions (pass-by-value vs pass-by-reference)?',
+    codeSnippet: `def modify(lst, num):
+    lst.append(99) # In-place mutation of mutable object
+    num = num + 10 # Rebinding local variable to new int
+
+my_list = [1, 2]
+my_num = 5
+modify(my_list, my_num)
+print("my_list:", my_list)
+print("my_num:", my_num)`,
+    stdoutExpected: `my_list: [1, 2, 99]
+my_num: 5`,
+    explanationTitle: 'Pass-By-Assignment (Call-By-Object-Reference)',
     explanationText:
-      '(ord("Z") - ord("A") + 3) % 26 = (25 + 3) % 26 = 2. Adding ord("A") (65) gives 67, which chr(67) evaluates to "C".',
-    complexityInfo: 'Modulo 26 wrap-around',
+      'Python uses "call by object reference" (pass-by-assignment). Mutating a mutable argument in-place modifies the original object outside. However, reassigning the parameter name inside (`num = ...`) merely changes a local reference without affecting the caller.',
+    complexityInfo: 'Evaluation strategy and memory binding',
   },
 
-  // =========================================================================
-  // CHAPTER 3.2: STRING OPERATIONS & IMMUTABILITY (Cards 21 to 40)
-  // =========================================================================
+  // ==========================================
+  // CHAPTER 3.2: Generator Functions, yield & Iterator Protocol (Cards 21-35 in Part 1)
+  // ==========================================
   {
     id: 'pcap-s3-fc-021',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'String immutability and item assignment',
-    category: 'T4: Bugs',
+    cardType: 'PCAP 3.2 • Generator Definition',
+    topic: 'Presence of yield keyword creates generator function',
+    category: 'T1: Built-ins',
     difficulty: 'Beginner',
     factor: '2.5',
     intervalDays: 1,
     chapter: '3.2',
     section: 'Section 3',
-    question: 'What happens when you attempt to modify a character in place via s[0] = "X"?',
-    codeSnippet: `s = "python"
-try:
-    s[0] = "P"
-except TypeError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `TypeError`,
-    explanationTitle: 'String Immutability',
+    question: 'What makes a function a generator function in Python, and what happens when it is called?',
+    codeSnippet: `def count_to(n):
+    print("Function started")
+    for i in range(1, n + 1):
+        yield i
+
+gen = count_to(3)
+print("Type:", type(gen).__name__)
+# Notice: 'Function started' was NOT printed yet!`,
+    stdoutExpected: 'Type: generator',
+    explanationTitle: 'Calling a Generator Function Does Not Execute Body Immediately',
     explanationText:
-      'Python strings are strictly immutable sequences. Item assignment triggers TypeError: \'str\' object does not support item assignment.',
-    complexityInfo: 'Immutability prevents in-place mutation',
+      'Any function containing the `yield` keyword is compiled as a generator function. Calling it does NOT execute the body immediately; instead, it instantly returns a generator iterator object in a paused state.',
+    complexityInfo: 'Generator initialization and lazy invocation',
   },
   {
     id: 'pcap-s3-fc-022',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Negative indexing wrap-around',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What do s[-1] and s[-len(s)] evaluate to?',
-    codeSnippet: `s = "PYTHON"
-print(s[-1])
-print(s[-len(s)])`,
-    stdoutExpected: `N
-P`,
-    explanationTitle: 'Negative Index Bounds',
-    explanationText:
-      'Negative index -k accesses s[len(s) - k]. Thus s[-1] is the last character ("N"), and s[-len(s)] is the first character ("P").',
-    complexityInfo: 'O(1) index addressing',
-  },
-  {
-    id: 'pcap-s3-fc-023',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'String reversal via slice [::-1]',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What is the output of reversing a string with s[::-1]?',
-    codeSnippet: `s = "PCAP"
-rev = s[::-1]
-print(rev)
-print(rev[::-1] == s)`,
-    stdoutExpected: `PACP
-True`,
-    explanationTitle: 'Step -1 Extended Slicing',
-    explanationText:
-      's[::-1] traverses the entire string from right to left with step -1, returning the reversed string without modifying the original.',
-    complexityInfo: 'O(N) copy creation',
-  },
-  {
-    id: 'pcap-s3-fc-024',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Slice out of range bounds behavior',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'Why does s[100] raise an IndexError, but s[100:200] does not?',
-    codeSnippet: `s = "abc"
-print(repr(s[100:200]))
-try:
-    print(s[100])
-except IndexError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `''
-IndexError`,
-    explanationTitle: 'Slices Never Raise IndexError',
-    explanationText:
-      'Direct index lookups s[i] must fall within [-len, len-1], else IndexError is raised. Slices clamp out-of-bound indices silently, returning "" if completely out of range.',
-    complexityInfo: 'Slice bounds clamping policy',
-  },
-  {
-    id: 'pcap-s3-fc-025',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Slice with step: s[::2]',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What is the result of s[::2] on "0123456789"?',
-    codeSnippet: `s = "0123456789"
-print(s[::2])
-print(s[1::2])`,
-    stdoutExpected: `02468
-13579`,
-    explanationTitle: 'Step Slicing Even and Odd',
-    explanationText:
-      's[::2] takes elements at indices 0, 2, 4, 6, 8. s[1::2] starts at index 1 and takes elements at indices 1, 3, 5, 7, 9.',
-    complexityInfo: 'O(N/2) string construction',
-  },
-  {
-    id: 'pcap-s3-fc-026',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Lexicographical comparison: "10" < "2"',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'Why does "10" < "2" evaluate to True in Python?',
-    codeSnippet: `print("10" < "2")
-print(ord("1"), ord("2"))`,
-    stdoutExpected: `True
-49 50`,
-    explanationTitle: 'Lexicographical Character Ordering',
-    explanationText:
-      'String comparisons compare character by character using code points. Since "1" (49) is less than "2" (50), "10" is strictly less than "2" lexicographically.',
-    complexityInfo: 'O(min(len1, len2)) comparison',
-  },
-  {
-    id: 'pcap-s3-fc-027',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'min() and max() on strings',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What do min("The Dark Knight") and max("The Dark Knight") return?',
-    codeSnippet: `s = "The Dark Knight"
-print(repr(min(s)))
-print(repr(max(s)))`,
-    stdoutExpected: `' '
-'t'`,
-    explanationTitle: 'min() and max() Code Point Selection',
-    explanationText:
-      'min() and max() evaluate characters by their Unicode code point. The space character " " (code point 32) is the minimum. Lowercase "t" (code point 116) is greater than uppercase "T" (84) and is the maximum.',
-    complexityInfo: 'O(N) scan across characters',
-  },
-  {
-    id: 'pcap-s3-fc-028',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'min() and max() on empty string error',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What error does min("") or max("") raise without a default argument?',
-    codeSnippet: `try:
-    min("")
-except ValueError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `ValueError`,
-    explanationTitle: 'min() Empty Sequence ValueError',
-    explanationText:
-      'Calling min() or max() on an empty sequence raises ValueError: min() arg is an empty sequence. To prevent this, provide default=val.',
-    complexityInfo: 'Empty collection guard',
-  },
-  {
-    id: 'pcap-s3-fc-029',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'String multiplication operator *',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What is the output of "Ha" * 3 and "Ha" * -2?',
-    codeSnippet: `print("Ha" * 3)
-print(repr("Ha" * -2))
-print(repr("Ha" * 0))`,
-    stdoutExpected: `HaHaHa
-''
-''`,
-    explanationTitle: 'String Multiplication Rules',
-    explanationText:
-      'Multiplying a string by an integer n repeats the string n times. If n <= 0, string multiplication returns the empty string "".',
-    complexityInfo: 'O(len * max(0, n)) allocation',
-  },
-  {
-    id: 'pcap-s3-fc-030',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'in and not in containment operators',
-    category: 'T1: Built-ins',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What does "" in "any string" evaluate to?',
-    codeSnippet: `print("" in "python")
-print("th" in "python")
-print("pt" in "python")`,
-    stdoutExpected: `True
-True
-False`,
-    explanationTitle: 'Empty String Substring Rule',
-    explanationText:
-      'The empty string "" is considered a valid substring of EVERY string, so "" in s is always True. "pt" is False because substrings must be contiguous.',
-    complexityInfo: 'O(N * M) substring check',
-  },
-  {
-    id: 'pcap-s3-fc-031',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Slice with start > stop and positive step',
-    category: 'T4: Bugs',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What does s[5:2] return when step is positive (default 1)?',
-    codeSnippet: `s = "ABCDEFGH"
-res = s[5:2]
-print(repr(res))
-print(len(res))`,
-    stdoutExpected: `''
-0`,
-    explanationTitle: 'Invalid Direction Slice',
-    explanationText:
-      'When step is positive, start must be less than stop to generate characters. If start >= stop with step > 0, an empty string "" is returned.',
-    complexityInfo: 'Bounds checking before loop',
-  },
-  {
-    id: 'pcap-s3-fc-032',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Negative step slicing: s[5:2:-1]',
-    category: 'T2: Output',
-    difficulty: 'Intermediate',
-    factor: '2.3',
-    intervalDays: 3,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What does s[5:2:-1] return for "ABCDEFGH"?',
-    codeSnippet: `s = "ABCDEFGH"
-# indices: 0:A, 1:B, 2:C, 3:D, 4:E, 5:F
-print(s[5:2:-1])`,
-    stdoutExpected: `FED`,
-    explanationTitle: 'Negative Step Slicing',
-    explanationText:
-      'With step -1, slicing starts at index 5 ("F") and decrements down to, but NOT including, index 2 ("C"). Characters collected are indices 5 ("F"), 4 ("E"), 3 ("D").',
-    complexityInfo: 'Direction matches negative step',
-  },
-  {
-    id: 'pcap-s3-fc-033',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'del statement on string index or slice',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'Can you use del to delete a slice or index of a string?',
-    codeSnippet: `s = "Python"
-try:
-    del s[0]
-except TypeError as err:
-    print(type(err).__name__)`,
-    stdoutExpected: `TypeError`,
-    explanationTitle: 'del Prohibited on Strings',
-    explanationText:
-      'Strings do not support item deletion because they are immutable. Attempting del s[0] or del s[1:3] raises TypeError: \'str\' object doesn\'t support item deletion.',
-    complexityInfo: 'Immutable data integrity',
-  },
-  {
-    id: 'pcap-s3-fc-034',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'String concatenation with non-string using +',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What happens when using the + operator between a string and an integer?',
-    codeSnippet: `try:
-    res = "Score: " + 100
-except TypeError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `TypeError`,
-    explanationTitle: 'Strict String Concatenation',
-    explanationText:
-      'Python does not automatically coerce integers to strings during concatenation (+). You must explicitly call str(100) or use an f-string.',
-    complexityInfo: 'Strongly-typed typing rules',
-  },
-  {
-    id: 'pcap-s3-fc-035',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Automatic string literal concatenation',
-    category: 'T2: Output',
-    difficulty: 'Intermediate',
-    factor: '2.4',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What is the result of placing two string literals adjacent without a comma or plus?',
-    codeSnippet: `s = "Hello" " " "World"
-print(s)
-print(len(s))`,
-    stdoutExpected: `Hello World
-11`,
-    explanationTitle: 'Compile-Time Literal Merging',
-    explanationText:
-      'Two or more string literals placed next to each other in source code are automatically concatenated by the Python compiler at compile time.',
-    complexityInfo: 'Zero runtime overhead',
-  },
-  {
-    id: 'pcap-s3-fc-036',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Lexicographical prefix comparison: "apple" vs "apples"',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'When one string is a prefix of another, which one is considered smaller?',
-    codeSnippet: `print("apple" < "apples")
-print("" < "a")`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'Prefix Comparison Rule',
-    explanationText:
-      'If all characters match up to the end of the shorter string, the shorter string is strictly smaller than the longer string.',
-    complexityInfo: 'Length acts as tie-breaker',
-  },
-  {
-    id: 'pcap-s3-fc-037',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Case sensitivity in string comparisons',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'Why does "Zebra" < "apple" evaluate to True?',
-    codeSnippet: `print("Zebra" < "apple")
-print(ord("Z"), ord("a"))`,
-    stdoutExpected: `True
-90 97`,
-    explanationTitle: 'Uppercase Precedes Lowercase',
-    explanationText:
-      'All ASCII uppercase letters (A-Z = 65-90) have smaller code points than lowercase letters (a-z = 97-122). Therefore, any uppercase letter is smaller than any lowercase letter.',
-    complexityInfo: 'ASCII code point direct comparison',
-  },
-  {
-    id: 'pcap-s3-fc-038',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Slice step equal to 0 error',
-    category: 'T4: Bugs',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 2,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What exception is raised if slice step is 0?',
-    codeSnippet: `s = "python"
-try:
-    print(s[::0])
-except ValueError as e:
-    print(type(e).__name__)`,
-    stdoutExpected: `ValueError`,
-    explanationTitle: 'Slice Step Zero ValueError',
-    explanationText:
-      'A slice step of 0 is mathematically undefined and raises ValueError: slice step cannot be zero.',
-    complexityInfo: 'Step != 0 invariant',
-  },
-  {
-    id: 'pcap-s3-fc-039',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Iterating through characters of a string',
-    category: 'T2: Output',
-    difficulty: 'Beginner',
-    factor: '2.5',
-    intervalDays: 1,
-    chapter: '3.2',
-    section: 'Section 3',
-    question: 'What are the elements yielded when iterating directly over a string?',
-    codeSnippet: `chars = [c for c in "Py!"]
-print(chars)
-print([type(c).__name__ for c in chars])`,
-    stdoutExpected: `['P', 'y', '!']
-['str', 'str', 'str']`,
-    explanationTitle: 'Strings as Character Iterables',
-    explanationText:
-      'Iterating over a string yields 1-character str objects. Python has no distinct "char" data type—individual characters are strings of length 1.',
-    complexityInfo: 'O(N) iteration yielding 1-len str',
-  },
-  {
-    id: 'pcap-s3-fc-040',
-    cardType: 'PCAP 3.2 • Slicing & Immutability',
-    topic: 'Full copy slice s[:] identity vs equality',
+    cardType: 'PCAP 3.2 • yield vs return State Suspension',
+    topic: 'Execution frame preservation across yield statements',
     category: 'T3: Theory',
     difficulty: 'Intermediate',
     factor: '2.4',
     intervalDays: 2,
     chapter: '3.2',
     section: 'Section 3',
-    question: 'Does s[:] create a new distinct object in memory for immutable strings?',
-    codeSnippet: `s1 = "immutable_string"
-s2 = s1[:]
-print(s1 == s2)
-print(s1 is s2)`,
-    stdoutExpected: `True
-True`,
-    explanationTitle: 'String Slicing Optimization',
+    question: 'How does `yield` differ fundamentally from `return` in terms of function execution state?',
+    codeSnippet: `def step_tracker():
+    step = 1
+    yield step
+    step += 10
+    yield step
+
+gen = step_tracker()
+print(next(gen))
+print(next(gen))`,
+    stdoutExpected: `1
+11`,
+    explanationTitle: 'yield Suspends Execution and Preserves Local Frame',
     explanationText:
-      'Because strings are immutable, Python optimizes s[:] by returning the exact same string object in memory (s1 is s2 is True), unlike lists where list[:] creates a new copy.',
-    complexityInfo: 'Zero-copy immutable optimization',
+      'Whereas `return` terminates function execution and destroys its stack frame, `yield` pauses execution, yields a value to the caller, and retains all local variable values and execution pointers until resumed.',
+    complexityInfo: 'Execution frame suspension',
+  },
+  {
+    id: 'pcap-s3-fc-023',
+    cardType: 'PCAP 3.2 • next() Built-in Function',
+    topic: 'Resuming generator execution with built-in next()',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What built-in function advances an iterator or generator to its next yield point?',
+    codeSnippet: `def letters():
+    yield 'A'
+    yield 'B'
+
+g = letters()
+val1 = next(g)
+val2 = next(g)
+print(val1, val2)`,
+    stdoutExpected: 'A B',
+    explanationTitle: 'next() Calls __next__() on Iterators',
+    explanationText:
+      'The built-in `next(iterator)` function invokes the underlying `__next__()` method on the iterator, resuming execution until the next `yield` expression is evaluated.',
+    complexityInfo: 'Iterator advancement',
+  },
+  {
+    id: 'pcap-s3-fc-024',
+    cardType: 'PCAP 3.2 • StopIteration Exception',
+    topic: 'Signaling end of iteration when generator exhausts',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What exception is raised when next() is called on an exhausted generator or iterator?',
+    codeSnippet: `def single():
+    yield 42
+
+g = single()
+print(next(g))
+try:
+    next(g)
+except StopIteration:
+    print("Caught StopIteration!")`,
+    stdoutExpected: `42
+Caught StopIteration!`,
+    explanationTitle: 'StopIteration Signals End of Stream',
+    explanationText:
+      'When a generator function finishes executing (returns or reaches the end of its block), any subsequent call to `next()` raises a `StopIteration` exception to signal termination of the sequence.',
+    complexityInfo: 'Iterator termination signal',
+  },
+  {
+    id: 'pcap-s3-fc-025',
+    cardType: 'PCAP 3.2 • next() with Default Fallback Value',
+    topic: 'Suppressing StopIteration using the two-argument form of next()',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'How can you call `next()` on an exhausted iterator without raising a StopIteration exception?',
+    codeSnippet: `def numbers():
+    yield 100
+
+g = numbers()
+print(next(g, -1))
+print(next(g, -1))
+print(next(g, "EMPTY"))`,
+    stdoutExpected: `100
+-1
+EMPTY`,
+    explanationTitle: 'next(iterator, default) Suppresses StopIteration',
+    explanationText:
+      'The built-in `next()` accepts an optional second argument: `next(iterator, default)`. If the iterator is exhausted, instead of raising `StopIteration`, it returns the specified default fallback value.',
+    complexityInfo: 'Defensive iteration pattern',
+  },
+  {
+    id: 'pcap-s3-fc-026',
+    cardType: 'PCAP 3.2 • for Loops and StopIteration',
+    topic: 'Automatic exception handling and iterator protocol in for loops',
+    category: 'T3: Theory',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'How does Python `for` loop handle generator exhaustion under the hood?',
+    codeSnippet: `def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+
+output = []
+for val in countdown(3):
+    output.append(val)
+
+print(output)`,
+    stdoutExpected: '[3, 2, 1]',
+    explanationTitle: 'for Loops Automatically Catch StopIteration',
+    explanationText:
+      'A Python `for` loop calls `iter()` on the target, repeatedly invokes `__next__()` to retrieve items, and automatically catches and terminates upon encountering `StopIteration` without error.',
+    complexityInfo: 'Language loop mechanics',
+  },
+  {
+    id: 'pcap-s3-fc-027',
+    cardType: 'PCAP 3.2 • Iterator Protocol (__iter__ and __next__)',
+    topic: 'The two dunder methods defining the Python iterator protocol',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What two special dunder methods must an object implement to satisfy the Python iterator protocol?',
+    codeSnippet: `class Evens:
+    def __init__(self, limit):
+        self.val = 0
+        self.limit = limit
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.val >= self.limit:
+            raise StopIteration
+        res = self.val
+        self.val += 2
+        return res
+
+print(list(Evens(7)))`,
+    stdoutExpected: '[0, 2, 4, 6]',
+    explanationTitle: 'Iterator Protocol: __iter__() and __next__()',
+    explanationText:
+      'The iterator protocol requires: (1) `__iter__()` which must return the iterator object itself (`self`), and (2) `__next__()` which returns the next item or raises `StopIteration`.',
+    complexityInfo: 'Dunder protocol compliance',
+  },
+  {
+    id: 'pcap-s3-fc-028',
+    cardType: 'PCAP 3.2 • Generator Identity with iter()',
+    topic: 'Generators are their own iterators (iter(g) is g)',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What is returned when built-in `iter()` is called on a generator object?',
+    codeSnippet: `def my_gen():
+    yield 1
+
+g = my_gen()
+it = iter(g)
+print("it is g:", it is g)
+print(hasattr(g, '__iter__') and hasattr(g, '__next__'))`,
+    stdoutExpected: `it is g: True
+True`,
+    explanationTitle: 'A Generator Is Both an Iterable and an Iterator',
+    explanationText:
+      'All generator objects implement both `__iter__()` and `__next__()`. Calling `iter(g)` returns `g` itself (`iter(g) is g`), confirming that generators are self-iterating.',
+    complexityInfo: 'Object identity and type traits',
+  },
+  {
+    id: 'pcap-s3-fc-029',
+    cardType: 'PCAP 3.2 • Generator Exhaustion is One-Way',
+    topic: 'Generators cannot be rewound or restarted once consumed',
+    category: 'T2: Gotchas',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What happens if you iterate over an already-exhausted generator a second time?',
+    codeSnippet: `def seq():
+    yield 1
+    yield 2
+
+g = seq()
+list1 = list(g)
+list2 = list(g) # Second iteration on same generator!
+
+print("list1:", list1)
+print("list2:", list2)`,
+    stdoutExpected: `list1: [1, 2]
+list2: []`,
+    explanationTitle: 'Generators Are Single-Pass Consumable Streams',
+    explanationText:
+      'Generators are one-way data pipelines. Once exhausted, they remain exhausted and yield nothing on further iterations. To iterate again, you must invoke the generator function anew to create a fresh generator object.',
+    complexityInfo: 'Stream consumption lifecycle',
+  },
+  {
+    id: 'pcap-s3-fc-030',
+    cardType: 'PCAP 3.2 • Generator Expressions vs List Comprehensions',
+    topic: 'Parentheses syntax creates lazy generator expression',
+    category: 'T1: Built-ins',
+    difficulty: 'Beginner',
+    factor: '2.5',
+    intervalDays: 1,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What type of object is created by enclosing a comprehension in parentheses `(x*2 for x in data)`?',
+    codeSnippet: `nums = [1, 2, 3]
+comp = [x * 2 for x in nums]
+gen_exp = (x * 2 for x in nums)
+
+print("comp type:", type(comp).__name__)
+print("gen_exp type:", type(gen_exp).__name__)
+print(next(gen_exp), next(gen_exp))`,
+    stdoutExpected: `comp type: list
+gen_exp type: generator
+2 4`,
+    explanationTitle: 'Parentheses Form Generator Expressions',
+    explanationText:
+      'While square brackets `[...]` produce an eager list comprehension that allocates memory for all elements immediately, parentheses `(...)` create a lazy generator expression evaluated item-by-item on demand.',
+    complexityInfo: 'Comprehension syntax differentiation',
+  },
+  {
+    id: 'pcap-s3-fc-031',
+    cardType: 'PCAP 3.2 • Memory Efficiency of Generators',
+    topic: 'O(1) memory footprint regardless of stream size',
+    category: 'T3: Theory',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'Why are generators preferred over lists when processing millions of items in memory?',
+    codeSnippet: `import sys
+
+# List allocates 10,000 integers in memory
+lst = [i for i in range(10000)]
+# Generator allocates only a generator state object
+gen = (i for i in range(10000))
+
+print(sys.getsizeof(lst) > sys.getsizeof(gen))`,
+    stdoutExpected: 'True',
+    explanationTitle: 'Generators Provide Lazy O(1) Memory Usage',
+    explanationText:
+      'Lists store all items in memory simultaneously (O(N) space). Generators produce values on-the-fly one at a time (O(1) space), enabling the processing of arbitrarily huge or even infinite datasets without memory exhaustion.',
+    complexityInfo: 'Computational complexity & memory profile',
+  },
+  {
+    id: 'pcap-s3-fc-032',
+    cardType: 'PCAP 3.2 • Infinite Generators',
+    topic: 'Producing boundless sequences using while True loops',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'How can a generator produce an infinite sequence without causing an infinite memory overflow?',
+    codeSnippet: `def infinite_fib():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+fib = infinite_fib()
+first_six = [next(fib) for _ in range(6)]
+print(first_six)`,
+    stdoutExpected: '[0, 1, 1, 2, 3, 5]',
+    explanationTitle: 'Infinite Streams with while True and yield',
+    explanationText:
+      'Because `yield` suspends execution and waits for the caller to invoke `next()`, an infinite loop (`while True`) in a generator only produces values on request without ever freezing the program or overflowing memory.',
+    complexityInfo: 'Infinite sequence generation',
+  },
+  {
+    id: 'pcap-s3-fc-033',
+    cardType: 'PCAP 3.2 • return Statement Inside Generator',
+    topic: 'return statement raises StopIteration with return value',
+    category: 'T2: Gotchas',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What happens when a `return value` statement executes inside a generator function in Python 3?',
+    codeSnippet: `def gen_with_return():
+    yield 1
+    yield 2
+    return "FINISHED"
+
+g = gen_with_return()
+print(next(g))
+print(next(g))
+try:
+    next(g)
+except StopIteration as err:
+    print("Caught StopIteration value:", err.value)`,
+    stdoutExpected: `1
+2
+Caught StopIteration value: FINISHED`,
+    explanationTitle: 'return in Generator Raises StopIteration(value)',
+    explanationText:
+      'In Python 3.3+, executing a `return val` inside a generator terminates the generator and raises `StopIteration(val)`. The return value is stored in the `.value` attribute of the exception object.',
+    complexityInfo: 'Generator termination semantics',
+  },
+  {
+    id: 'pcap-s3-fc-034',
+    cardType: 'PCAP 3.2 • yield from Delegation',
+    topic: 'Delegating iteration to a sub-generator or iterable',
+    category: 'T1: Built-ins',
+    difficulty: 'Intermediate',
+    factor: '2.4',
+    intervalDays: 2,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What does the `yield from` syntax accomplish inside a generator function?',
+    codeSnippet: `def chain_iterables():
+    yield from [10, 20]
+    yield from "AB"
+
+print(list(chain_iterables()))`,
+    stdoutExpected: "[10, 20, 'A', 'B']",
+    explanationTitle: 'yield from Transparently Delegates to Sub-Iterables',
+    explanationText:
+      '`yield from iterable` delegates iteration directly to another sub-generator or iterable, transparently yielding all of its elements one by one without needing an explicit `for x in iterable: yield x` loop.',
+    complexityInfo: 'Sub-generator delegation',
+  },
+  {
+    id: 'pcap-s3-fc-035',
+    cardType: 'PCAP 3.2 • Generator close() Method',
+    topic: 'Prematurely terminating a generator with close()',
+    category: 'T1: Built-ins',
+    difficulty: 'Advanced',
+    factor: '2.2',
+    intervalDays: 3,
+    chapter: '3.2',
+    section: 'Section 3',
+    question: 'What method can be called on a generator to force it to close and raise GeneratorExit internally?',
+    codeSnippet: `def monitor():
+    try:
+        while True:
+            yield "running"
+    finally:
+        print("Cleanup completed")
+
+g = monitor()
+print(next(g))
+g.close()
+print("After close, next raises:")
+try:
+    next(g)
+except StopIteration:
+    print("StopIteration")`,
+    stdoutExpected: `running
+Cleanup completed
+After close, next raises:
+StopIteration`,
+    explanationTitle: 'g.close() Raises GeneratorExit for Cleanup',
+    explanationText:
+      'Calling `g.close()` raises `GeneratorExit` at the point of suspension inside the generator, triggering any `finally` blocks for resource cleanup. Subsequent `next()` calls immediately raise `StopIteration`.',
+    complexityInfo: 'Generator resource disposal',
   },
 ];
