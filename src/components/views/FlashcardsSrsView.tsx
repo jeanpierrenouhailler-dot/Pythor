@@ -17,15 +17,23 @@ import {
   Clock,
   Sparkles,
   BookOpen,
+  Plus,
+  Trash2,
 } from 'lucide-react';
-import { Flashcard, CardSRSData } from '../../types';
+import { Flashcard, CardSRSData, CertificationTrack } from '../../types';
 import { pcapSyllabusSections } from '../../data/pcapData';
+import { pcepSyllabusSections } from '../../data/pcepData';
+import { useI18n } from '../../context/I18nContext';
 
 interface FlashcardsSrsViewProps {
   cards: Flashcard[];
   selectedSection: string;
   onSelectSection: (section: string) => void;
   initialChapter?: string;
+  currentTrack?: CertificationTrack;
+  onSelectTrack?: (track: CertificationTrack) => void;
+  onOpenCreateCard?: () => void;
+  onDeleteCard?: (id: string) => void;
 }
 
 export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
@@ -33,7 +41,12 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   selectedSection,
   onSelectSection,
   initialChapter,
+  currentTrack = 'pcap',
+  onSelectTrack,
+  onOpenCreateCard,
+  onDeleteCard,
 }) => {
+  const { t, isFrench } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<string>(initialChapter || 'all');
@@ -239,45 +252,143 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Top Banner / Section Header */}
       <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Track switch bar if onSelectTrack provided */}
+        {onSelectTrack && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800/60">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-slate-400 font-medium">Certification Track:</span>
+              <div className="inline-flex rounded-lg bg-slate-950 p-1 border border-slate-800">
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcap');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcap'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCAP-31-03 (Associate)
+                </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcep');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcep'
+                      ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCEP-30-0x (Entry-Level)
+                </button>
+              </div>
+            </div>
+
+            {onOpenCreateCard && (
+              <button
+                onClick={onOpenCreateCard}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-cyan-400" />
+                <span>+ Create Flashcard</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Section Tabs Selector */}
+        <div className="flex flex-wrap items-center gap-1.5 pb-4 border-b border-slate-800/60">
+          <button
+            onClick={() => {
+              onSelectSection('all');
+              setSelectedChapter('all');
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              selectedSection === 'all'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+            }`}
+          >
+            All Sections
+          </button>
+          {(currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections).map((sec) => (
+            <button
+              key={sec.id}
+              onClick={() => {
+                onSelectSection(`Section ${sec.number}`);
+                setSelectedChapter('all');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                selectedSection === `Section ${sec.number}`
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+              }`}
+            >
+              Sec {sec.number}: {sec.title.split(':')[0]} ({sec.weight})
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4">
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                {selectedSection === 'all'
-                  ? 'Complete PCAP Bank'
-                  : selectedSection === 'Section 4'
-                  ? 'PCAP Section 4 • 100 Flashcards'
-                  : selectedSection === 'Section 1'
-                  ? 'PCAP Section 1 • 100 Flashcards'
-                  : selectedSection === 'Section 2'
-                  ? 'PCAP Section 2 • 100 Flashcards'
-                  : selectedSection === 'Section 3'
-                  ? 'PCAP Section 3 • 100 Flashcards'
-                  : selectedSection}
+                {currentTrack.toUpperCase()} • {selectedSection === 'all' ? 'Complete Bank' : selectedSection}
               </span>
               <span className="text-xs text-slate-400">
                 {filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'} available
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-white mt-1 tracking-tight">
-              {selectedSection === 'Section 4'
-                ? 'Object-Oriented Programming (OOP) Deep Dive'
-                : selectedSection === 'Section 1'
-                ? 'Control and Evaluations: Modules, Packages & PIP Deep Dive'
-                : selectedSection === 'Section 2'
-                ? 'Data Aggregates, Strings & Exception Handling Deep Dive'
-                : selectedSection === 'Section 3'
-                ? 'Functions, Generators, Closures & File Streams Deep Dive'
-                : 'Interactive Active Recall & SRS Flashcards'}
+              {currentTrack === 'pcep' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCEP Section 1: Computer Programming & Python Fundamentals'
+                  : selectedSection === 'Section 2'
+                  ? 'PCEP Section 2: Control Flow, Conditional Blocks & Loops'
+                  : selectedSection === 'Section 3'
+                  ? 'PCEP Section 3: Data Collections (Lists, Tuples, Dictionaries)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCEP Section 4: Functions & Basic Exception Handling'
+                  : 'PCEP-30-0x Interactive Flashcards & SRS Recall'
+              ) : (
+                selectedSection === 'Section 1'
+                  ? 'PCAP Section 1: Modules, Packages & PIP Deep Dive'
+                  : selectedSection === 'Section 2'
+                  ? 'PCAP Section 2: Data Aggregates, Strings & Exception Handling Deep Dive'
+                  : selectedSection === 'Section 3'
+                  ? 'PCAP Section 3: Functions, Generators, Closures & File Streams Deep Dive'
+                  : selectedSection === 'Section 4'
+                  ? 'PCAP Section 4: Object-Oriented Programming (OOP) Deep Dive'
+                  : selectedSection === 'Section 5'
+                  ? 'PCAP Section 5: Miscellaneous (Comprehensions, Lambdas, Closures, I/O)'
+                  : 'PCAP-31-03 Interactive Active Recall & SRS Flashcards'
+              )}
             </h1>
             <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              {selectedSection === 'Section 4'
-                ? 'Comprehensive coverage of 100 questions spanning all 5 exam chapters: paradigms, variable scopes, name mangling, dunders, operator overloading, and MRO.'
-                : selectedSection === 'Section 2'
-                ? '100 deep-dive questions on string immutability, ASCII/Unicode, 20+ methods, extended slicing, try-except-else-finally, exception hierarchy, and custom errors.'
-                : selectedSection === 'Section 3'
-                ? '100 comprehensive questions on function parameters (*args/**kwargs), LEGB scopes, generator yield execution suspension, iterator protocol, lambdas, closures, and file stream I/O.'
-                : 'Spaced repetition system designed for rapid mastery of Python syntax nuances, runtime exceptions, and PCAP-31-03 exam traps.'}
+              {currentTrack === 'pcep' ? (
+                selectedSection === 'Section 2' ? (
+                  'Complete coverage of 100 questions spanning conditional logic (if-elif-else, ternary), relational operators, short-circuit evaluation, bitwise operations (&, |, ^, ~, <<, >>), and loops with break/continue/else.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Complete coverage of 100 questions spanning computer programming fundamentals, compilation vs interpretation, literals, basic I/O with print/input, operator precedence, and variable assignment rules.'
+                ) : (
+                  'Master Python fundamental syntax, memory model, data types, control flow decisions, and core collections for the PCEP-30-0x exam.'
+                )
+              ) : selectedSection === 'Section 5' ? (
+                'Comprehensive coverage of 100 questions spanning list/dict/set comprehensions, lambda expressions, closures, file streams, bytearrays, and platform module APIs.'
+              ) : selectedSection === 'Section 4' ? (
+                'Comprehensive coverage of 100 questions spanning all 5 exam chapters: paradigms, variable scopes, name mangling, dunders, operator overloading, and MRO.'
+              ) : selectedSection === 'Section 3' ? (
+                '100 comprehensive questions on function parameters (*args/**kwargs), LEGB scopes, generator yield execution suspension, iterator protocol, and closures.'
+              ) : selectedSection === 'Section 2' ? (
+                '100 deep-dive questions on string immutability, ASCII/Unicode, 20+ methods, extended slicing, and exception hierarchy.'
+              ) : (
+                'Spaced repetition system designed for rapid mastery of Python syntax nuances, runtime exceptions, and exam traps.'
+              )}
             </p>
           </div>
 
@@ -302,8 +413,8 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           </div>
         </div>
 
-        {/* Section 1 Chapter Sub-Nav (if Section 1 is active) */}
-        {selectedSection === 'Section 1' && (
+        {/* Section 1 Chapter Sub-Nav (PCAP) */}
+        {currentTrack === 'pcap' && selectedSection === 'Section 1' && (
           <div className="mt-4 pt-4 border-t border-slate-800/60">
             <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -338,8 +449,8 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           </div>
         )}
 
-        {/* Section 2 Chapter Sub-Nav (if Section 2 is active) */}
-        {selectedSection === 'Section 2' && (
+        {/* Section 2 Chapter Sub-Nav (PCAP) */}
+        {currentTrack === 'pcap' && selectedSection === 'Section 2' && (
           <div className="mt-4 pt-4 border-t border-slate-800/60">
             <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -374,8 +485,8 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           </div>
         )}
 
-        {/* Section 3 Chapter Sub-Nav (if Section 3 is active) */}
-        {selectedSection === 'Section 3' && (
+        {/* Section 3 Chapter Sub-Nav (PCAP) */}
+        {currentTrack === 'pcap' && selectedSection === 'Section 3' && (
           <div className="mt-4 pt-4 border-t border-slate-800/60">
             <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -410,8 +521,8 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           </div>
         )}
 
-        {/* Section 4 Chapter Sub-Nav (if Section 4 is active) */}
-        {selectedSection === 'Section 4' && (
+        {/* Section 4 Chapter Sub-Nav (PCAP) */}
+        {currentTrack === 'pcap' && selectedSection === 'Section 4' && (
           <div className="mt-4 pt-4 border-t border-slate-800/60">
             <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -437,6 +548,158 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                     selectedChapter === ch.id
                       ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
                       : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 5 Chapter Sub-Nav (PCAP) */}
+        {currentTrack === 'pcap' && selectedSection === 'Section 5' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 5 (100 Cards)' },
+                { id: '5.1', label: '5.1 List/Dict/Set Comprehensions (1-20)' },
+                { id: '5.2', label: '5.2 Lambdas & Functional map/filter (21-40)' },
+                { id: '5.3', label: '5.3 Closures & Nested Scopes (41-60)' },
+                { id: '5.4', label: '5.4 File Streams & bytearray (61-80)' },
+                { id: '5.5', label: '5.5 Platform & Sys Streams (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCEP Chapter Sub-Navs (Sections 1 to 4) */}
+        {currentTrack === 'pcep' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Filter by Chapter:</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => {
+                  setSelectedChapter('all');
+                  setCurrentIndex(0);
+                  setIsFlipped(false);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                  selectedChapter === 'all'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                }`}
+              >
+                All Chapters
+              </button>
+              {selectedSection === 'Section 1' && [
+                { id: '1.1', label: '1.1 Fundamentals (1-20)' },
+                { id: '1.2', label: '1.2 Literals & Types (21-40)' },
+                { id: '1.3', label: '1.3 Basic I/O & Escapes (41-60)' },
+                { id: '1.4', label: '1.4 Operators & Precedence (61-80)' },
+                { id: '1.5', label: '1.5 Variables & PEP 8 (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+              {selectedSection === 'Section 2' && [
+                { id: '2.1', label: '2.1 Conditionals (1-20)' },
+                { id: '2.2', label: '2.2 Relational Operators (21-40)' },
+                { id: '2.3', label: '2.3 Logical & Short-Circuit (41-60)' },
+                { id: '2.4', label: '2.4 Bitwise & Shifts (61-80)' },
+                { id: '2.5', label: '2.5 Loops & Control (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+              {selectedSection === 'Section 3' && [
+                { id: '3.1', label: '3.1 Lists & Indexing' },
+                { id: '3.2', label: '3.2 List Slices & Operations' },
+                { id: '3.3', label: '3.3 Tuples & Immutability' },
+                { id: '3.4', label: '3.4 Dictionaries & Key-Value' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+              {selectedSection === 'Section 4' && [
+                { id: '4.1', label: '4.1 Functions & Return' },
+                { id: '4.2', label: '4.2 Scopes & LEGB' },
+                { id: '4.3', label: '4.3 Exceptions (try-except)' },
+                { id: '4.4', label: '4.4 Exception Hierarchy' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200'
                   }`}
                 >
                   {ch.label}
@@ -565,6 +828,11 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                       <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
                         {currentCard.category}
                       </span>
+                      {currentCard.isUserCreated && (
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          Custom
+                        </span>
+                      )}
                       <span
                         className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                           currentCard.difficulty === 'Beginner'
@@ -581,6 +849,20 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                     <div className="flex items-center space-x-2 text-xs text-slate-400">
                       <span>Topic:</span>
                       <span className="text-slate-200 font-medium">{currentCard.topic}</span>
+                      {currentCard.isUserCreated && onDeleteCard && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('Delete this custom flashcard?')) {
+                              onDeleteCard(currentCard.id);
+                            }
+                          }}
+                          className="ml-2 p-1 rounded-md text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors"
+                          title="Delete custom card"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navbar } from './components/Navbar';
 import { HamburgerMenu } from './components/HamburgerMenu';
 import { DashboardView } from './components/views/DashboardView';
@@ -7,20 +7,84 @@ import { ExamSimulatorView } from './components/views/ExamSimulatorView';
 import { CheatsheetView } from './components/views/CheatsheetView';
 import { CodeLabView } from './components/views/CodeLabView';
 import { SystemSettingsModal } from './components/SystemSettingsModal';
+import { CreateFlashcardModal } from './components/CreateFlashcardModal';
 import { UpdateNotificationBanner } from './components/UpdateNotificationBanner';
 import { SystemSettingsProvider, useSystemSettings } from './context/SystemSettingsContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { I18nProvider, useI18n } from './context/I18nContext';
 import { pcapFlashcardsData, pcapSyllabusSections } from './data/pcapData';
-import { AppView } from './types';
-import { ShieldCheck, Layers, LayoutDashboard, GraduationCap, BookMarked, Code2, Settings } from 'lucide-react';
+import { pcepStarterFlashcards, pcepSyllabusSections } from './data/pcepData';
+import { AppView, CertificationTrack, Flashcard } from './types';
+import { ShieldCheck, Settings, Sun, Moon, Globe } from 'lucide-react';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState<AppView>('dashboard');
-  const [selectedSection, setSelectedSection] = useState<string>('Section 4');
+  const [currentTrack, setCurrentTrack] = useState<CertificationTrack>(() => {
+    try {
+      const saved = localStorage.getItem('py_cert_track');
+      if (saved === 'pcep' || saved === 'pcap') return saved;
+    } catch {}
+    return 'pcap';
+  });
+  const [selectedSection, setSelectedSection] = useState<string>('Section 1');
   const [selectedChapter, setSelectedChapter] = useState<string>('all');
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isCreateCardOpen, setIsCreateCardOpen] = useState<boolean>(false);
   const [reviewedCount, setReviewedCount] = useState<number>(0);
 
+  // User-created flashcards with persistence
+  const [userCards, setUserCards] = useState<Flashcard[]>(() => {
+    try {
+      const saved = localStorage.getItem('py_user_cards');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleAddCustomCard = (newCard: Flashcard) => {
+    setUserCards((prev) => {
+      const updated = [newCard, ...prev];
+      try {
+        localStorage.setItem('py_user_cards', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleDeleteCustomCard = (id: string) => {
+    setUserCards((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      try {
+        localStorage.setItem('py_user_cards', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  // Active pool of cards based on currentTrack
+  const activeCards = useMemo(() => {
+    if (currentTrack === 'pcep') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcep');
+      return [...pcepStarterFlashcards, ...trackUserCards];
+    } else {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcap' || !c.track);
+      return [...pcapFlashcardsData, ...trackUserCards];
+    }
+  }, [currentTrack, userCards]);
+
+  const handleSelectTrack = (track: CertificationTrack) => {
+    setCurrentTrack(track);
+    try {
+      localStorage.setItem('py_cert_track', track);
+    } catch {}
+    setSelectedSection('Section 1');
+    setSelectedChapter('all');
+  };
+
   const { settings, isSettingsOpen, setIsSettingsOpen } = useSystemSettings();
+  const { theme, toggleTheme, isDark } = useTheme();
+  const { lang, setLang, toggleLang, t, isFrench } = useI18n();
 
   // Read SRS state count from localStorage
   const updateReviewedCount = () => {
@@ -61,13 +125,14 @@ function AppContent() {
   const handleResetProgress = () => {
     localStorage.removeItem('pcap_srs_state');
     setReviewedCount(0);
-    // Trigger custom event or force re-render
     window.dispatchEvent(new Event('storage'));
   };
 
+  const currentSyllabus = currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500/20 selection:text-cyan-300">
-      {/* Universal Hamburger Drawer Menu (Available on every page) */}
+      {/* Universal Hamburger Drawer Menu */}
       <HamburgerMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
@@ -78,15 +143,19 @@ function AppContent() {
         }}
         selectedSection={selectedSection}
         onSelectSection={setSelectedSection}
-        totalCards={pcapFlashcardsData.length}
+        totalCards={activeCards.length}
         reviewedCount={reviewedCount}
         onResetProgress={handleResetProgress}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        currentTrack={currentTrack}
+        onSelectTrack={handleSelectTrack}
+        onOpenCreateCard={() => setIsCreateCardOpen(true)}
+        activeCards={activeCards}
       />
 
-      {/* Top Navigation Bar with persistent Hamburger trigger and System Settings */}
+      {/* Top Navigation Bar with track switcher and Create Card */}
       <Navbar
-        totalCards={pcapFlashcardsData.length}
+        totalCards={activeCards.length}
         reviewedCount={reviewedCount}
         selectedSection={selectedSection}
         onSelectSection={setSelectedSection}
@@ -97,31 +166,43 @@ function AppContent() {
         }}
         onToggleMenu={() => setIsMenuOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        currentTrack={currentTrack}
+        onSelectTrack={handleSelectTrack}
+        onOpenCreateCard={() => setIsCreateCardOpen(true)}
       />
 
       {/* Main Viewport Content */}
       <main className="flex-1 py-4">
         {currentView === 'dashboard' && (
           <DashboardView
-            cards={pcapFlashcardsData}
+            cards={activeCards}
             onNavigate={handleNavigate}
             reviewedCount={reviewedCount}
+            currentTrack={currentTrack}
+            onSelectTrack={handleSelectTrack}
+            onOpenCreateCard={() => setIsCreateCardOpen(true)}
+            onDeleteCustomCard={handleDeleteCustomCard}
           />
         )}
 
         {currentView === 'flashcards' && (
           <FlashcardsSrsView
-            cards={pcapFlashcardsData}
+            cards={activeCards}
             selectedSection={selectedSection}
             onSelectSection={setSelectedSection}
             initialChapter={selectedChapter}
+            currentTrack={currentTrack}
+            onSelectTrack={handleSelectTrack}
+            onOpenCreateCard={() => setIsCreateCardOpen(true)}
+            onDeleteCard={handleDeleteCustomCard}
           />
         )}
 
         {currentView === 'exam' && (
           <ExamSimulatorView
-            cards={pcapFlashcardsData}
+            cards={activeCards}
             onNavigate={handleNavigate}
+            currentTrack={currentTrack}
           />
         )}
 
@@ -138,6 +219,15 @@ function AppContent() {
         )}
       </main>
 
+      {/* Create Flashcard Modal */}
+      <CreateFlashcardModal
+        isOpen={isCreateCardOpen}
+        onClose={() => setIsCreateCardOpen(false)}
+        onCardCreated={handleAddCustomCard}
+        defaultTrack={currentTrack}
+        defaultSection={selectedSection}
+      />
+
       {/* System Settings & Updates Modal */}
       <SystemSettingsModal
         isOpen={isSettingsOpen}
@@ -153,7 +243,9 @@ function AppContent() {
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
             <span className="font-semibold text-slate-200">
-              PCAP-31-03 Certified Associate in Python Programming
+              {currentTrack === 'pcep'
+                ? 'PCEP-30-0x Certified Entry-Level Python Programmer'
+                : 'PCAP-31-03 Certified Associate in Python Programming'}
             </span>
             <span className="text-slate-500">|</span>
             <span>Python Institute Official Alignment</span>
@@ -171,7 +263,7 @@ function AppContent() {
               Main Dashboard
             </button>
             <span className="text-slate-600">•</span>
-            {pcapSyllabusSections.map((sec) => (
+            {currentSyllabus.map((sec) => (
               <button
                 key={sec.id}
                 onClick={() => handleNavigate('flashcards', `Section ${sec.number}`)}
@@ -192,7 +284,27 @@ function AppContent() {
               title="Open System Settings & Updates"
             >
               <Settings className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Settings ({settings.currentVersion})</span>
+              <span>{t.nav.settings} ({settings.currentVersion})</span>
+            </button>
+            <span className="text-slate-600">•</span>
+            {/* Quick Language Toggle */}
+            <button
+              onClick={toggleLang}
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
+              title={isFrench ? 'Switch to English' : 'Passer en Français'}
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-semibold">{isFrench ? 'FR' : 'EN'}</span>
+            </button>
+            <span className="text-slate-600">•</span>
+            {/* Quick Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
+              title={isDark ? t.nav.themeLight : t.nav.themeDark}
+            >
+              {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-cyan-400" />}
+              <span>{isDark ? t.nav.light : t.nav.dark}</span>
             </button>
           </div>
         </div>
@@ -203,9 +315,13 @@ function AppContent() {
 
 export function App() {
   return (
-    <SystemSettingsProvider>
-      <AppContent />
-    </SystemSettingsProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <SystemSettingsProvider>
+          <AppContent />
+        </SystemSettingsProvider>
+      </I18nProvider>
+    </ThemeProvider>
   );
 }
 

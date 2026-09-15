@@ -14,17 +14,21 @@ import {
   Layers,
   ArrowRight,
 } from 'lucide-react';
-import { Flashcard, AppView } from '../../types';
+import { Flashcard, AppView, CertificationTrack } from '../../types';
+import { useI18n } from '../../context/I18nContext';
 
 interface ExamSimulatorViewProps {
   cards: Flashcard[];
   onNavigate: (view: AppView, section?: string) => void;
+  currentTrack?: CertificationTrack;
 }
 
 export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
   cards,
   onNavigate,
+  currentTrack = 'pcap',
 }) => {
+  const { t, isFrench } = useI18n();
   const [examStarted, setExamStarted] = useState(false);
   const [examFinished, setExamFinished] = useState(false);
   const [questionCount, setQuestionCount] = useState(10);
@@ -132,6 +136,21 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
   // 1. Pre-Exam Configuration View
   if (!examStarted) {
+    const scopeOptions = currentTrack === 'pcep' ? [
+      { id: 'all', label: isFrench ? `Toutes les Sections (${cards.length} Cartes)` : `All Sections (${cards.length} Cards)` },
+      { id: 'Section 1', label: isFrench ? 'Section 1 : Fondamentaux Python' : 'Section 1: Python Fundamentals' },
+      { id: 'Section 2', label: isFrench ? 'Section 2 : Flux de Contrôle & Boucles' : 'Section 2: Control Flow & Loops' },
+      { id: 'Section 3', label: isFrench ? 'Section 3 : Collections de Données' : 'Section 3: Data Collections' },
+      { id: 'Section 4', label: isFrench ? 'Section 4 : Fonctions & Exceptions' : 'Section 4: Functions & Exceptions' },
+    ] : [
+      { id: 'all', label: isFrench ? `Toutes les Sections (${cards.length} Cartes)` : `All Sections (${cards.length} Cards)` },
+      { id: 'Section 1', label: isFrench ? 'Section 1 : Modules & PIP' : 'Section 1: Modules & PIP' },
+      { id: 'Section 2', label: isFrench ? 'Section 2 : Chaînes & Exceptions' : 'Section 2: Strings & Exceptions' },
+      { id: 'Section 3', label: isFrench ? 'Section 3 : Fonctions & Générateurs' : 'Section 3: Functions & Generators' },
+      { id: 'Section 4', label: isFrench ? 'Section 4 : POO (100 Cartes)' : 'Section 4: OOP (100 Cards)' },
+      { id: 'Section 5', label: isFrench ? 'Section 5 : Divers (Compréhensions, E/S)' : 'Section 5: Miscellaneous (100 Cards)' },
+    ];
+
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <div className="text-center space-y-3">
@@ -139,10 +158,14 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
             <GraduationCap className="w-8 h-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            PCAP-31-03 Exam Simulator
+            {currentTrack === 'pcep'
+              ? (isFrench ? "Simulateur d'Examen PCEP-30-0x" : 'PCEP-30-0x Exam Simulator')
+              : (isFrench ? "Simulateur d'Examen PCAP-31-03" : 'PCAP-31-03 Exam Simulator')}
           </h1>
           <p className="text-slate-400 text-sm max-w-lg mx-auto">
-            Test your Python certification readiness with realistic, timed questions. Passing mark is 70% (Python Institute official standard).
+            {isFrench
+              ? "Testez votre préparation aux certifications Python avec des questions réalistes et chronométrées. Le seuil de réussite est de 70% (norme officielle Python Institute)."
+              : "Test your Python certification readiness with realistic, timed questions. Passing mark is 70% (Python Institute official standard)."}
           </p>
         </div>
 
@@ -150,16 +173,10 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           {/* Section Filter */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Select Exam Scope
+              {isFrench ? "Sélectionner la Portée de l'Examen" : 'Select Exam Scope'}
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {[
-                { id: 'all', label: 'All Sections (111 Cards)' },
-                { id: 'Section 4', label: 'Section 4: OOP (100 Cards)' },
-                { id: 'Section 1', label: 'Section 1: Modules & PIP' },
-                { id: 'Section 2', label: 'Section 2: Exceptions' },
-                { id: 'Section 3', label: 'Section 3: Functions & Generators' },
-              ].map((opt) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {scopeOptions.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => setSelectedSectionFilter(opt.id)}
@@ -178,7 +195,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           {/* Question Count */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Question Count
+              {isFrench ? "Nombre de Questions" : 'Question Count'}
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[10, 20, 30].map((count) => (
@@ -191,7 +208,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
                       : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  {count} Questions
+                  {count} {isFrench ? 'Questions' : 'Questions'}
                 </button>
               ))}
             </div>
@@ -199,17 +216,31 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
           {/* Guidelines */}
           <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-xs text-slate-400 space-y-1.5">
-            <span className="font-semibold text-slate-200 block">Exam Instructions:</span>
-            <p>• Carefully inspect code snippets for indentation, assignment vs equality, and dunder spellings.</p>
-            <p>• Predict the exact stdout console output or runtime error raised.</p>
-            <p>• A minimum score of 70% is required to pass the PCAP-31-03 examination.</p>
+            <span className="font-semibold text-slate-200 block">
+              {isFrench ? 'Consignes pour l’Examen :' : 'Exam Instructions:'}
+            </span>
+            <p>
+              {isFrench
+                ? "• Inspectez attentivement les snippets de code (indentation, types, opérateurs, dunders)."
+                : "• Carefully inspect code snippets for indentation, assignment vs equality, and dunder spellings."}
+            </p>
+            <p>
+              {isFrench
+                ? "• Prédisez la sortie console stdout exacte ou l'erreur levée à l'exécution."
+                : "• Predict the exact stdout console output or runtime error raised."}
+            </p>
+            <p>
+              {isFrench
+                ? "• Un score minimum de 70% est requis pour réussir l'examen officiel de certification Python."
+                : "• A minimum score of 70% is required to pass the official Python certification examination."}
+            </p>
           </div>
 
           <button
             onClick={handleStartExam}
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center space-x-2"
           >
-            <span>Begin Timed Practice Exam</span>
+            <span>{isFrench ? "Commencer l'Examen Pratique Chronométré" : 'Begin Timed Practice Exam'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -231,31 +262,37 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           </div>
 
           <h2 className="text-3xl font-bold text-white">
-            {isPassed ? 'Congratulations! You Passed!' : 'Review Needed — Keep Practicing'}
+            {isPassed
+              ? (isFrench ? 'Félicitations ! Vous avez réussi !' : 'Congratulations! You Passed!')
+              : (isFrench ? 'Révision requise — Continuez à vous entraîner' : 'Review Needed — Keep Practicing')}
           </h2>
 
           <p className="text-sm text-slate-400 max-w-md mx-auto">
             {isPassed
-              ? `You achieved ${scorePercent}%, exceeding the official 70% Python Institute passing requirement.`
-              : `You scored ${scorePercent}%. The passing threshold is 70%. Review the questions below and drill with Flashcards SRS.`}
+              ? (isFrench
+                  ? `Vous avez obtenu ${scorePercent}%, dépassant l'exigence officielle de réussite de 70% du Python Institute.`
+                  : `You achieved ${scorePercent}%, exceeding the official 70% Python Institute passing requirement.`)
+              : (isFrench
+                  ? `Vous avez obtenu ${scorePercent}%. Le seuil de passage est de 70%. Révisez les questions ci-dessous et entraînez-vous avec les Flashcards SRS.`
+                  : `You scored ${scorePercent}%. The passing threshold is 70%. Review the questions below and drill with Flashcards SRS.`)}
           </p>
 
           <div className="flex items-center justify-center space-x-8 py-4 border-y border-slate-800 my-4">
             <div>
               <span className="block text-2xl font-mono font-bold text-cyan-400">{scorePercent}%</span>
-              <span className="text-xs text-slate-500 uppercase">Score</span>
+              <span className="text-xs text-slate-500 uppercase">{isFrench ? 'Score' : 'Score'}</span>
             </div>
             <div>
               <span className="block text-2xl font-mono font-bold text-slate-200">
                 {correctCount} / {examCards.length}
               </span>
-              <span className="text-xs text-slate-500 uppercase">Correct</span>
+              <span className="text-xs text-slate-500 uppercase">{isFrench ? 'Correctes' : 'Correct'}</span>
             </div>
             <div>
               <span className="block text-2xl font-mono font-bold text-amber-400">
                 {formatTime(secondsElapsed)}
               </span>
-              <span className="text-xs text-slate-500 uppercase">Time</span>
+              <span className="text-xs text-slate-500 uppercase">{isFrench ? 'Temps' : 'Time'}</span>
             </div>
           </div>
 
@@ -265,29 +302,31 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm transition-all flex items-center space-x-2"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Retake Exam</span>
+              <span>{isFrench ? "Repasser l'Examen" : 'Retake Exam'}</span>
             </button>
 
             <button
-              onClick={() => onNavigate('flashcards', 'Section 4')}
+              onClick={() => onNavigate('flashcards', 'Section 1')}
               className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition-colors flex items-center space-x-2"
             >
               <Layers className="w-4 h-4 text-cyan-400" />
-              <span>Drill Flashcards</span>
+              <span>{isFrench ? 'Réviser les Flashcards' : 'Drill Flashcards'}</span>
             </button>
 
             <button
               onClick={() => setExamStarted(false)}
               className="px-5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 text-sm transition-colors"
             >
-              Configure New Exam
+              {isFrench ? 'Configurer un Nouvel Examen' : 'Configure New Exam'}
             </button>
           </div>
         </div>
 
         {/* Detailed Question Review List */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-white">Question Review</h3>
+          <h3 className="text-lg font-bold text-white">
+            {isFrench ? 'Revue des Questions' : 'Question Review'}
+          </h3>
           <div className="space-y-4">
             {examCards.map((card, idx) => {
               const userAns = userAnswers[idx];
@@ -312,12 +351,12 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
                       {isCorrect ? (
                         <span className="text-emerald-400 flex items-center space-x-1">
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>Correct</span>
+                          <span>{isFrench ? 'Correct' : 'Correct'}</span>
                         </span>
                       ) : (
                         <span className="text-rose-400 flex items-center space-x-1">
                           <XCircle className="w-4 h-4" />
-                          <span>Incorrect</span>
+                          <span>{isFrench ? 'Incorrect' : 'Incorrect'}</span>
                         </span>
                       )}
                     </div>
@@ -331,13 +370,17 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-3">
                     <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                      <span className="text-slate-500 block mb-0.5">Your Answer:</span>
+                      <span className="text-slate-500 block mb-0.5">
+                        {isFrench ? 'Votre Réponse :' : 'Your Answer:'}
+                      </span>
                       <span className={isCorrect ? 'text-emerald-400 font-mono' : 'text-rose-400 font-mono'}>
-                        {userAns || 'No answer selected'}
+                        {userAns || (isFrench ? 'Aucune réponse sélectionnée' : 'No answer selected')}
                       </span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                      <span className="text-slate-500 block mb-0.5">Expected Correct:</span>
+                      <span className="text-slate-500 block mb-0.5">
+                        {isFrench ? 'Réponse Attendue :' : 'Expected Correct:'}
+                      </span>
                       <span className="text-emerald-400 font-mono">{card.stdoutExpected}</span>
                     </div>
                   </div>
@@ -366,7 +409,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
       <div className="flex items-center justify-between bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl">
         <div className="flex items-center space-x-3">
           <span className="text-xs font-mono font-bold text-cyan-400">
-            Question {currentIndex + 1} of {examCards.length}
+            {isFrench ? `Question ${currentIndex + 1} sur ${examCards.length}` : `Question ${currentIndex + 1} of ${examCards.length}`}
           </span>
           <span className="text-xs text-slate-500">•</span>
           <span className="text-xs text-slate-400">{currentCard.topic}</span>
@@ -382,7 +425,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
             onClick={handleFinishExam}
             className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
           >
-            Finish Exam
+            {isFrench ? "Terminer l'Examen" : 'Finish Exam'}
           </button>
         </div>
       </div>
@@ -414,7 +457,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           <button
             onClick={() => handleCopyCode(currentCard.codeSnippet)}
             className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-            title="Copy code"
+            title={isFrench ? 'Copier le code' : 'Copy code'}
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
@@ -424,7 +467,9 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
         {/* Answer Options */}
         <div className="space-y-2.5 pt-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
-            Select Expected Console Output / Return Value:
+            {isFrench
+              ? 'Sélectionnez la sortie console stdout ou la valeur attendue :'
+              : 'Select Expected Console Output / Return Value:'}
           </span>
           {options.map((option, idx) => {
             const isSelected = selectedOption === option;
@@ -459,11 +504,13 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
             className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-300 transition-colors flex items-center space-x-1.5"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>Previous</span>
+            <span>{isFrench ? 'Précédente' : 'Previous'}</span>
           </button>
 
           <span className="text-xs font-mono text-slate-500">
-            Answered: {Object.keys(userAnswers).length} / {examCards.length}
+            {isFrench
+              ? `Répondues : ${Object.keys(userAnswers).length} / ${examCards.length}`
+              : `Answered: ${Object.keys(userAnswers).length} / ${examCards.length}`}
           </span>
 
           {currentIndex < examCards.length - 1 ? (
@@ -471,7 +518,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               onClick={() => setCurrentIndex((prev) => prev + 1)}
               className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors flex items-center space-x-1.5"
             >
-              <span>Next Question</span>
+              <span>{isFrench ? 'Question Suivante' : 'Next Question'}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
@@ -479,7 +526,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               onClick={handleFinishExam}
               className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors flex items-center space-x-1.5"
             >
-              <span>Submit Exam</span>
+              <span>{isFrench ? "Soumettre l'Examen" : 'Submit Exam'}</span>
               <CheckCircle2 className="w-4 h-4" />
             </button>
           )}

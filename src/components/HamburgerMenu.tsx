@@ -21,10 +21,17 @@ import {
   Settings,
   Sliders,
   Radio,
+  Sun,
+  Moon,
+  Globe,
+  Plus,
 } from 'lucide-react';
-import { AppView } from '../types';
+import { AppView, CertificationTrack, Flashcard } from '../types';
 import { pcapSyllabusSections, pcapFlashcardsData } from '../data/pcapData';
+import { pcepSyllabusSections } from '../data/pcepData';
 import { useSystemSettings } from '../context/SystemSettingsContext';
+import { useTheme } from '../context/ThemeContext';
+import { useI18n } from '../context/I18nContext';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -37,6 +44,10 @@ interface HamburgerMenuProps {
   reviewedCount: number;
   onResetProgress: () => void;
   onOpenSettings: () => void;
+  currentTrack: CertificationTrack;
+  onSelectTrack: (track: CertificationTrack) => void;
+  onOpenCreateCard: () => void;
+  activeCards: Flashcard[];
 }
 
 export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
@@ -50,8 +61,15 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   reviewedCount,
   onResetProgress,
   onOpenSettings,
+  currentTrack,
+  onSelectTrack,
+  onOpenCreateCard,
+  activeCards,
 }) => {
   const { settings } = useSystemSettings();
+  const { theme, toggleTheme, isDark } = useTheme();
+  const { lang, setLang, t, isFrench } = useI18n();
+
   if (!isOpen) return null;
 
   const progressPercent = totalCards > 0 ? Math.round((reviewedCount / totalCards) * 100) : 0;
@@ -76,6 +94,71 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
     2: <AlertTriangle className="w-4 h-4 text-amber-400" />,
     3: <Zap className="w-4 h-4 text-purple-400" />,
     4: <Box className="w-4 h-4 text-cyan-400" />,
+    5: <Sliders className="w-4 h-4 text-fuchsia-400" />,
+  };
+
+  const getSectionTitle = (secNumber: number, fallback: string) => {
+    if (!isFrench) return fallback;
+    if (currentTrack === 'pcep') {
+      switch (secNumber) {
+        case 1:
+          return t.dashboard.pcepSec1Title;
+        case 2:
+          return t.dashboard.pcepSec2Title;
+        case 3:
+          return t.dashboard.pcepSec3Title;
+        case 4:
+          return t.dashboard.pcepSec4Title;
+        default:
+          return fallback;
+      }
+    }
+    switch (secNumber) {
+      case 1:
+        return t.dashboard.sec1Title;
+      case 2:
+        return t.dashboard.sec2Title;
+      case 3:
+        return t.dashboard.sec3Title;
+      case 4:
+        return t.dashboard.sec4Title;
+      case 5:
+        return t.dashboard.sec5Title;
+      default:
+        return fallback;
+    }
+  };
+
+  const getSectionDescription = (secNumber: number, fallback: string) => {
+    if (!isFrench) return fallback;
+    if (currentTrack === 'pcep') {
+      switch (secNumber) {
+        case 1:
+          return t.dashboard.pcepSec1Desc;
+        case 2:
+          return t.dashboard.pcepSec2Desc;
+        case 3:
+          return t.dashboard.pcepSec3Desc;
+        case 4:
+          return t.dashboard.pcepSec4Desc;
+        default:
+          return fallback;
+      }
+    }
+    switch (secNumber) {
+      case 1:
+        return t.dashboard.sec1Desc;
+      case 2:
+        return t.dashboard.sec2Desc;
+      case 3:
+        return t.dashboard.sec3Desc;
+      case 4:
+        return t.dashboard.sec4Desc;
+      case 5:
+        return t.dashboard.sec5Desc;
+      default:
+        return fallback;
+    }
   };
 
   return (
@@ -136,6 +219,63 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
 
         {/* Scrollable Navigation Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          {/* TRACK SWITCHER IN MENU */}
+          <div>
+            <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span>{isFrench ? 'Parcours de certification' : 'Certification Track'}</span>
+              <button
+                onClick={() => {
+                  onOpenCreateCard();
+                  onClose();
+                }}
+                className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 font-semibold"
+              >
+                <Plus className="w-3 h-3" />
+                <span>{isFrench ? '+ Créer carte' : '+ New Card'}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onSelectTrack('pcep')}
+                className={`p-2.5 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcep'
+                    ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200 ring-1 ring-emerald-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCEP-30-0x</span>
+                  {currentTrack === 'pcep' && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1 line-clamp-1">
+                  {isFrench ? 'Niveau Débutant • 4 Sections' : 'Entry-Level • 4 Sections'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcap')}
+                className={`p-2.5 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcap'
+                    ? 'bg-cyan-950/50 border-cyan-500/50 text-cyan-200 ring-1 ring-cyan-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCAP-31-03</span>
+                  {currentTrack === 'pcap' && (
+                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1 line-clamp-1">
+                  {isFrench ? 'Niveau Associé • 5 Sections' : 'Associate • 5 Sections'}
+                </p>
+              </button>
+            </div>
+          </div>
+
           {/* CATEGORY 1: Core Views & Workspaces */}
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
@@ -246,13 +386,17 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           {/* CATEGORY 2: Syllabus Blueprint Domains */}
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>PCAP-31-03 Exam Blueprint</span>
-              <span className="text-[10px] text-slate-500 font-normal">Syllabus Sections</span>
+              <span>
+                {currentTrack === 'pcep' ? 'PCEP-30-0x Exam Blueprint' : 'PCAP-31-03 Exam Blueprint'}
+              </span>
+              <span className="text-[10px] text-slate-500 font-normal">
+                {currentTrack === 'pcep' ? '4 Sections' : '5 Sections'}
+              </span>
             </div>
             <div className="space-y-1.5">
-              {pcapSyllabusSections.map((sec) => {
+              {(currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections).map((sec) => {
                 const isSelected = selectedSection === `Section ${sec.number}`;
-                const sectionCardCount = pcapFlashcardsData.filter(
+                const sectionCardCount = activeCards.filter(
                   (c) => c.section === `Section ${sec.number}`
                 ).length;
 
@@ -272,12 +416,12 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                           {sectionIcons[sec.number]}
                         </div>
                         <span className="text-xs font-semibold text-slate-100">
-                          Section {sec.number}: {sec.title}
+                          Section {sec.number}: {getSectionTitle(sec.number, sec.title)}
                         </span>
                       </div>
                       <div className="flex items-center space-x-1.5">
                         <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                          {sectionCardCount} Cards
+                          {sectionCardCount} {isFrench ? 'Cartes' : 'Cards'}
                         </span>
                         <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
                           {sec.weight}
@@ -286,27 +430,104 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                     </div>
 
                     <p className="text-[11px] text-slate-400 mt-1.5 line-clamp-1">
-                      {sec.description}
+                      {getSectionDescription(sec.number, sec.description)}
                     </p>
 
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px]">
                       <span className="text-slate-300 flex items-center space-x-1.5">
                         <strong className="text-cyan-400 font-semibold">
-                          {sec.number === 4
-                            ? `${sectionCardCount} Comprehensive Cards`
+                          {isFrench
+                            ? `${sectionCardCount} Cartes d’étude`
                             : `${sectionCardCount} Flashcards`}
                         </strong>
                         <span className="text-slate-500">•</span>
-                        <span className="text-slate-400">{sec.chapters.length} Sub-chapters</span>
+                        <span className="text-slate-400">
+                          {sec.chapters.length} {isFrench ? 'Sous-chapitres' : 'Sub-chapters'}
+                        </span>
                       </span>
                       <span className="text-cyan-400 hover:underline flex items-center space-x-0.5 font-medium">
-                        <span>Study Cards</span>
+                        <span>{isFrench ? 'Étudier' : 'Study Cards'}</span>
                         <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* PREFERENCES: Language & Light Theme Switch */}
+          <div>
+            <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span>{isFrench ? 'Langue & Thème visuel' : 'Language & Visual Theme'}</span>
+              <span className="text-[10px] text-cyan-400 font-mono font-medium">
+                {lang.toUpperCase()} • {isDark ? 'DARK' : 'LIGHT'}
+              </span>
+            </div>
+            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 space-y-3">
+              {/* Language Selection */}
+              <div>
+                <label className="text-[11px] font-medium text-slate-400 flex items-center space-x-1.5 mb-1.5">
+                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{isFrench ? 'Sélectionner la langue' : 'Select Language'}</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setLang('en')}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 border transition-all ${
+                      lang === 'en'
+                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <span className="text-sm">🇬🇧</span>
+                    <span>English</span>
+                  </button>
+                  <button
+                    onClick={() => setLang('fr')}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 border transition-all ${
+                      lang === 'fr'
+                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <span className="text-sm">🇫🇷</span>
+                    <span>Français</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Theme Selection */}
+              <div>
+                <label className="text-[11px] font-medium text-slate-400 flex items-center space-x-1.5 mb-1.5">
+                  {isDark ? <Moon className="w-3.5 h-3.5 text-cyan-400" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
+                  <span>{isFrench ? 'Basculer le thème' : 'Switch Theme'}</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => { if (isDark) toggleTheme(); }}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 border transition-all ${
+                      !isDark
+                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <Sun className="w-4 h-4 text-amber-500" />
+                    <span>{t.nav.light}</span>
+                  </button>
+                  <button
+                    onClick={() => { if (!isDark) toggleTheme(); }}
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 border transition-all ${
+                      isDark
+                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                  >
+                    <Moon className="w-4 h-4 text-slate-950" />
+                    <span>{t.nav.dark}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

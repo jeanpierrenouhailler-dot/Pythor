@@ -3,12 +3,14 @@ import { pcapSection1Flashcards } from './pcapSection1Flashcards';
 import { pcapSection2Flashcards } from './pcapSection2Flashcards';
 import { pcapSection3Flashcards } from './pcapSection3Flashcards';
 import { pcapSection4Flashcards } from './pcapSection4Flashcards';
+import { pcapSection5Flashcards } from './pcapSection5Flashcards';
 
 export {
   pcapSection1Flashcards,
   pcapSection2Flashcards,
   pcapSection3Flashcards,
   pcapSection4Flashcards,
+  pcapSection5Flashcards,
 };
 
 export const pcapSyllabusSections: SyllabusSection[] = [
@@ -68,6 +70,20 @@ export const pcapSyllabusSections: SyllabusSection[] = [
       { id: '4.5', title: 'Inheritance, Polymorphism & MRO', weight: 'Cards 81-100', cardCount: 20 },
     ],
   },
+  {
+    id: 'section-5',
+    number: 5,
+    title: 'Miscellaneous (List Comprehensions, Lambdas, Closures, I/O)',
+    weight: '20%',
+    description: 'List, dict, and set comprehensions, ternary expressions, lambdas, map/filter/reduce, closures, nonlocal scope binding, text and binary file streams, bytearray, errno, and OS operations.',
+    chapters: [
+      { id: '5.1', title: 'List, Dict & Set Comprehensions', weight: 'Cards 1-20', cardCount: 20 },
+      { id: '5.2', title: 'Lambdas and Anonymous Functions', weight: 'Cards 21-40', cardCount: 20 },
+      { id: '5.3', title: 'Closures, Nested Scopes & nonlocal', weight: 'Cards 41-60', cardCount: 20 },
+      { id: '5.4', title: 'File Streams & Text I/O', weight: 'Cards 61-80', cardCount: 20 },
+      { id: '5.5', title: 'Binary I/O, bytearray, errno & OS Operations', weight: 'Cards 81-100', cardCount: 20 },
+    ],
+  },
 ];
 
 export const pcapFlashcardsData: Flashcard[] = [
@@ -75,6 +91,7 @@ export const pcapFlashcardsData: Flashcard[] = [
   ...pcapSection2Flashcards,
   ...pcapSection3Flashcards,
   ...pcapSection4Flashcards,
+  ...pcapSection5Flashcards,
 ];
 
 export const allPcapCards = pcapFlashcardsData;

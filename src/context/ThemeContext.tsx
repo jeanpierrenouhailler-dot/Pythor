@@ -35,12 +35,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
     if (theme === 'light') {
       root.classList.remove('dark');
       root.classList.add('light');
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
     } else {
       root.classList.remove('light');
       root.classList.add('dark');
+      document.body.classList.remove('light');
+      document.body.classList.add('dark');
     }
   }, [theme]);
 

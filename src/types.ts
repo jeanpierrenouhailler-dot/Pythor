@@ -2,8 +2,25 @@ export type CardDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
 export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'cheatsheet' | 'codelab';
 
+export type CertificationTrack = 'pcap' | 'pcep';
+
+export interface CertificationTrackInfo {
+  id: CertificationTrack;
+  code: string;
+  name: string;
+  shortName: string;
+  level: string;
+  officialRef: string;
+  totalSections: number;
+  durationMinutes: number;
+  questionCount: number;
+  passingScore: number;
+  description: string;
+}
+
 export interface Flashcard {
   id: string;
+  track?: CertificationTrack;
   cardType: string;
   topic: string;
   category: string;
@@ -18,6 +35,7 @@ export interface Flashcard {
   explanationTitle: string;
   explanationText: string;
   complexityInfo?: string;
+  isUserCreated?: boolean;
 }
 
 export interface SyllabusChapter {

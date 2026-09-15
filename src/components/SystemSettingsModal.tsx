@@ -20,8 +20,13 @@ import {
   Terminal,
   Download,
   Info,
+  Globe,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useSystemSettings } from '../context/SystemSettingsContext';
+import { useTheme } from '../context/ThemeContext';
+import { useI18n } from '../context/I18nContext';
 import { UpdateChannel } from '../types';
 
 interface SystemSettingsModalProps {
@@ -42,27 +47,34 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
     simulateNewVersion,
   } = useSystemSettings();
 
-  const [activeTab, setActiveTab] = useState<'updates' | 'diagnostics' | 'notes'>('updates');
+  const { theme, toggleTheme, setTheme, isDark } = useTheme();
+  const { lang, setLang, t, isFrench } = useI18n();
+
+  const [activeTab, setActiveTab] = useState<'updates' | 'preferences' | 'diagnostics' | 'notes'>('updates');
   const [copiedStatus, setCopiedStatus] = useState(false);
 
   if (!isOpen) return null;
 
   // Format Last Checked nicely (relative + absolute)
   const formatLastChecked = (timestamp: number | null) => {
-    if (!timestamp) return 'Never checked';
+    if (!timestamp) return isFrench ? 'Jamais vérifié' : 'Never checked';
     const diffSeconds = Math.floor((Date.now() - timestamp) / 1000);
     let relative = '';
     if (diffSeconds < 60) {
-      relative = 'Just now';
+      relative = isFrench ? 'À l’instant' : 'Just now';
     } else if (diffSeconds < 3600) {
       const mins = Math.floor(diffSeconds / 60);
-      relative = `${mins} minute${mins > 1 ? 's' : ''} ago`;
+      relative = isFrench
+        ? `Il y a ${mins} minute${mins > 1 ? 's' : ''}`
+        : `${mins} minute${mins > 1 ? 's' : ''} ago`;
     } else {
       const hours = Math.floor(diffSeconds / 3600);
-      relative = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      relative = isFrench
+        ? `Il y a ${hours} heure${hours > 1 ? 's' : ''}`
+        : `${hours} hour${hours > 1 ? 's' : ''} ago`;
     }
 
-    const fullDate = new Date(timestamp).toLocaleDateString('en-US', {
+    const fullDate = new Date(timestamp).toLocaleDateString(isFrench ? 'fr-FR' : 'en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -142,44 +154,56 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center space-x-1 px-6 pt-3 border-b border-slate-800/80 bg-slate-950/50">
+        <div className="flex items-center space-x-1 px-6 pt-3 border-b border-slate-800/80 bg-slate-950/50 overflow-x-auto">
           <button
             onClick={() => setActiveTab('updates')}
-            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 shrink-0 ${
               activeTab === 'updates'
                 ? 'border-cyan-400 text-cyan-300 font-semibold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isChecking || isDownloading ? 'animate-spin text-cyan-400' : ''}`} />
-            <span>Update Manager</span>
+            <span>{t.settings.tabUpdates}</span>
             {isReady && (
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             )}
           </button>
 
           <button
+            onClick={() => setActiveTab('preferences')}
+            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 shrink-0 ${
+              activeTab === 'preferences'
+                ? 'border-cyan-400 text-cyan-300 font-semibold'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{t.settings.tabPreferences}</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('notes')}
-            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 shrink-0 ${
               activeTab === 'notes'
                 ? 'border-cyan-400 text-cyan-300 font-semibold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Release Notes</span>
+            <span>{t.settings.tabNotes}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('diagnostics')}
-            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            className={`px-3.5 py-2 text-xs font-medium border-b-2 transition-colors flex items-center space-x-2 shrink-0 ${
               activeTab === 'diagnostics'
                 ? 'border-cyan-400 text-cyan-300 font-semibold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Terminal className="w-3.5 h-3.5" />
-            <span>Activity Log & Cache</span>
+            <span>{t.settings.tabDiagnostics}</span>
           </button>
         </div>
 
@@ -239,13 +263,13 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     </div>
                     <div>
                       <span className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold block">
-                        Release Date
+                        {t.settings.releaseDate}
                       </span>
                       <span className="text-sm font-semibold text-slate-200 mt-0.5 block">
                         {settings.releaseDate}
                       </span>
                       <span className="text-[11px] text-slate-500 block mt-0.5">
-                        Official Certified Associate candidate build
+                        {isFrench ? 'Version certifiée officielle candidat Associate' : 'Official Certified Associate candidate build'}
                       </span>
                     </div>
                   </div>
@@ -257,7 +281,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     </div>
                     <div>
                       <span className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold block">
-                        Last Checked
+                        {t.settings.lastChecked}
                       </span>
                       <span className="text-sm font-semibold text-slate-200 mt-0.5 block">
                         {typeof lastCheckedInfo === 'object' ? lastCheckedInfo.relative : lastCheckedInfo}
@@ -275,7 +299,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-cyan-300 font-medium flex items-center space-x-2">
                         <Download className="w-3.5 h-3.5 animate-bounce" />
-                        <span>Downloading & preparing {settings.availableVersion}...</span>
+                        <span>{isFrench ? 'Téléchargement de' : 'Downloading & preparing'} {settings.availableVersion}...</span>
                       </span>
                       <span className="font-mono text-cyan-300 font-bold">{settings.progress}%</span>
                     </div>
@@ -286,7 +310,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                       />
                     </div>
                     <p className="text-[11px] text-slate-400">
-                      Compiling bytecode chunks and staging to offline browser IndexedDB storage...
+                      {isFrench ? 'Mise en cache locale du bytecode dans le stockage hors ligne...' : 'Compiling bytecode chunks and staging to offline browser IndexedDB storage...'}
                     </p>
                   </div>
                 )}
@@ -299,11 +323,13 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                         <div className="flex items-center space-x-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           <span className="text-sm font-bold text-emerald-300">
-                            Version {settings.availableVersion} Ready to Apply!
+                            {isFrench ? `Version ${settings.availableVersion} prête à être appliquée !` : `Version ${settings.availableVersion} Ready to Apply!`}
                           </span>
                         </div>
                         <p className="text-xs text-slate-300 mt-1">
-                          The update package was fully staged in the background. Restarting takes less than 1 second and preserves your active study history.
+                          {isFrench
+                            ? 'La mise à jour a été entièrement préparée en arrière-plan. Le redémarrage prend moins d’une seconde sans perte de votre historique.'
+                            : 'The update package was fully staged in the background. Restarting takes less than 1 second and preserves your active study history.'}
                         </p>
                       </div>
                       <button
@@ -311,7 +337,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                         className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all flex items-center space-x-1.5 shrink-0"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Restart Now</span>
+                        <span>{t.settings.restartNow}</span>
                       </button>
                     </div>
                   </div>
@@ -324,10 +350,10 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     onClick={() => checkForUpdates(true)}
                     disabled={isChecking || isDownloading}
                     className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-xs shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                    title="Check remote repository for new releases and question banks"
+                    title={isFrench ? "Vérifier la présence de nouvelles versions" : "Check remote repository for new releases and question banks"}
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isChecking ? 'animate-spin' : ''}`} />
-                    <span>{isChecking ? 'Checking Updates...' : 'Check for Updates'}</span>
+                    <span>{isChecking ? (isFrench ? 'Vérification...' : 'Checking Updates...') : t.settings.checkForUpdates}</span>
                   </button>
 
                   {/* FORCE UPDATE BUTTON */}
@@ -335,10 +361,10 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     onClick={forceUpdate}
                     disabled={isChecking || isDownloading}
                     className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 border border-slate-700 hover:border-amber-500/50 text-slate-200 hover:text-white font-semibold text-xs transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    title="Bypass local cache, purge transient buffers, and pull fresh binary bundle"
+                    title={isFrench ? "Purger les tampons et forcer le téléchargement" : "Bypass local cache, purge transient buffers, and pull fresh binary bundle"}
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Force Update</span>
+                    <span>{t.settings.forceUpdate}</span>
                   </button>
 
                   {/* Staged Install button if ready */}
@@ -348,7 +374,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                       className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm transition-all"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />
-                      <span>Install & Restart</span>
+                      <span>{t.settings.restartNow}</span>
                     </button>
                   )}
                 </div>
@@ -508,6 +534,160 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                     <span className="font-mono text-slate-200">v3.12.0</span>
                     <span className="text-slate-500">August 15, 2026</span>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'preferences' && (
+            <div className="space-y-6">
+              {/* LANGUAGE SELECTION CARD */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 space-y-4">
+                <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-800">
+                  <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-100">
+                      {t.settings.languageTitle}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {t.settings.languageDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* English Option */}
+                  <button
+                    onClick={() => setLang('en')}
+                    className={`p-4 rounded-xl border text-left transition-all flex items-start justify-between ${
+                      lang === 'en'
+                        ? 'bg-cyan-950/40 border-cyan-500 text-slate-100 shadow-sm ring-1 ring-cyan-500/50'
+                        : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <span className="text-2xl mt-0.5">🇬🇧</span>
+                      <div>
+                        <span className="text-sm font-bold block text-slate-100">
+                          English
+                        </span>
+                        <span className="text-xs text-slate-400 mt-0.5 block">
+                          Official PCAP terminology & English UI
+                        </span>
+                      </div>
+                    </div>
+                    {lang === 'en' && (
+                      <div className="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* French Option */}
+                  <button
+                    onClick={() => setLang('fr')}
+                    className={`p-4 rounded-xl border text-left transition-all flex items-start justify-between ${
+                      lang === 'fr'
+                        ? 'bg-cyan-950/40 border-cyan-500 text-slate-100 shadow-sm ring-1 ring-cyan-500/50'
+                        : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <span className="text-2xl mt-0.5">🇫🇷</span>
+                      <div>
+                        <span className="text-sm font-bold block text-slate-100">
+                          Français
+                        </span>
+                        <span className="text-xs text-slate-400 mt-0.5 block">
+                          Interface complète et explications en Français
+                        </span>
+                      </div>
+                    </div>
+                    {lang === 'fr' && (
+                      <div className="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* THEME SELECTION CARD */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 space-y-4">
+                <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-800">
+                  <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+                    {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-400" />}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-100">
+                      {t.settings.themeTitle}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {t.settings.themeDesc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Light Theme Button */}
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`p-4 rounded-xl border text-left transition-all flex items-start justify-between ${
+                      !isDark
+                        ? 'bg-amber-950/30 border-amber-400 text-slate-100 shadow-sm ring-1 ring-amber-400/50'
+                        : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 rounded-lg bg-amber-400/15 text-amber-400 mt-0.5">
+                        <Sun className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold block text-slate-100">
+                          {t.settings.themeLight}
+                        </span>
+                        <span className="text-xs text-slate-400 mt-0.5 block">
+                          Clean daylight workspace with high contrast readability
+                        </span>
+                      </div>
+                    </div>
+                    {!isDark && (
+                      <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Dark Theme Button */}
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`p-4 rounded-xl border text-left transition-all flex items-start justify-between ${
+                      isDark
+                        ? 'bg-cyan-950/40 border-cyan-500 text-slate-100 shadow-sm ring-1 ring-cyan-500/50'
+                        : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 rounded-lg bg-cyan-400/15 text-cyan-400 mt-0.5">
+                        <Moon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold block text-slate-100">
+                          {t.settings.themeDark}
+                        </span>
+                        <span className="text-xs text-slate-400 mt-0.5 block">
+                          Midnight studio palette optimized for extended night sessions
+                        </span>
+                      </div>
+                    </div>
+                    {isDark && (
+                      <div className="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
