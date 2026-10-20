@@ -1,0 +1,175 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerified() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTrack(t) {
+      return t in ['pcap', 'pcep', 'pcpp', 'pced', 'pcad', 'pcet', 'pcat'];
+    }
+
+    // --- Entity Validation Helpers ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'selectedTrack', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 256 &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
+        (!('selectedTrack' in data) || isValidTrack(data.selectedTrack));
+    }
+
+    function isValidCustomCard(data) {
+      return data.keys().hasAll(['id', 'userId', 'track', 'section', 'chapter', 'difficulty', 'question', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'userId', 'track', 'section', 'chapter', 'difficulty', 'question', 'codeSnippet', 'correctAnswer', 'explanation', 'tags', 'createdAt', 'updatedAt']) &&
+        data.id is string && isValidId(data.id) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        isValidTrack(data.track) &&
+        data.section is string && data.section.size() <= 128 &&
+        data.chapter is string && data.chapter.size() <= 128 &&
+        data.difficulty in ['Beginner', 'Intermediate', 'Advanced', 'beginner', 'intermediate', 'advanced'] &&
+        data.question is string && data.question.size() >= 1 && data.question.size() <= 2000 &&
+        (!('codeSnippet' in data) || (data.codeSnippet is string && data.codeSnippet.size() <= 5000)) &&
+        (!('correctAnswer' in data) || (data.correctAnswer is string && data.correctAnswer.size() <= 1000)) &&
+        (!('explanation' in data) || (data.explanation is string && data.explanation.size() <= 5000)) &&
+        (!('tags' in data) || (data.tags is list && data.tags.size() <= 20));
+    }
+
+    function isValidSrsItem(data) {
+      return data.keys().hasAll(['cardId', 'userId', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
+        data.keys().hasOnly(['cardId', 'userId', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
+        data.cardId is string && isValidId(data.cardId) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.repetitions is number &&
+        data.interval is number &&
+        data.easeFactor is number &&
+        data.status in ['new', 'learning', 'review', 'mastered'] &&
+        data.lastReviewed is number &&
+        data.dueDate is number;
+    }
+
+    function isValidExamAttempt(data) {
+      return data.keys().hasAll(['id', 'userId', 'track', 'section', 'score', 'totalQuestions', 'percentage', 'passed', 'durationSeconds', 'completedAt']) &&
+        data.keys().hasOnly(['id', 'userId', 'track', 'section', 'score', 'totalQuestions', 'percentage', 'passed', 'durationSeconds', 'completedAt']) &&
+        data.id is string && isValidId(data.id) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        isValidTrack(data.track) &&
+        data.section is string && data.section.size() <= 128 &&
+        data.score is number &&
+        data.totalQuestions is number &&
+        data.percentage is number &&
+        data.passed is bool &&
+        data.durationSeconds is number;
+    }
+
+    // --- Collections ---
+
+    // 1. User Profile Document
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false; // Blanket listing forbidden to protect PII
+
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().uid == userId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isValidUserProfile(incoming());
+
+      allow update: if isOwner(userId) &&
+        isValidId(userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        isValidUserProfile(incoming());
+
+      allow delete: if false;
+
+      // 2. Custom Flashcards Subcollection
+      match /customCards/{cardId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+          isValidId(cardId) &&
+          incoming().userId == userId &&
+          incoming().id == cardId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          isValidCustomCard(incoming());
+
+        allow update: if isOwner(userId) &&
+          isValidId(cardId) &&
+          incoming().userId == existing().userId &&
+          incoming().id == existing().id &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          isValidCustomCard(incoming());
+
+        allow delete: if isOwner(userId) && isValidId(cardId);
+      }
+
+      // 3. SRS Spaced Repetition Progress Subcollection
+      match /srsProgress/{cardId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+          isValidId(cardId) &&
+          incoming().userId == userId &&
+          incoming().cardId == cardId &&
+          incoming().updatedAt == request.time &&
+          isValidSrsItem(incoming());
+
+        allow update: if isOwner(userId) &&
+          isValidId(cardId) &&
+          incoming().userId == existing().userId &&
+          incoming().cardId == existing().cardId &&
+          incoming().updatedAt == request.time &&
+          isValidSrsItem(incoming());
+
+        allow delete: if isOwner(userId) && isValidId(cardId);
+      }
+
+      // 4. Exam Attempt Historical Records (Immutable)
+      match /examAttempts/{attemptId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+          isValidId(attemptId) &&
+          incoming().userId == userId &&
+          incoming().id == attemptId &&
+          incoming().completedAt == request.time &&
+          isValidExamAttempt(incoming());
+
+        allow update, delete: if false; // Immutable audit log
+      }
+    }
+  }
+}

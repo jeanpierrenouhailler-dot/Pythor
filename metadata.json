@@ -1,6 +1,6 @@
 {
   "name": "PCAP-31-03 Python Certification Prep Studio",
-  "description": "Comprehensive interactive study suite for PCAP-31-03 and PCEP-30-0x Python certifications with 100 deep-dive flashcards per section, custom card creation, multi-track simulator, and active recall SRS engine.",
+  "description": "Comprehensive interactive study suite for PCAP-31-03, PCEP-30-0x, PCPP-32-10x, PCED-30-02, PCAD-31-02, PCET-30-01, PCAT-31-0x, PCES-30-01, PCEA-30-01, and PCEI-30-01 Python certifications with 100 deep-dive flashcards per section, custom card creation, multi-track simulator, and active recall SRS engine.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

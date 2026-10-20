@@ -12,8 +12,23 @@ import { UpdateNotificationBanner } from './components/UpdateNotificationBanner'
 import { SystemSettingsProvider, useSystemSettings } from './context/SystemSettingsContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { I18nProvider, useI18n } from './context/I18nContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import {
+  saveUserCustomCard,
+  deleteUserCustomCard,
+  subscribeUserCustomCards,
+  syncUserProfile,
+} from './services/firestoreService';
 import { pcapFlashcardsData, pcapSyllabusSections } from './data/pcapData';
 import { pcepStarterFlashcards, pcepSyllabusSections } from './data/pcepData';
+import { pcppStarterFlashcards, pcppSyllabusSections } from './data/pcppData';
+import { pcedStarterFlashcards, pcedSyllabusSections } from './data/pcedData';
+import { pcadStarterFlashcards, pcadSyllabusSections } from './data/pcadData';
+import { pcetAllFlashcards, pcetSyllabusSections } from './data/pcetData';
+import { pcatAllFlashcards, pcatSyllabusSections } from './data/pcatData';
+import { pcesAllFlashcards, pcesSyllabusSections } from './data/pcesData';
+import { pceaAllFlashcards, pceaSyllabusSections } from './data/pceaData';
+import { pceiAllFlashcards, pceiSyllabusSections } from './data/pceiData';
 import { AppView, CertificationTrack, Flashcard } from './types';
 import { ShieldCheck, Settings, Sun, Moon, Globe } from 'lucide-react';
 
@@ -22,7 +37,7 @@ function AppContent() {
   const [currentTrack, setCurrentTrack] = useState<CertificationTrack>(() => {
     try {
       const saved = localStorage.getItem('py_cert_track');
-      if (saved === 'pcep' || saved === 'pcap') return saved;
+      if (saved === 'pcep' || saved === 'pcap' || saved === 'pcpp' || saved === 'pced' || saved === 'pcad' || saved === 'pcet' || saved === 'pcat' || saved === 'pces' || saved === 'pcea' || saved === 'pcei') return saved;
     } catch {}
     return 'pcap';
   });
@@ -32,7 +47,9 @@ function AppContent() {
   const [isCreateCardOpen, setIsCreateCardOpen] = useState<boolean>(false);
   const [reviewedCount, setReviewedCount] = useState<number>(0);
 
-  // User-created flashcards with persistence
+  const { user } = useAuth();
+
+  // User-created flashcards with persistence & Firestore Cloud Sync
   const [userCards, setUserCards] = useState<Flashcard[]>(() => {
     try {
       const saved = localStorage.getItem('py_user_cards');
@@ -42,14 +59,34 @@ function AppContent() {
     }
   });
 
+  // Real-time synchronization of custom flashcards from Firestore when logged in
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeUserCustomCards(user.uid, (cloudCards) => {
+      if (Array.isArray(cloudCards)) {
+        setUserCards(cloudCards);
+        try {
+          localStorage.setItem('py_user_cards', JSON.stringify(cloudCards));
+        } catch {}
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
+
   const handleAddCustomCard = (newCard: Flashcard) => {
     setUserCards((prev) => {
-      const updated = [newCard, ...prev];
+      const updated = [newCard, ...prev.filter((c) => c.id !== newCard.id)];
       try {
         localStorage.setItem('py_user_cards', JSON.stringify(updated));
       } catch {}
       return updated;
     });
+
+    if (user) {
+      saveUserCustomCard(user.uid, newCard).catch((err) => {
+        console.warn('Could not save card to Firestore:', err);
+      });
+    }
   };
 
   const handleDeleteCustomCard = (id: string) => {
@@ -60,6 +97,12 @@ function AppContent() {
       } catch {}
       return updated;
     });
+
+    if (user) {
+      deleteUserCustomCard(user.uid, id).catch((err) => {
+        console.warn('Could not delete card from Firestore:', err);
+      });
+    }
   };
 
   // Active pool of cards based on currentTrack
@@ -67,6 +110,30 @@ function AppContent() {
     if (currentTrack === 'pcep') {
       const trackUserCards = userCards.filter((c) => c.track === 'pcep');
       return [...pcepStarterFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcpp') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcpp');
+      return [...pcppStarterFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pced') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pced');
+      return [...pcedStarterFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcad') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcad');
+      return [...pcadStarterFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcet') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcet');
+      return [...pcetAllFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcat') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcat');
+      return [...pcatAllFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pces') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pces');
+      return [...pcesAllFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcea') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcea');
+      return [...pceaAllFlashcards, ...trackUserCards];
+    } else if (currentTrack === 'pcei') {
+      const trackUserCards = userCards.filter((c) => c.track === 'pcei');
+      return [...pceiAllFlashcards, ...trackUserCards];
     } else {
       const trackUserCards = userCards.filter((c) => c.track === 'pcap' || !c.track);
       return [...pcapFlashcardsData, ...trackUserCards];
@@ -80,6 +147,10 @@ function AppContent() {
     } catch {}
     setSelectedSection('Section 1');
     setSelectedChapter('all');
+
+    if (user) {
+      syncUserProfile(user.uid, user.email || '', user.displayName, user.photoURL, track).catch(() => {});
+    }
   };
 
   const { settings, isSettingsOpen, setIsSettingsOpen } = useSystemSettings();
@@ -128,7 +199,26 @@ function AppContent() {
     window.dispatchEvent(new Event('storage'));
   };
 
-  const currentSyllabus = currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections;
+  const currentSyllabus =
+    currentTrack === 'pcep'
+      ? pcepSyllabusSections
+      : currentTrack === 'pcpp'
+      ? pcppSyllabusSections
+      : currentTrack === 'pced'
+      ? pcedSyllabusSections
+      : currentTrack === 'pcad'
+      ? pcadSyllabusSections
+      : currentTrack === 'pcet'
+      ? pcetSyllabusSections
+      : currentTrack === 'pcat'
+      ? pcatSyllabusSections
+      : currentTrack === 'pces'
+      ? pcesSyllabusSections
+      : currentTrack === 'pcea'
+      ? pceaSyllabusSections
+      : currentTrack === 'pcei'
+      ? pceiSyllabusSections
+      : pcapSyllabusSections;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500/20 selection:text-cyan-300">
@@ -215,6 +305,7 @@ function AppContent() {
         {currentView === 'codelab' && (
           <CodeLabView
             onNavigate={handleNavigate}
+            currentTrack={currentTrack}
           />
         )}
       </main>
@@ -245,6 +336,22 @@ function AppContent() {
             <span className="font-semibold text-slate-200">
               {currentTrack === 'pcep'
                 ? 'PCEP-30-0x Certified Entry-Level Python Programmer'
+                : currentTrack === 'pcpp'
+                ? 'PCPP1-32-101 Certified Professional in Python Programming 1'
+                : currentTrack === 'pced'
+                ? 'PCED-30-02 Certified Entry-Level Data Analyst with Python'
+                : currentTrack === 'pcad'
+                ? 'PCAD-31-02 Certified Associate Data Analyst with Python'
+                : currentTrack === 'pcet'
+                ? 'PCET-30-01 Certified Entry-Level Tester with Python'
+                : currentTrack === 'pcat'
+                ? 'PCAT-31-0x Certified Associate Tester with Python'
+                : currentTrack === 'pces'
+                ? 'PCES-30-01 Certified Entry-Level Security Specialist with Python'
+                : currentTrack === 'pcea'
+                ? 'PCEA-30-01 Certified Entry-Level Automation Specialist with Python'
+                : currentTrack === 'pcei'
+                ? 'PCEI-30-01 Certified Entry-Level AI Specialist with Python'
                 : 'PCAP-31-03 Certified Associate in Python Programming'}
             </span>
             <span className="text-slate-500">|</span>
@@ -317,9 +424,11 @@ export function App() {
   return (
     <ThemeProvider>
       <I18nProvider>
-        <SystemSettingsProvider>
-          <AppContent />
-        </SystemSettingsProvider>
+        <AuthProvider>
+          <SystemSettingsProvider>
+            <AppContent />
+          </SystemSettingsProvider>
+        </AuthProvider>
       </I18nProvider>
     </ThemeProvider>
   );

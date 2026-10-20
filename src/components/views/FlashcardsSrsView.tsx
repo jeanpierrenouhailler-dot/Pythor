@@ -23,7 +23,17 @@ import {
 import { Flashcard, CardSRSData, CertificationTrack } from '../../types';
 import { pcapSyllabusSections } from '../../data/pcapData';
 import { pcepSyllabusSections } from '../../data/pcepData';
+import { pcppSyllabusSections } from '../../data/pcppData';
+import { pcedSyllabusSections } from '../../data/pcedData';
+import { pcadSyllabusSections } from '../../data/pcadData';
+import { pcetSyllabusSections } from '../../data/pcetData';
+import { pcatSyllabusSections } from '../../data/pcatData';
+import { pcesSyllabusSections } from '../../data/pcesData';
+import { pceaSyllabusSections } from '../../data/pceaData';
+import { pceiSyllabusSections } from '../../data/pceiData';
 import { useI18n } from '../../context/I18nContext';
+import { useAuth } from '../../context/AuthContext';
+import { saveUserSrsItem, subscribeUserSrsProgress } from '../../services/firestoreService';
 
 interface FlashcardsSrsViewProps {
   cards: Flashcard[];
@@ -47,6 +57,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   onDeleteCard,
 }) => {
   const { t, isFrench } = useI18n();
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<string>(initialChapter || 'all');
@@ -70,6 +81,21 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       return {};
     }
   });
+
+  // Real-time synchronization of SRS progress from Firestore when user is authenticated
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeUserSrsProgress(user.uid, (cloudSrs) => {
+      setSrsState((prev) => {
+        const merged = { ...prev, ...cloudSrs };
+        try {
+          localStorage.setItem('pcap_srs_state', JSON.stringify(merged));
+        } catch {}
+        return merged;
+      });
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   const saveSrsState = (newState: Record<string, CardSRSData>) => {
     setSrsState(newState);
@@ -102,10 +128,10 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchQ = card.question.toLowerCase().includes(q);
-        const matchCode = card.codeSnippet.toLowerCase().includes(q);
-        const matchTopic = card.topic.toLowerCase().includes(q);
-        const matchExp = card.explanationText.toLowerCase().includes(q);
+        const matchQ = (card.question || '').toLowerCase().includes(q);
+        const matchCode = (card.codeSnippet || '').toLowerCase().includes(q);
+        const matchTopic = (card.topic || '').toLowerCase().includes(q);
+        const matchExp = (card.explanationText || card.explanation || card.deepDive || '').toLowerCase().includes(q);
         return matchQ || matchCode || matchTopic || matchExp;
       }
       return true;
@@ -183,17 +209,25 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       newStatus = 'mastered';
     }
 
+    const updatedSrsItem: CardSRSData = {
+      repetitions: prev.repetitions + 1,
+      interval: newInterval,
+      easeFactor: Number(newEase.toFixed(2)),
+      lastReviewed: Date.now(),
+      dueDate: Date.now() + newInterval * 86400000,
+      status: newStatus,
+    };
+
     saveSrsState({
       ...srsState,
-      [cardId]: {
-        repetitions: prev.repetitions + 1,
-        interval: newInterval,
-        easeFactor: Number(newEase.toFixed(2)),
-        lastReviewed: Date.now(),
-        dueDate: Date.now() + newInterval * 86400000,
-        status: newStatus,
-      },
+      [cardId]: updatedSrsItem,
     });
+
+    if (user) {
+      saveUserSrsItem(user.uid, cardId, updatedSrsItem).catch((err) => {
+        console.warn('Could not save SRS progress to Firestore:', err);
+      });
+    }
 
     // Auto-advance to next card on rating
     handleNext();
@@ -286,6 +320,76 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                 >
                   PCEP-30-0x (Entry-Level)
                 </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcpp');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcpp'
+                      ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCPP-32-10x (Professional)
+                </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pced');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pced'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCED-30-02 (Entry Data)
+                </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcad');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcad'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCAD-31-02 (Data Analyst)
+                </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcet');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcet'
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCET-30-01 (Entry Tester)
+                </button>
+                <button
+                  onClick={() => {
+                    onSelectTrack('pcat');
+                    onSelectSection('Section 1');
+                    setSelectedChapter('all');
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                    currentTrack === 'pcat'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  PCAT-31-0x (Associate Tester)
+                </button>
               </div>
             </div>
 
@@ -316,7 +420,26 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           >
             All Sections
           </button>
-          {(currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections).map((sec) => (
+          {(currentTrack === 'pcep'
+            ? pcepSyllabusSections
+            : currentTrack === 'pcpp'
+            ? pcppSyllabusSections
+            : currentTrack === 'pced'
+            ? pcedSyllabusSections
+            : currentTrack === 'pcad'
+            ? pcadSyllabusSections
+            : currentTrack === 'pcet'
+            ? pcetSyllabusSections
+            : currentTrack === 'pcat'
+            ? pcatSyllabusSections
+            : currentTrack === 'pces'
+            ? pcesSyllabusSections
+            : currentTrack === 'pcea'
+            ? pceaSyllabusSections
+            : currentTrack === 'pcei'
+            ? pceiSyllabusSections
+            : pcapSyllabusSections
+          ).map((sec) => (
             <button
               key={sec.id}
               onClick={() => {
@@ -345,7 +468,87 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-white mt-1 tracking-tight">
-              {currentTrack === 'pcep' ? (
+              {currentTrack === 'pcei' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCEI Section 1: Artificial Intelligence Fundamentals (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCEI Section 2: Machine Learning Fundamentals (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCEI Section 3: Data Handling, Analysis & Visualization (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCEI Section 4: Neural Networks, Deep Learning & Generative AI (100 Cards)'
+                  : selectedSection === 'Section 5'
+                  ? 'PCEI Section 5: Responsible AI, Ethics & Critical Thinking (100 Cards)'
+                  : selectedSection === 'Section 6'
+                  ? 'PCEI Section 6: AI Projects, Collaboration & Communication (100 Cards)'
+                  : 'PCEI-30-01 Certified Entry-Level AI Specialist with Python (600 Cards)'
+              ) : currentTrack === 'pcea' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCEA Section 1: Automation Fundamentals & CLI Operations (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCEA Section 2: File System & Data Automation (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCEA Section 3: Web, API & Network Automation (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCEA Section 4: Scheduling, Monitoring & Notifications (100 Cards)'
+                  : 'PCEA-30-01 Certified Entry-Level Automation Specialist with Python (400 Cards)'
+              ) : currentTrack === 'pces' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCES Section 1: Security Essentials (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCES Section 2: IT Systems Security (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCES Section 3: Python for Security Operations (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCES Section 4: Secure Development & Implementation in Python (100 Cards)'
+                  : 'PCES-30-01 Certified Entry-Level Security Specialist with Python (400 Cards)'
+              ) : currentTrack === 'pcat' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCAT Section 1: Software Testing Essentials (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCAT Section 2: Test Automation & Code Refactoring (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCAT Section 3: Assertions, Context Managers & Decorators (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCAT Section 4: Unit Testing Foundations with unittest (100 Cards)'
+                  : selectedSection === 'Section 5'
+                  ? 'PCAT Section 5: Advanced Unit Testing Techniques & Mocking (100 Cards)'
+                  : selectedSection === 'Section 6'
+                  ? 'PCAT Section 6: Test-Driven & Behavior-Driven Development (100 Cards)'
+                  : 'PCAT-31-0x Certified Associate Tester with Python (600 Cards)'
+              ) : currentTrack === 'pcet' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCET Section 1: Testing Fundamentals & QA Concepts (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCET Section 2: Test Levels & Defect Process (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCET Section 3: Static Analysis & Code Quality (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCET Section 4: pytest Automation & CI/CD Pipelines (100 Cards)'
+                  : 'PCET-30-01 Certified Entry-Level Tester with Python (400 Cards)'
+              ) : currentTrack === 'pcad' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCAD Section 1: Data Acquisition & Pre-Processing (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCAD Section 2: Programming & Database Skills (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCAD Section 3: Statistical Analysis & Inference (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCAD Section 4: Data Analysis & Modeling (100 Cards)'
+                  : selectedSection === 'Section 5'
+                  ? 'PCAD Section 5: Data Communication & Visualization (100 Cards)'
+                  : 'PCAD-31-02 Certified Associate Data Analyst with Python'
+              ) : currentTrack === 'pced' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCED Section 1: Introduction to Data and Data Analysis Concepts (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCED Section 2: Python Basics for Data Analysis (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCED Section 3: Working with Data and Performing Simple Analyses (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCED Section 4: Communicating Insights and Reporting'
+                  : 'PCED-30-02 Interactive Data Analyst Flashcards & SRS Recall'
+              ) : currentTrack === 'pcep' ? (
                 selectedSection === 'Section 1'
                   ? 'PCEP Section 1: Computer Programming & Python Fundamentals'
                   : selectedSection === 'Section 2'
@@ -355,6 +558,18 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   : selectedSection === 'Section 4'
                   ? 'PCEP Section 4: Functions & Basic Exception Handling'
                   : 'PCEP-30-0x Interactive Flashcards & SRS Recall'
+              ) : currentTrack === 'pcpp' ? (
+                selectedSection === 'Section 1'
+                  ? 'PCPP Section 1: Advanced Object-Oriented Programming (100 Cards)'
+                  : selectedSection === 'Section 2'
+                  ? 'PCPP Section 2: Coding Conventions, Best Practices & Design Patterns (100 Cards)'
+                  : selectedSection === 'Section 3'
+                  ? 'PCPP Section 3: GUI Programming with Tkinter (100 Cards)'
+                  : selectedSection === 'Section 4'
+                  ? 'PCPP Section 4: Network Programming, Sockets & REST'
+                  : selectedSection === 'Section 5'
+                  ? 'PCPP Section 5: File Processing, sqlite3, XML & Logging'
+                  : 'PCPP-32-10x Interactive Professional Flashcards & SRS Recall'
               ) : (
                 selectedSection === 'Section 1'
                   ? 'PCAP Section 1: Modules, Packages & PIP Deep Dive'
@@ -370,13 +585,121 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
               )}
             </h1>
             <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              {currentTrack === 'pcep' ? (
+              {currentTrack === 'pcei' ? (
+                selectedSection === 'Section 6' ? (
+                  'Comprehensive 100-card deep dive into identifying AI opportunities vs deterministic software, resource and cloud GPU economics, agile AI project lifecycle, Git/DVC collaboration, and audience-tailored communication of results.'
+                ) : selectedSection === 'Section 5' ? (
+                  'Comprehensive 100-card deep dive into algorithmic bias, fairness definitions, data privacy & GDPR, model transparency, explainable AI (SHAP/LIME), safety guardrails, hallucination mitigation, and AI governance.'
+                ) : selectedSection === 'Section 4' ? (
+                  'Comprehensive 100-card deep dive into perceptrons, activation functions, backpropagation, CNN architectures, NLP tokenization & embeddings, and Generative AI, transformer attention, and prompt engineering.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive 100-card deep dive into pandas data ingestion, missing value imputation, feature encoding and scaling (StandardScaler/MinMaxScaler), exploratory data analysis, and visualization with matplotlib/seaborn.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive 100-card deep dive into machine learning paradigms (supervised, unsupervised, RL), classification and regression, k-means clustering, bias-variance tradeoff, and cross-validation evaluation.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive 100-card deep dive into AI definitions and taxonomy, intelligent agents, knowledge representation, propositional logic, state-space search algorithms, and computational capabilities/Turing Test.'
+                ) : (
+                  'Master artificial intelligence foundations, machine learning algorithms, deep neural nets, and responsible AI ethics for the PCEI-30-01 certification exam.'
+                )
+              ) : currentTrack === 'pcea' ? (
+                selectedSection === 'Section 4' ? (
+                  'Comprehensive 100-card deep dive into time & datetime manipulation, ISO-8601, schedule periodic jobs, enterprise logging handlers, resilient retry logic with exponential backoff, and automated email alerts with smtplib.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive 100-card deep dive into requests HTTP operations, REST API authentication (Bearer/Basic), BeautifulSoup scraping, session connection pooling, rate limiting with jitter, and chunked streaming downloads.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive 100-card deep dive into modern pathlib manipulation, os.walk and shutil automation, csv reader/writer/DictWriter, json serialization and JSON Lines, and regular expression pattern matching with re.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive 100-card deep dive into automation candidates & ROI, idempotency & atomicity, CLI parsing with sys.argv & argparse, environment variables & virtual environments, and process orchestration with subprocess.'
+                ) : (
+                  'Master automation engineering, CLI scripting, filesystem operations, REST APIs, and resilient periodic workflows for the PCEA-30-01 certification exam.'
+                )
+              ) : currentTrack === 'pces' ? (
+                selectedSection === 'Section 4' ? (
+                  'Comprehensive 100-card deep dive into Secure SDLC, Shift-Left, bandit/pip-audit, SQL/command injection defense, pickle RCE prevention, safe YAML/JSON/XML, PII regex masking, and cryptography with secrets, Fernet & bcrypt.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive 100-card deep dive into ethical testing scoping, Python socket scanning (connect vs connect_ex, timeouts, thread pools), psutil process monitoring & port auditing, hashlib file integrity baselines, and subprocess automation.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive 100-card deep dive into Zero Trust, Defense-in-Depth, CIS benchmarks, OS hardening, TCP/IP & UDP, well-known ports, ARP/DNSSEC, firewalls, TLS/VPNs, AAA, MFA/TOTP, and cloud shared responsibility.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive 100-card deep dive into CIA triad, authenticity & non-repudiation, vulnerability management (CVE/CVSS/CWE), threat actor taxonomy, attack vectors (phishing, DDoS, MitM), risk formulas (SLE, ARO, ALE), and security regulations.'
+                ) : (
+                  'Master essential security principles, IT infrastructure hardening, defensive Python operations, and secure coding for the PCES-30-01 certification exam.'
+                )
+              ) : currentTrack === 'pcat' ? (
+                selectedSection === 'Section 6' ? (
+                  'Comprehensive 100-card deep dive into TDD Red-Green-Refactor cycles, BDD principles, Dan North ubiquitous language, Gherkin syntax (Scenario Outline, Examples), and Python BDD frameworks (behave, pytest-bdd).'
+                ) : selectedSection === 'Section 5' ? (
+                  'Comprehensive 100-card deep dive into test fixtures lifecycle (setUp/tearDown/setUpClass/tearDownClass/addCleanup), parameterized subtests (self.subTest), conditional execution (@skip/@skipIf/@expectedFailure), unittest.mock (Mock, MagicMock, patch, side_effect, autospec), and assertRaises/assertWarns.'
+                ) : selectedSection === 'Section 4' ? (
+                  'Comprehensive 100-card deep dive into F.I.R.S.T. unit testing principles, xUnit framework architecture in Python (TestCase, TestSuite, TestRunner, TestLoader, TestResult), CLI discovery flags, clean directory structuring, and specialized assertions.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive 100-card deep dive into Python assert statement syntax, invariant verification, context managers and the with statement (ExitStack, suppress, redirect_stdout), function/class decorators, and OOP method types (@classmethod, @staticmethod, @property).'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive 100-card deep dive into test automation ROI, flakiness remediation, code refactoring loops, technical debt, Arrange-Act-Assert (AAA) pattern, DRY vs DAMP test readability, and KISS principles.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive 100-card deep dive into software testing concepts, QA vs QC, verification vs validation, error/fault/failure taxonomy, defect lifecycle, testing levels, 7 fundamental principles of testing, and the Test Pyramid.'
+                ) : (
+                  'Master professional automated software testing, unittest, mock doubles, TDD and BDD in Python for the PCAT-31-0x certification exam.'
+                )
+              ) : currentTrack === 'pcet' ? (
+                selectedSection === 'Section 4' ? (
+                  'Comprehensive coverage of pytest automation, fixture lifecycles, test discovery, CLI flags, plugins, and CI/CD quality gates.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive coverage of static code analysis (flake8, pylint, black), code complexity metrics (cyclomatic, Halstead), and refactoring techniques.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive coverage of software testing levels, black-box vs white-box techniques, boundary value analysis, equivalence partitioning, and defect management.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive coverage of quality assurance vs testing, software defect lifecycle, verification vs validation, and fundamental testing principles.'
+                ) : (
+                  'Master software testing fundamentals, quality processes, static analysis, and pytest automation for the PCET-30-01 exam.'
+                )
+              ) : currentTrack === 'pcad' ? (
+                selectedSection === 'Section 5' ? (
+                  'Comprehensive coverage of 100 flashcards spanning Matplotlib OO API, styling & annotations, Seaborn statistical distributions & categorical plots, multi-plot grids & Plotly interactive dashboards, and executive data storytelling & ethical visualization.'
+                ) : selectedSection === 'Section 4' ? (
+                  'Comprehensive coverage of 100 flashcards spanning exploratory feature relationships & correlations, data pipeline architecture, Scikit-Learn preprocessing, supervised regression/classification algorithms & metrics, and unsupervised clustering, PCA & hyperparameter tuning.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive coverage of 100 flashcards spanning descriptive statistics, theoretical distributions, sampling theory & CLT, parametric & non-parametric hypothesis testing, and regression analysis.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive coverage of 100 flashcards spanning advanced Python data structures, functional tools & generators, relational database architecture & SQL, database connectivity (sqlite3, SQLAlchemy), and pandas-SQL integration.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Comprehensive coverage of 100 flashcards spanning multi-format data ingestion, cleansing & imputation, wrangling & type coercion, reshaping & pivoting, and feature engineering.'
+                ) : (
+                  'Master professional data acquisition, wrangling, SQL integration, inferential statistics, machine learning pipelines, and executive visualization for the PCAD-31-02 exam.'
+                )
+              ) : currentTrack === 'pced' ? (
+                selectedSection === 'Section 4' ? (
+                  'Complete coverage of 100 flashcards spanning visual encodings & graphic integrity, Matplotlib OO API, Seaborn statistical plots, executive dashboard layouts & KPIs, and narrative data storytelling.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Complete coverage of 100 flashcards spanning open() file operations, CSV reader/DictReader, handling missing data & duplicates, type coercion, string cleaning & normalization, NumPy vectorization & slicing, and descriptive statistics.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Complete coverage of 100 flashcards spanning Python types, casting, string manipulation, control flow, functions, lambdas, math/statistics modules, data collections (lists, tuples, sets, dicts), and file I/O.'
+                ) : selectedSection === 'Section 1' ? (
+                  'Complete coverage of 100 flashcards spanning data classification, DIKW hierarchy, collection methods, relational vs NoSQL storage, data analysis workflows, CRISP-DM, analytics types, and data ethics & privacy.'
+                ) : (
+                  'Master Python for data analysis, data structures, cleansing workflows, NumPy arrays, and statistics for the PCED-30-02 exam.'
+                )
+              ) : currentTrack === 'pcep' ? (
                 selectedSection === 'Section 2' ? (
                   'Complete coverage of 100 questions spanning conditional logic (if-elif-else, ternary), relational operators, short-circuit evaluation, bitwise operations (&, |, ^, ~, <<, >>), and loops with break/continue/else.'
                 ) : selectedSection === 'Section 1' ? (
                   'Complete coverage of 100 questions spanning computer programming fundamentals, compilation vs interpretation, literals, basic I/O with print/input, operator precedence, and variable assignment rules.'
                 ) : (
                   'Master Python fundamental syntax, memory model, data types, control flow decisions, and core collections for the PCEP-30-0x exam.'
+                )
+              ) : currentTrack === 'pcpp' ? (
+                selectedSection === 'Section 1' ? (
+                  'Comprehensive 100-card deep dive into advanced classes, @classmethod, @staticmethod, @property, dunder methods, ABCs, multiple inheritance, C3 MRO, metaclass internals, and serialization.'
+                ) : selectedSection === 'Section 2' ? (
+                  'Comprehensive 100-card deep dive into PEP 8 styling, PEP 20 Zen of Python, PEP 257 docstring conventions, and Gang of Four (GoF) creational, structural, and behavioral design patterns.'
+                ) : selectedSection === 'Section 3' ? (
+                  'Comprehensive 100-card deep dive into Tkinter GUI architecture, window lifecycle, core widgets, pack/grid/place geometry managers, event-driven bindings, variables, and dialogs.'
+                ) : selectedSection === 'Section 4' ? (
+                  'Comprehensive 100-card deep dive into TCP/IP networking, low-level socket programming (client/server), RESTful APIs, HTTP verbs/status codes, requests library, and JSON serialization.'
+                ) : selectedSection === 'Section 5' ? (
+                  'Comprehensive 100-card deep dive into relational databases with sqlite3 (transactions, parameterized queries), XML ElementTree, CSV reader/DictReader/dialects, and enterprise logging.'
+                ) : (
+                  'Master professional Python engineering concepts: advanced OOP, design patterns, Tkinter GUIs, network sockets, and data persistence for PCPP-32-10x.'
                 )
               ) : selectedSection === 'Section 5' ? (
                 'Comprehensive coverage of 100 questions spanning list/dict/set comprehensions, lambda expressions, closures, file streams, bytearrays, and platform module APIs.'
@@ -709,6 +1032,802 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           </div>
         )}
 
+        {/* PCPP Chapter Sub-Nav (Section 1: 1.1 to 1.5) */}
+        {currentTrack === 'pcpp' && selectedSection === 'Section 1' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-purple-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 1 (100 Cards)' },
+                { id: '1.1', label: '1.1 Advanced Classes & Methods (1-20)' },
+                { id: '1.2', label: '1.2 Properties & Encapsulation (21-40)' },
+                { id: '1.3', label: '1.3 Magic Dunders & Subclassing (41-60)' },
+                { id: '1.4', label: '1.4 ABCs & Multiple Inheritance / MRO (61-80)' },
+                { id: '1.5', label: '1.5 Metaclasses & Serialization (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCPP Chapter Sub-Nav (Section 2: 2.1 to 2.5) */}
+        {currentTrack === 'pcpp' && selectedSection === 'Section 2' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 2 (100 Cards)' },
+                { id: '2.1', label: '2.1 PEP 8 Style Guide & Linters (1-20)' },
+                { id: '2.2', label: '2.2 PEP 20 & PEP 257 Docstrings (21-40)' },
+                { id: '2.3', label: '2.3 Creational Design Patterns (41-60)' },
+                { id: '2.4', label: '2.4 Structural Design Patterns (61-80)' },
+                { id: '2.5', label: '2.5 Behavioral Design Patterns (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCPP Chapter Sub-Nav (Section 3: 3.1 to 3.5) */}
+        {currentTrack === 'pcpp' && selectedSection === 'Section 3' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 3 (100 Cards)' },
+                { id: '3.1', label: '3.1 Tkinter Architecture & Lifecycle (1-20)' },
+                { id: '3.2', label: '3.2 Core Widgets & Attributes (21-40)' },
+                { id: '3.3', label: '3.3 Geometry Managers (pack/grid/place) (41-60)' },
+                { id: '3.4', label: '3.4 Event-Driven Programming & Bindings (61-80)' },
+                { id: '3.5', label: '3.5 Variables, Menus & Dialogs (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCPP Chapter Sub-Nav (Section 4: 4.1 to 4.5) */}
+        {currentTrack === 'pcpp' && selectedSection === 'Section 4' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-sky-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 4 (100 Cards)' },
+                { id: '4.1', label: '4.1 Network & Sockets Architecture (1-20)' },
+                { id: '4.2', label: '4.2 Socket Server & Client Coding (21-40)' },
+                { id: '4.3', label: '4.3 REST & HTTP Verbs/Status Codes (41-60)' },
+                { id: '4.4', label: '4.4 HTTP Requests with requests (61-80)' },
+                { id: '4.5', label: '4.5 JSON Data Exchange & Serialization (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCPP Chapter Sub-Nav (Section 5: 5.1 to 5.5) */}
+        {currentTrack === 'pcpp' && selectedSection === 'Section 5' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 5 (100 Cards)' },
+                { id: '5.1', label: '5.1 SQLite3 Relational Operations (1-20)' },
+                { id: '5.2', label: '5.2 XML ElementTree Processing (21-40)' },
+                { id: '5.3', label: '5.3 CSV Reader & DictReader (41-60)' },
+                { id: '5.4', label: '5.4 Logging Architecture & Formatters (61-80)' },
+                { id: '5.5', label: '5.5 Handlers, Rotation & Config (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCED Chapter Sub-Nav (Section 1: 1.1 to 1.5) */}
+        {currentTrack === 'pced' && selectedSection === 'Section 1' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 1 (100 Cards)' },
+                { id: '1.1', label: '1.1 Defining & Classifying Data (1-20)' },
+                { id: '1.2', label: '1.2 Sources, Collection & Storage (21-40)' },
+                { id: '1.3', label: '1.3 Data Analysis Process (41-60)' },
+                { id: '1.4', label: '1.4 Analytics Types & Roles (61-80)' },
+                { id: '1.5', label: '1.5 Ethics, Privacy & Compliance (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCED Chapter Sub-Nav (Section 2: 2.1 to 2.5) */}
+        {currentTrack === 'pced' && selectedSection === 'Section 2' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-orange-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 2 (100 Cards)' },
+                { id: '2.1', label: '2.1 Types, Casting & Strings (1-20)' },
+                { id: '2.2', label: '2.2 Control Flow & Iteration (21-40)' },
+                { id: '2.3', label: '2.3 Functions, Lambdas & Math/Stats (41-60)' },
+                { id: '2.4', label: '2.4 Lists, Tuples, Sets & Comprehensions (61-80)' },
+                { id: '2.5', label: '2.5 Dicts, Records & File I/O (CSV/JSON) (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCED Chapter Sub-Nav (Section 3: 3.1 to 3.5) */}
+        {currentTrack === 'pced' && selectedSection === 'Section 3' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 3 (100 Cards)' },
+                { id: '3.1', label: '3.1 File Operations: open(), CSV & DictReader (1-20)' },
+                { id: '3.2', label: '3.2 Cleansing: Nulls, Duplicates & Types (21-40)' },
+                { id: '3.3', label: '3.3 Transformations, Normalization & Strings (41-60)' },
+                { id: '3.4', label: '3.4 NumPy Arrays & Vectorization (61-80)' },
+                { id: '3.5', label: '3.5 Descriptive Stats, Aggregations & EDA (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCED Chapter Sub-Nav (Section 4: 4.1 to 4.5) */}
+        {currentTrack === 'pced' && selectedSection === 'Section 4' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 4 (100 Cards)' },
+                { id: '4.1', label: '4.1 Visual Encodings & Graphic Integrity (1-20)' },
+                { id: '4.2', label: '4.2 Matplotlib OO API & Mechanics (21-40)' },
+                { id: '4.3', label: '4.3 Seaborn Statistical Plots (41-60)' },
+                { id: '4.4', label: '4.4 Dashboard Layouts & Executive Reporting (61-80)' },
+                { id: '4.5', label: '4.5 Narrative Data Storytelling & Presentation (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAD Chapter Sub-Nav (Section 1: 1.1 to 1.5) */}
+        {currentTrack === 'pcad' && selectedSection === 'Section 1' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 1 (100 Cards)' },
+                { id: '1.1', label: '1.1 Ingestion & Parsing (1-20)' },
+                { id: '1.2', label: '1.2 Cleansing & Imputation (21-40)' },
+                { id: '1.3', label: '1.3 Wrangling & Vectorization (41-60)' },
+                { id: '1.4', label: '1.4 Reshaping & Merging (61-80)' },
+                { id: '1.5', label: '1.5 Feature Engineering & Scalers (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAD Chapter Sub-Nav (Section 2: 2.1 to 2.5) */}
+        {currentTrack === 'pcad' && selectedSection === 'Section 2' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 2 (100 Cards)' },
+                { id: '2.1', label: '2.1 Advanced Data Structures (1-20)' },
+                { id: '2.2', label: '2.2 Functional Tools & Decorators (21-40)' },
+                { id: '2.3', label: '2.3 RDBMS, Normalization & SQL (41-60)' },
+                { id: '2.4', label: '2.4 DB Connectivity (sqlite3/SQLAlchemy) (61-80)' },
+                { id: '2.5', label: '2.5 Pandas-SQL Integration & Optimization (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAD Chapter Sub-Nav (Section 3: 3.1 to 3.5) */}
+        {currentTrack === 'pcad' && selectedSection === 'Section 3' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 3 (100 Cards)' },
+                { id: '3.1', label: '3.1 Descriptive Statistics & EDA (1-20)' },
+                { id: '3.2', label: '3.2 Distributions & Probability (21-40)' },
+                { id: '3.3', label: '3.3 Sampling Theory & CLT (41-60)' },
+                { id: '3.4', label: '3.4 Hypothesis Testing (61-80)' },
+                { id: '3.5', label: '3.5 Categorical Tests & Regression (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAD Chapter Sub-Nav (Section 4: 4.1 to 4.5) */}
+        {currentTrack === 'pcad' && selectedSection === 'Section 4' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-violet-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 4 (100 Cards)' },
+                { id: '4.1', label: '4.1 Feature Relationships & Correlation (1-20)' },
+                { id: '4.2', label: '4.2 Data Pipelines & Validation (21-40)' },
+                { id: '4.3', label: '4.3 ML Preprocessing & Pipeline Architecture (41-60)' },
+                { id: '4.4', label: '4.4 Supervised Learning & Metrics (61-80)' },
+                { id: '4.5', label: '4.5 Unsupervised Learning & Tuning (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAD Chapter Sub-Nav (Section 5: 5.1 to 5.5) */}
+        {currentTrack === 'pcad' && selectedSection === 'Section 5' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-teal-400" />
+              <span>Filter by Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: 'All Section 5 (100 Cards)' },
+                { id: '5.1', label: '5.1 Matplotlib Core Architecture (1-20)' },
+                { id: '5.2', label: '5.2 Matplotlib Styling & Annotations (21-40)' },
+                { id: '5.3', label: '5.3 Seaborn Statistical Plots (41-60)' },
+                { id: '5.4', label: '5.4 Multi-Plot Grids & Plotly Dashboards (61-80)' },
+                { id: '5.5', label: '5.5 Data Storytelling & Ethical Charting (81-100)' },
+              ].map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCAT Chapter Sub-Navs (Sections 1 to 6) */}
+        {currentTrack === 'pcat' && selectedSection !== 'all' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-teal-400" />
+              <span>Filter PCAT Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(selectedSection === 'Section 1'
+                ? [
+                    { id: 'all', label: 'All Section 1 (100 Cards)' },
+                    { id: '1.1', label: '1.1 Concepts & Terminology (1-20)' },
+                    { id: '1.2', label: '1.2 Testing Levels (21-40)' },
+                    { id: '1.3', label: '1.3 Defect Lifecycle (41-60)' },
+                    { id: '1.4', label: '1.4 Seven Principles (61-80)' },
+                    { id: '1.5', label: '1.5 Importance & Test Pyramid (81-100)' },
+                  ]
+                : selectedSection === 'Section 2'
+                ? [
+                    { id: 'all', label: 'All Section 2 (100 Cards)' },
+                    { id: '2.1', label: '2.1 Automation Goals & ROI (1-20)' },
+                    { id: '2.2', label: '2.2 Refactoring Loop & Debt (21-40)' },
+                    { id: '2.3', label: '2.3 Arrange, Act, Assert (41-60)' },
+                    { id: '2.4', label: '2.4 DRY vs DAMP (61-80)' },
+                    { id: '2.5', label: '2.5 KISS & Simplicity (81-100)' },
+                  ]
+                : selectedSection === 'Section 3'
+                ? [
+                    { id: 'all', label: 'All Section 3 (100 Cards)' },
+                    { id: '3.1', label: '3.1 Assertions & Invariants (1-20)' },
+                    { id: '3.2', label: '3.2 Context Managers & with (21-40)' },
+                    { id: '3.3', label: '3.3 Function Decorators (41-60)' },
+                    { id: '3.4', label: '3.4 Class Decorators (61-80)' },
+                    { id: '3.5', label: '3.5 Method Types & Properties (81-100)' },
+                  ]
+                : selectedSection === 'Section 4'
+                ? [
+                    { id: 'all', label: 'All Section 4 (100 Cards)' },
+                    { id: '4.1', label: '4.1 F.I.R.S.T. Principles (1-20)' },
+                    { id: '4.2', label: '4.2 xUnit Architecture (21-40)' },
+                    { id: '4.3', label: '4.3 CLI Tools & Discovery (41-60)' },
+                    { id: '4.4', label: '4.4 Structure & Naming (61-80)' },
+                    { id: '4.5', label: '4.5 unittest Assertions (81-100)' },
+                  ]
+                : selectedSection === 'Section 5'
+                ? [
+                    { id: 'all', label: 'All Section 5 (100 Cards)' },
+                    { id: '5.1', label: '5.1 Fixtures & Lifecycle (1-20)' },
+                    { id: '5.2', label: '5.2 SubTests & Matrix (21-40)' },
+                    { id: '5.3', label: '5.3 Conditional & Skips (41-60)' },
+                    { id: '5.4', label: '5.4 Mocks & Doubles (61-80)' },
+                    { id: '5.5', label: '5.5 Exceptions & Warnings (81-100)' },
+                  ]
+                : [
+                    { id: 'all', label: 'All Section 6 (100 Cards)' },
+                    { id: '6.1', label: '6.1 TDD Red-Green-Refactor (1-20)' },
+                    { id: '6.2', label: '6.2 BDD Foundations (21-40)' },
+                    { id: '6.3', label: '6.3 Gherkin Syntax (41-60)' },
+                    { id: '6.4', label: '6.4 Behave & pytest-bdd (61-80)' },
+                    { id: '6.5', label: '6.5 Living Docs & ATDD (81-100)' },
+                  ]
+              ).map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCES Chapter Sub-Navs (Sections 1 to 4) */}
+        {currentTrack === 'pces' && selectedSection !== 'all' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span>Filter PCES Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(selectedSection === 'Section 1'
+                ? [
+                    { id: 'all', label: 'All Section 1 (100 Cards)' },
+                    { id: '1.1', label: '1.1 CIA Triad & Security Model (1-20)' },
+                    { id: '1.2', label: '1.2 Threats & Threat Actors (21-40)' },
+                    { id: '1.3', label: '1.3 Attacks & Threat Vectors (41-60)' },
+                    { id: '1.4', label: '1.4 Risk Management & ALE (61-80)' },
+                    { id: '1.5', label: '1.5 Compliance & Incident Ethics (81-100)' },
+                  ]
+                : selectedSection === 'Section 2'
+                ? [
+                    { id: 'all', label: 'All Section 2 (100 Cards)' },
+                    { id: '2.1', label: '2.1 Security Principles & Architecture (1-20)' },
+                    { id: '2.2', label: '2.2 System & OS Hardening (21-40)' },
+                    { id: '2.3', label: '2.3 Network Security & Protocols (41-60)' },
+                    { id: '2.4', label: '2.4 Authentication & Access Control (61-80)' },
+                    { id: '2.5', label: '2.5 Cloud & Remote Work Security (81-100)' },
+                  ]
+                : selectedSection === 'Section 3'
+                ? [
+                    { id: 'all', label: 'All Section 3 (100 Cards)' },
+                    { id: '3.1', label: '3.1 Ethical Testing & Scoping (1-20)' },
+                    { id: '3.2', label: '3.2 Sockets & Network Scanning (21-40)' },
+                    { id: '3.3', label: '3.3 Process Monitoring with psutil (41-60)' },
+                    { id: '3.4', label: '3.4 File Integrity with hashlib (61-80)' },
+                    { id: '3.5', label: '3.5 Security Automation & Reports (81-100)' },
+                  ]
+                : [
+                    { id: 'all', label: 'All Section 4 (100 Cards)' },
+                    { id: '4.1', label: '4.1 Secure SDLC & Bandit/SAST (1-20)' },
+                    { id: '4.2', label: '4.2 Injection & Path Traversal (21-40)' },
+                    { id: '4.3', label: '4.3 Deserialization & Unsafe Ops (41-60)' },
+                    { id: '4.4', label: '4.4 Data Anonymization & Logs (61-80)' },
+                    { id: '4.5', label: '4.5 Cryptography & Fernet/Secrets (81-100)' },
+                  ]
+              ).map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCEA Chapter Sub-Navs (Sections 1 to 4) */}
+        {currentTrack === 'pcea' && selectedSection !== 'all' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Filter PCEA Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(selectedSection === 'Section 1'
+                ? [
+                    { id: 'all', label: 'All Section 1 (100 Cards)' },
+                    { id: '1.1', label: '1.1 Concepts, ROI & Idempotency (1-20)' },
+                    { id: '1.2', label: '1.2 sys.argv & argparse (21-40)' },
+                    { id: '1.3', label: '1.3 Env Vars & Virtual Envs (41-60)' },
+                    { id: '1.4', label: '1.4 Subprocess Execution (61-80)' },
+                    { id: '1.5', label: '1.5 Modular Scripts & Exit Codes (81-100)' },
+                  ]
+                : selectedSection === 'Section 2'
+                ? [
+                    { id: 'all', label: 'All Section 2 (100 Cards)' },
+                    { id: '2.1', label: '2.1 Modern Path Operations (1-20)' },
+                    { id: '2.2', label: '2.2 Files & Dirs with os/shutil (21-40)' },
+                    { id: '2.3', label: '2.3 Tabular Processing with csv (41-60)' },
+                    { id: '2.4', label: '2.4 JSON Serialization & .jsonl (61-80)' },
+                    { id: '2.5', label: '2.5 Pattern Extraction with re (81-100)' },
+                  ]
+                : selectedSection === 'Section 3'
+                ? [
+                    { id: 'all', label: 'All Section 3 (100 Cards)' },
+                    { id: '3.1', label: '3.1 HTTP with requests (1-20)' },
+                    { id: '3.2', label: '3.2 REST APIs & Auth (21-40)' },
+                    { id: '3.3', label: '3.3 Scraping with BeautifulSoup (41-60)' },
+                    { id: '3.4', label: '3.4 Pagination, Sessions & Limits (61-80)' },
+                    { id: '3.5', label: '3.5 File Downloads & Streams (81-100)' },
+                  ]
+                : [
+                    { id: 'all', label: 'All Section 4 (100 Cards)' },
+                    { id: '4.1', label: '4.1 time, datetime & Durations (1-20)' },
+                    { id: '4.2', label: '4.2 Scheduling with schedule & cron (21-40)' },
+                    { id: '4.3', label: '4.3 Audit Logging & Handlers (41-60)' },
+                    { id: '4.4', label: '4.4 Retries & Backoff Logic (61-80)' },
+                    { id: '4.5', label: '4.5 Email Alerts with smtplib (81-100)' },
+                  ]
+              ).map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PCEI Chapter Sub-Navs (Sections 1 to 6) */}
+        {currentTrack === 'pcei' && selectedSection !== 'all' && (
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-violet-400" />
+              <span>Filter PCEI Chapter (20 Cards Each):</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(selectedSection === 'Section 1'
+                ? [
+                    { id: 'all', label: 'All Section 1 (100 Cards)' },
+                    { id: '1.1', label: '1.1 AI Concepts & Taxonomy (1-20)' },
+                    { id: '1.2', label: '1.2 Intelligent Agents & Envs (21-40)' },
+                    { id: '1.3', label: '1.3 Knowledge Rep & Search (41-60)' },
+                    { id: '1.4', label: '1.4 Capabilities & Turing Test (61-80)' },
+                    { id: '1.5', label: '1.5 Applications & Impact (81-100)' },
+                  ]
+                : selectedSection === 'Section 2'
+                ? [
+                    { id: 'all', label: 'All Section 2 (100 Cards)' },
+                    { id: '2.1', label: '2.1 Learning Paradigms (1-20)' },
+                    { id: '2.2', label: '2.2 Supervised Learning (21-40)' },
+                    { id: '2.3', label: '2.3 Unsupervised & Clustering (41-60)' },
+                    { id: '2.4', label: '2.4 Reinforcement Learning (61-80)' },
+                    { id: '2.5', label: '2.5 Evaluation & Validation (81-100)' },
+                  ]
+                : selectedSection === 'Section 3'
+                ? [
+                    { id: 'all', label: 'All Section 3 (100 Cards)' },
+                    { id: '3.1', label: '3.1 Ingestion with pandas (1-20)' },
+                    { id: '3.2', label: '3.2 Cleaning & Preprocessing (21-40)' },
+                    { id: '3.3', label: '3.3 Encoding & Scaling (41-60)' },
+                    { id: '3.4', label: '3.4 EDA & Descriptive Stats (61-80)' },
+                    { id: '3.5', label: '3.5 Visualization for AI (81-100)' },
+                  ]
+                : selectedSection === 'Section 4'
+                ? [
+                    { id: 'all', label: 'All Section 4 (100 Cards)' },
+                    { id: '4.1', label: '4.1 Artificial Neural Nets (1-20)' },
+                    { id: '4.2', label: '4.2 Deep Learning & Training (21-40)' },
+                    { id: '4.3', label: '4.3 Computer Vision & CNNs (41-60)' },
+                    { id: '4.4', label: '4.4 NLP Fundamentals (61-80)' },
+                    { id: '4.5', label: '4.5 GenAI, LLMs & Prompting (81-100)' },
+                  ]
+                : selectedSection === 'Section 5'
+                ? [
+                    { id: 'all', label: 'All Section 5 (100 Cards)' },
+                    { id: '5.1', label: '5.1 Bias, Fairness & Parity (1-20)' },
+                    { id: '5.2', label: '5.2 Privacy, Data & Security (21-40)' },
+                    { id: '5.3', label: '5.3 Transparency & XAI (41-60)' },
+                    { id: '5.4', label: '5.4 Safety, Hallucination & Robustness (61-80)' },
+                    { id: '5.5', label: '5.5 Governance & Societal Impact (81-100)' },
+                  ]
+                : [
+                    { id: 'all', label: 'All Section 6 (100 Cards)' },
+                    { id: '6.1', label: '6.1 Real-World AI Opportunities (1-20)' },
+                    { id: '6.2', label: '6.2 Cost & Resource Economics (21-40)' },
+                    { id: '6.3', label: '6.3 Basic Development Lifecycle (41-60)' },
+                    { id: '6.4', label: '6.4 Git, DVC & Team Workflows (61-80)' },
+                    { id: '6.5', label: '6.5 Communication & Visuals (81-100)' },
+                  ]
+              ).map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => {
+                    setSelectedChapter(ch.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    selectedChapter === ch.id
+                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40 shadow-sm'
+                      : 'bg-slate-950/40 text-slate-400 border border-slate-800/80 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {ch.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Search & Secondary Filter Bar */}
         <div className="mt-4 flex flex-col sm:flex-row items-center gap-2.5">
           <div className="relative w-full sm:w-72">
@@ -801,7 +1920,9 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                 Card {currentIndex + 1} of {filteredCards.length}
               </span>
               <span>•</span>
-              <span className="text-slate-300 font-medium">{currentCard.cardType}</span>
+              <span className="text-slate-300 font-medium">
+                {currentCard.cardType || `PCED ${currentCard.chapter}`}
+              </span>
             </div>
 
             <div className="flex items-center space-x-1.5">
@@ -826,7 +1947,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/80">
                     <div className="flex items-center space-x-2">
                       <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                        {currentCard.category}
+                        {currentCard.category || 'Data Analysis'}
                       </span>
                       {currentCard.isUserCreated && (
                         <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
@@ -835,9 +1956,9 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                       )}
                       <span
                         className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
-                          currentCard.difficulty === 'Beginner'
+                          currentCard.difficulty?.toLowerCase() === 'beginner'
                             ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
-                            : currentCard.difficulty === 'Intermediate'
+                            : currentCard.difficulty?.toLowerCase() === 'intermediate'
                             ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
                             : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
                         }`}
@@ -848,7 +1969,9 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
 
                     <div className="flex items-center space-x-2 text-xs text-slate-400">
                       <span>Topic:</span>
-                      <span className="text-slate-200 font-medium">{currentCard.topic}</span>
+                      <span className="text-slate-200 font-medium">
+                        {currentCard.topic || `Chapter ${currentCard.chapter}`}
+                      </span>
                       {currentCard.isUserCreated && onDeleteCard && (
                         <button
                           onClick={(e) => {
@@ -906,13 +2029,33 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                       </pre>
                     </div>
                   )}
+
+                  {/* Multiple Choice Options if available */}
+                  {currentCard.options && currentCard.options.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <div className="text-xs font-semibold text-slate-400">Answer Options:</div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {currentCard.options.map((opt, optIdx) => (
+                          <div
+                            key={optIdx}
+                            className="flex items-start space-x-2.5 p-2.5 rounded-lg border border-slate-800 bg-slate-950/60 text-xs text-slate-300"
+                          >
+                            <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-800 text-[11px] font-bold text-cyan-400 shrink-0">
+                              {String.fromCharCode(65 + optIdx)}
+                            </span>
+                            <span className="leading-relaxed">{opt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom hint to flip */}
                 <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
                   <div className="flex items-center space-x-1 text-slate-500">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Interval: {currentCard.intervalDays}d • Ease: {currentCard.factor}</span>
+                    <span>Interval: {currentCard.intervalDays || 1}d • Ease: {currentCard.factor || '2.5'}</span>
                   </div>
 
                   <div className="flex items-center space-x-2 text-cyan-400 font-medium group-hover:text-cyan-300">
@@ -938,31 +2081,50 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   </div>
 
                   {/* Expected Output Terminal */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-4 rounded-xl border border-emerald-950/50 bg-slate-950 p-4 font-mono text-xs sm:text-sm text-emerald-400 shadow-inner"
-                  >
-                    <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 mb-2 border-b border-slate-800 pb-1.5">
-                      <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Console Output / Value</span>
+                  {(currentCard.stdoutExpected || (currentCard.options && currentCard.correctAnswer !== undefined ? currentCard.options[Number(currentCard.correctAnswer)] : null)) && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-4 rounded-xl border border-emerald-950/50 bg-slate-950 p-4 font-mono text-xs sm:text-sm text-emerald-400 shadow-inner"
+                    >
+                      <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 mb-2 border-b border-slate-800 pb-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{currentCard.stdoutExpected ? 'Console Output / Value' : 'Correct Answer'}</span>
+                      </div>
+                      <pre className="overflow-x-auto whitespace-pre font-mono leading-relaxed">
+                        {currentCard.stdoutExpected || (currentCard.options && currentCard.correctAnswer !== undefined ? currentCard.options[Number(currentCard.correctAnswer)] : '')}
+                      </pre>
                     </div>
-                    <pre className="overflow-x-auto whitespace-pre font-mono leading-relaxed">
-                      {currentCard.stdoutExpected}
-                    </pre>
-                  </div>
+                  )}
 
                   {/* Detailed Explanation Breakdown */}
                   <div className="mt-5 space-y-2">
                     <div className="flex items-center space-x-2">
                       <Brain className="w-4 h-4 text-cyan-400" />
                       <h3 className="text-base font-bold text-white tracking-tight">
-                        {currentCard.explanationTitle}
+                        {currentCard.explanationTitle || 'Concept & Exam Insight'}
                       </h3>
                     </div>
                     <p className="text-sm text-slate-300 leading-relaxed pl-6">
-                      {currentCard.explanationText}
+                      {currentCard.explanationText || currentCard.explanation}
                     </p>
+                    {currentCard.deepDive && (
+                      <p className="text-xs text-slate-400 leading-relaxed pl-6 mt-2 border-l-2 border-cyan-500/40 py-1">
+                        <strong className="text-cyan-400">Deep Dive: </strong>
+                        {currentCard.deepDive}
+                      </p>
+                    )}
                   </div>
+
+                  {/* Tags */}
+                  {currentCard.tags && currentCard.tags.length > 0 && (
+                    <div className="mt-3 pl-6 flex flex-wrap gap-1.5">
+                      {currentCard.tags.map((tag, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Complexity / PCAP Tip */}
                   {currentCard.complexityInfo && (

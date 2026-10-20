@@ -18,6 +18,7 @@ import { AppView, CertificationTrack } from '../types';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useI18n } from '../context/I18nContext';
+import { UserAuthButton } from './UserAuthButton';
 
 interface NavbarProps {
   totalCards: number;
@@ -80,6 +81,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105 ${
               currentTrack === 'pcep'
                 ? 'bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-600 shadow-emerald-500/20 ring-1 ring-emerald-400/30'
+                : currentTrack === 'pcpp'
+                ? 'bg-gradient-to-tr from-purple-600 via-indigo-500 to-cyan-500 shadow-purple-500/20 ring-1 ring-purple-400/30'
+                : currentTrack === 'pced'
+                ? 'bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-500 shadow-amber-500/20 ring-1 ring-amber-400/30'
+                : currentTrack === 'pcad'
+                ? 'bg-gradient-to-tr from-blue-600 via-cyan-500 to-teal-400 shadow-blue-500/20 ring-1 ring-blue-400/30'
+                : currentTrack === 'pcet'
+                ? 'bg-gradient-to-tr from-rose-600 via-pink-500 to-orange-400 shadow-rose-500/20 ring-1 ring-rose-400/30'
+                : currentTrack === 'pcat'
+                ? 'bg-gradient-to-tr from-teal-600 via-emerald-500 to-cyan-500 shadow-teal-500/20 ring-1 ring-teal-400/30'
+                : currentTrack === 'pces'
+                ? 'bg-gradient-to-tr from-red-600 via-amber-500 to-yellow-400 shadow-red-500/20 ring-1 ring-red-400/30'
+                : currentTrack === 'pcea'
+                ? 'bg-gradient-to-tr from-emerald-600 via-green-500 to-teal-400 shadow-emerald-500/20 ring-1 ring-emerald-400/30'
+                : currentTrack === 'pcei'
+                ? 'bg-gradient-to-tr from-violet-600 via-purple-500 to-indigo-400 shadow-violet-500/20 ring-1 ring-violet-400/30'
                 : 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-indigo-600 shadow-cyan-500/20 ring-1 ring-cyan-400/30'
             }`}>
               <span className="font-mono font-bold text-white text-base">Py</span>
@@ -87,19 +104,87 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-semibold text-slate-100 tracking-tight text-sm sm:text-base group-hover:text-cyan-300 transition-colors">
-                  {currentTrack === 'pcep' ? 'PCEP-30-0x' : 'PCAP-31-03'}
+                  {currentTrack === 'pcep'
+                    ? 'PCEP-30-0x'
+                    : currentTrack === 'pcpp'
+                    ? 'PCPP-32-10x'
+                    : currentTrack === 'pced'
+                    ? 'PCED-30-02'
+                    : currentTrack === 'pcad'
+                    ? 'PCAD-31-02'
+                    : currentTrack === 'pcet'
+                    ? 'PCET-30-01'
+                    : currentTrack === 'pcat'
+                    ? 'PCAT-31-0x'
+                    : currentTrack === 'pces'
+                    ? 'PCES-30-01'
+                    : currentTrack === 'pcea'
+                    ? 'PCEA-30-01'
+                    : currentTrack === 'pcei'
+                    ? 'PCEI-30-01'
+                    : 'PCAP-31-03'}
                 </span>
                 <span className={`hidden sm:inline px-1.5 py-0.2 rounded-full text-[10px] font-medium border ${
                   currentTrack === 'pcep'
                     ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : currentTrack === 'pcpp'
+                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                    : currentTrack === 'pced'
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : currentTrack === 'pcad'
+                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/30'
+                    : currentTrack === 'pcet'
+                    ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                    : currentTrack === 'pcat'
+                    ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
+                    : currentTrack === 'pces'
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : currentTrack === 'pcea'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : currentTrack === 'pcei'
+                    ? 'bg-violet-500/10 text-violet-300 border-violet-500/30'
                     : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
                 }`}>
-                  {currentTrack === 'pcep' ? 'Entry-Level' : 'Associate'}
+                  {currentTrack === 'pcep'
+                    ? 'Entry-Level'
+                    : currentTrack === 'pcpp'
+                    ? 'Professional'
+                    : currentTrack === 'pced'
+                    ? 'Data Analyst'
+                    : currentTrack === 'pcad'
+                    ? 'Associate DA'
+                    : currentTrack === 'pcet'
+                    ? 'Tester'
+                    : currentTrack === 'pcat'
+                    ? 'Associate Tester'
+                    : currentTrack === 'pces'
+                    ? 'Security Specialist'
+                    : currentTrack === 'pcea'
+                    ? 'Automation Specialist'
+                    : currentTrack === 'pcei'
+                    ? 'AI Specialist'
+                    : 'Associate'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden lg:block leading-none">
                 {currentTrack === 'pcep'
                   ? (isFrench ? 'Certifié Python Institute Débutant' : 'Python Institute Certified Entry-Level')
+                  : currentTrack === 'pcpp'
+                  ? (isFrench ? 'Certifié Python Institute Professionnel' : 'Python Institute Certified Professional')
+                  : currentTrack === 'pced'
+                  ? (isFrench ? 'Certifié Python Institute Data Analyst' : 'Python Institute Certified Data Analyst')
+                  : currentTrack === 'pcad'
+                  ? (isFrench ? 'Certifié Python Institute Associate Data Analyst' : 'Python Institute Certified Associate Data Analyst')
+                  : currentTrack === 'pcet'
+                  ? (isFrench ? 'Certifié Python Institute Testeur' : 'Python Institute Certified Entry-Level Tester')
+                  : currentTrack === 'pcat'
+                  ? (isFrench ? 'Certifié Python Institute Associate Tester' : 'Python Institute Certified Associate Tester')
+                  : currentTrack === 'pces'
+                  ? (isFrench ? 'Certifié Python Institute Sécurité' : 'Python Institute Certified Security Specialist')
+                  : currentTrack === 'pcea'
+                  ? (isFrench ? 'Certifié Python Institute Automatisation' : 'Python Institute Certified Automation Specialist')
+                  : currentTrack === 'pcei'
+                  ? (isFrench ? 'Certifié Python Institute Spécialiste IA' : 'Python Institute Certified AI Specialist')
                   : (isFrench ? 'Certifié Python Institute Associate' : 'Python Institute Certified Associate')}
               </p>
             </div>
@@ -232,6 +317,134 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>PCAP</span>
             </button>
+            <button
+              onClick={() => onSelectTrack('pcpp')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcpp'
+                  ? 'bg-purple-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCPP-32-10x (Niveau Professionnel)'
+                  : 'Switch to PCPP-32-10x (Certified Professional in Python Programming 1)'
+              }
+              aria-pressed={currentTrack === 'pcpp'}
+            >
+              <span>PCPP</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pced')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pced'
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCED-30-02 (Data Analyst Débutant)'
+                  : 'Switch to PCED-30-02 (Certified Entry-Level Data Analyst with Python)'
+              }
+              aria-pressed={currentTrack === 'pced'}
+            >
+              <span>PCED</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pcad')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcad'
+                  ? 'bg-blue-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCAD-31-02 (Data Analyst Associé)'
+                  : 'Switch to PCAD-31-02 (Certified Associate Data Analyst with Python)'
+              }
+              aria-pressed={currentTrack === 'pcad'}
+            >
+              <span>PCAD</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pcet')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcet'
+                  ? 'bg-rose-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCET-30-01 (Testeur Débutant)'
+                  : 'Switch to PCET-30-01 (Certified Entry-Level Tester with Python)'
+              }
+              aria-pressed={currentTrack === 'pcet'}
+            >
+              <span>PCET</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pcat')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcat'
+                  ? 'bg-teal-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCAT-31-0x (Testeur Associé)'
+                  : 'Switch to PCAT-31-0x (Certified Associate Tester with Python)'
+              }
+              aria-pressed={currentTrack === 'pcat'}
+            >
+              <span>PCAT</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pces')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pces'
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCES-30-01 (Spécialiste de Sécurité)'
+                  : 'Switch to PCES-30-01 (Certified Entry-Level Security Specialist with Python)'
+              }
+              aria-pressed={currentTrack === 'pces'}
+            >
+              <span>PCES</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pcea')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcea'
+                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCEA-30-01 (Spécialiste en Automatisation)'
+                  : 'Switch to PCEA-30-01 (Certified Entry-Level Automation Specialist with Python)'
+              }
+              aria-pressed={currentTrack === 'pcea'}
+            >
+              <span>PCEA</span>
+            </button>
+            <button
+              onClick={() => onSelectTrack('pcei')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                currentTrack === 'pcei'
+                  ? 'bg-violet-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+              title={
+                isFrench
+                  ? 'Basculer vers PCEI-30-01 (Spécialiste en Intelligence Artificielle)'
+                  : 'Switch to PCEI-30-01 (Certified Entry-Level AI Specialist with Python)'
+              }
+              aria-pressed={currentTrack === 'pcei'}
+            >
+              <span>PCEI</span>
+            </button>
           </div>
 
           {/* CREATE FLASHCARD BUTTON */}
@@ -303,6 +516,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             )}
           </button>
+
+          {/* Google Auth & User Cloud Sync Button */}
+          <UserAuthButton />
 
           {/* System Settings Button */}
           <button

@@ -1,0 +1,247 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and learning preferences",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Unique Firebase Auth user ID"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256,
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "User display name"
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "User profile avatar URL"
+        },
+        "selectedTrack": {
+          "type": "string",
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "description": "Active certification track"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account registration timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Profile last update timestamp"
+        }
+      },
+      "required": ["uid", "email", "createdAt", "updatedAt"]
+    },
+    "UserCustomCard": {
+      "title": "UserCustomCard",
+      "description": "User created flashcard synchronized across devices",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Unique card ID"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Author UID"
+        },
+        "track": {
+          "type": "string",
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "description": "Associated certification track"
+        },
+        "section": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Target exam section"
+        },
+        "chapter": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Target chapter"
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["Beginner", "Intermediate", "Advanced", "beginner", "intermediate", "advanced"],
+          "description": "Difficulty rating"
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "Flashcard question or prompt"
+        },
+        "codeSnippet": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Associated Python code snippet"
+        },
+        "correctAnswer": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Expected answer"
+        },
+        "explanation": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Detailed explanation and syllabus link"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Searchable topic tags"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["id", "userId", "track", "section", "chapter", "difficulty", "question", "createdAt", "updatedAt"]
+    },
+    "UserSrsItem": {
+      "title": "UserSrsItem",
+      "description": "Spaced repetition memory state for a flashcard",
+      "type": "object",
+      "properties": {
+        "cardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Target card ID"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Reviewer UID"
+        },
+        "repetitions": {
+          "type": "number",
+          "description": "Total review repetitions count"
+        },
+        "interval": {
+          "type": "number",
+          "description": "Current SRS interval in days"
+        },
+        "easeFactor": {
+          "type": "number",
+          "description": "SuperMemo SM-2 ease factor"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["new", "learning", "review", "mastered"],
+          "description": "Card learning lifecycle stage"
+        },
+        "lastReviewed": {
+          "type": "number",
+          "description": "Unix timestamp in ms of last review"
+        },
+        "dueDate": {
+          "type": "number",
+          "description": "Unix timestamp in ms when card is next due"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["cardId", "userId", "repetitions", "interval", "easeFactor", "status", "lastReviewed", "dueDate", "updatedAt"]
+    },
+    "UserExamAttempt": {
+      "title": "UserExamAttempt",
+      "description": "Logged exam simulation test attempt",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Attempt unique ID"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Candidate UID"
+        },
+        "track": {
+          "type": "string",
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "description": "Certification track tested"
+        },
+        "section": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Exam section or All"
+        },
+        "score": {
+          "type": "number",
+          "description": "Total correct answers"
+        },
+        "totalQuestions": {
+          "type": "number",
+          "description": "Total questions in exam session"
+        },
+        "percentage": {
+          "type": "number",
+          "description": "Final score percentage"
+        },
+        "passed": {
+          "type": "boolean",
+          "description": "Whether passing score >= 70% was met"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "description": "Elapsed exam duration in seconds"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Exam submission timestamp"
+        }
+      },
+      "required": ["id", "userId", "track", "section", "score", "totalQuestions", "percentage", "passed", "durationSeconds", "completedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile settings and certification tracking"
+    },
+    "/users/{userId}/customCards/{cardId}": {
+      "schema": "UserCustomCard",
+      "description": "User custom flashcards synchronized across sessions"
+    },
+    "/users/{userId}/srsProgress/{cardId}": {
+      "schema": "UserSrsItem",
+      "description": "Spaced repetition intervals and mastery status per card"
+    },
+    "/users/{userId}/examAttempts/{attemptId}": {
+      "schema": "UserExamAttempt",
+      "description": "Archived exam simulation test records"
+    }
+  }
+}

@@ -15,6 +15,9 @@ import { CardDifficulty, CertificationTrack, Flashcard } from '../types';
 import { useI18n } from '../context/I18nContext';
 import { pcapSyllabusSections } from '../data/pcapData';
 import { pcepSyllabusSections } from '../data/pcepData';
+import { pcppSyllabusSections } from '../data/pcppData';
+import { pcedSyllabusSections } from '../data/pcedData';
+import { pcadSyllabusSections } from '../data/pcadData';
 
 interface CreateFlashcardModalProps {
   isOpen: boolean;
@@ -49,13 +52,31 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentSections = track === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections;
+  const currentSections =
+    track === 'pcep'
+      ? pcepSyllabusSections
+      : track === 'pcpp'
+      ? pcppSyllabusSections
+      : track === 'pced'
+      ? pcedSyllabusSections
+      : track === 'pcad'
+      ? pcadSyllabusSections
+      : pcapSyllabusSections;
   const currentSection = currentSections.find((s) => s.number === sectionNumber) || currentSections[0];
 
   const handleTrackChange = (newTrack: CertificationTrack) => {
     setTrack(newTrack);
     setSectionNumber(1);
-    const newSections = newTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections;
+    const newSections =
+      newTrack === 'pcep'
+        ? pcepSyllabusSections
+        : newTrack === 'pcpp'
+        ? pcppSyllabusSections
+        : newTrack === 'pced'
+        ? pcedSyllabusSections
+        : newTrack === 'pcad'
+        ? pcadSyllabusSections
+        : pcapSyllabusSections;
     setChapter(newSections[0].chapters[0]?.id || '1.1');
   };
 
@@ -88,7 +109,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
       return;
     }
 
-    const prefix = track === 'pcep' ? 'PCEP' : 'PCAP';
+    const prefix = track === 'pcep' ? 'PCEP' : track === 'pcpp' ? 'PCPP' : 'PCAP';
     const newCard: Flashcard = {
       id: `${prefix}-CUSTOM-${Date.now().toString().slice(-6)}`,
       track,
@@ -168,28 +189,61 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 {isFrench ? 'Programme de Certification' : 'Target Certification Track'}
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-5 gap-1.5">
                 <button
                   type="button"
                   onClick={() => handleTrackChange('pcep')}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 ${
+                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                     track === 'pcep'
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/30'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <span>PCEP-30-0x</span>
+                  <span>PCEP</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleTrackChange('pcap')}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1.5 ${
+                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
                     track === 'pcap'
                       ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 ring-1 ring-cyan-500/30'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <span>PCAP-31-03</span>
+                  <span>PCAP</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTrackChange('pcpp')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                    track === 'pcpp'
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 ring-1 ring-purple-500/30'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>PCPP</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTrackChange('pced')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                    track === 'pced'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 ring-1 ring-amber-500/30'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>PCED</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTrackChange('pcad')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
+                    track === 'pcad'
+                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 ring-1 ring-blue-500/30'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>PCAD</span>
                 </button>
               </div>
             </div>

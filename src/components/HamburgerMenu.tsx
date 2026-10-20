@@ -29,9 +29,19 @@ import {
 import { AppView, CertificationTrack, Flashcard } from '../types';
 import { pcapSyllabusSections, pcapFlashcardsData } from '../data/pcapData';
 import { pcepSyllabusSections } from '../data/pcepData';
+import { pcppSyllabusSections } from '../data/pcppData';
+import { pcedSyllabusSections } from '../data/pcedData';
+import { pcadSyllabusSections } from '../data/pcadData';
+import { pcetSyllabusSections } from '../data/pcetData';
+import { pcatSyllabusSections } from '../data/pcatData';
+import { pcesSyllabusSections } from '../data/pcesData';
+import { pceaSyllabusSections } from '../data/pceaData';
+import { pceiSyllabusSections } from '../data/pceiData';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useI18n } from '../context/I18nContext';
+import { useAuth } from '../context/AuthContext';
+import { Cloud, LogOut, RefreshCw } from 'lucide-react';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -69,6 +79,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   const { settings } = useSystemSettings();
   const { theme, toggleTheme, isDark } = useTheme();
   const { lang, setLang, t, isFrench } = useI18n();
+  const { user, signInWithGoogle, signOut, syncState, syncLocalStorageToCloud } = useAuth();
 
   if (!isOpen) return null;
 
@@ -113,6 +124,84 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           return fallback;
       }
     }
+    if (currentTrack === 'pcpp') {
+      switch (secNumber) {
+        case 1:
+          return 'POO Avancée, Métaclasses & MRO';
+        case 2:
+          return 'Conventions PEP & Patrons de conception';
+        case 3:
+          return 'Programmation GUI (Tkinter)';
+        case 4:
+          return 'Programmation Réseau & Sockets';
+        case 5:
+          return 'Traitement de données & Logging';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pced') {
+      switch (secNumber) {
+        case 1:
+          return 'Concepts Fondamentaux & Données';
+        case 2:
+          return 'Fondations Python pour l’Analyse';
+        case 3:
+          return 'Traitement & Analyses Simples';
+        case 4:
+          return 'Visualisation & Narration des Données';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pcad') {
+      switch (secNumber) {
+        case 1:
+          return 'Acquisition & Prétraitement de Données';
+        case 2:
+          return 'Compétences Programmation & SQL';
+        case 3:
+          return 'Analyse Statistique & Inférence';
+        case 4:
+          return 'Modélisation & Évaluation de Données';
+        case 5:
+          return 'Visualisation & Narration des Données';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pcet') {
+      switch (secNumber) {
+        case 1:
+          return 'Fondamentaux des Tests & Assurance Qualité';
+        case 2:
+          return 'Types, Niveaux et Processus de Test';
+        case 3:
+          return 'Analyse Statique & Refactoring';
+        case 4:
+          return 'Automatisation de Tests (pytest & CI/CD)';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pcat') {
+      switch (secNumber) {
+        case 1:
+          return 'Essentiels des Tests Logiciels';
+        case 2:
+          return 'Automatisation des Tests & Refactoring';
+        case 3:
+          return 'Assertions, Contextes, Décorateurs & Méthodes';
+        case 4:
+          return 'Fondations des Tests Unitaires';
+        case 5:
+          return 'Techniques Avancées de Tests Unitaires';
+        case 6:
+          return 'Développement TDD et BDD';
+        default:
+          return fallback;
+      }
+    }
     switch (secNumber) {
       case 1:
         return t.dashboard.sec1Title;
@@ -141,6 +230,48 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           return t.dashboard.pcepSec3Desc;
         case 4:
           return t.dashboard.pcepSec4Desc;
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pcpp') {
+      switch (secNumber) {
+        case 1:
+          return 'Modèle objet approfondi : métaclasses, ABC, C3 MRO, descripteurs, slots et sérialisation pickle.';
+        case 2:
+          return 'Conventions PEP 8/20/257 et patrons de conception GoF (créationnels, structurels, comportementaux).';
+        case 3:
+          return 'Interfaces graphiques Tkinter : widgets, gestionnaires de géométrie (pack/grid/place) et événements.';
+        case 4:
+          return 'Réseau TCP/IP, sockets bas niveau, requêtes HTTP REST avec requests et sérialisation JSON.';
+        case 5:
+          return 'Bases de données relationnelles sqlite3, XML ElementTree, CSV et journalisation logging.';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pced') {
+      switch (secNumber) {
+        case 1:
+          return 'Définition des données, échelles de mesure, sources et stockage, cycle DAMA et éthique.';
+        case 2:
+          return 'Environnement Python pour l’analyse de données, bibliothèques (NumPy, pandas) et syntaxe.';
+        case 3:
+          return 'Ingestion, traitement des valeurs manquantes, détection des anomalies et transformations.';
+        case 4:
+          return 'Principes de visualisation, graphiques (Matplotlib, Seaborn) et narration décisionnelle.';
+        default:
+          return fallback;
+      }
+    }
+    if (currentTrack === 'pcad') {
+      switch (secNumber) {
+        case 1:
+          return 'Ingestion multi-formats, nettoyage, imputation, détection d’outliers, regex, fusion et feature engineering.';
+        case 2:
+          return 'Structures avancées Python, générateurs, décorateurs, SGBD relationnels, SQL avancé et intégration pandas-SQL.';
+        case 3:
+          return 'Statistiques descriptives, distributions théoriques, TCL, tests d’hypothèses (t-test, ANOVA, Chi-2) et régression OLS.';
         default:
           return fallback;
       }
@@ -175,14 +306,92 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
         {/* Drawer Header */}
         <div className="px-5 py-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/40">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/40 ${
+              currentTrack === 'pcep'
+                ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
+                : currentTrack === 'pcpp'
+                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600'
+                : currentTrack === 'pced'
+                ? 'bg-gradient-to-tr from-amber-600 to-orange-600'
+                : currentTrack === 'pcad'
+                ? 'bg-gradient-to-tr from-blue-600 to-teal-500'
+                : currentTrack === 'pcet'
+                ? 'bg-gradient-to-tr from-rose-600 to-pink-500'
+                : currentTrack === 'pcat'
+                ? 'bg-gradient-to-tr from-teal-600 to-emerald-500'
+                : currentTrack === 'pces'
+                ? 'bg-gradient-to-tr from-red-600 to-amber-500'
+                : currentTrack === 'pcea'
+                ? 'bg-gradient-to-tr from-emerald-600 to-teal-500'
+                : currentTrack === 'pcei'
+                ? 'bg-gradient-to-tr from-violet-600 to-purple-500'
+                : 'bg-gradient-to-tr from-cyan-600 to-indigo-600'
+            }`}>
               <span className="font-mono font-bold text-white text-base">Py</span>
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-slate-100 text-sm sm:text-base">PCAP-31-03</span>
-                <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                  Prep Suite
+                <span className="font-semibold text-slate-100 text-sm sm:text-base">
+                  {currentTrack === 'pcep'
+                    ? 'PCEP-30-0x'
+                    : currentTrack === 'pcpp'
+                    ? 'PCPP-32-10x'
+                    : currentTrack === 'pced'
+                    ? 'PCED-30-02'
+                    : currentTrack === 'pcad'
+                    ? 'PCAD-31-02'
+                    : currentTrack === 'pcet'
+                    ? 'PCET-30-01'
+                    : currentTrack === 'pcat'
+                    ? 'PCAT-31-0x'
+                    : currentTrack === 'pces'
+                    ? 'PCES-30-01'
+                    : currentTrack === 'pcea'
+                    ? 'PCEA-30-01'
+                    : currentTrack === 'pcei'
+                    ? 'PCEI-30-01'
+                    : 'PCAP-31-03'}
+                </span>
+                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
+                  currentTrack === 'pcep'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : currentTrack === 'pcpp'
+                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                    : currentTrack === 'pced'
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : currentTrack === 'pcad'
+                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/30'
+                    : currentTrack === 'pcet'
+                    ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                    : currentTrack === 'pcat'
+                    ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
+                    : currentTrack === 'pces'
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : currentTrack === 'pcea'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : currentTrack === 'pcei'
+                    ? 'bg-violet-500/10 text-violet-300 border-violet-500/30'
+                    : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                }`}>
+                  {currentTrack === 'pcep'
+                    ? 'Entry'
+                    : currentTrack === 'pcpp'
+                    ? 'Professional'
+                    : currentTrack === 'pced'
+                    ? 'Data Analyst'
+                    : currentTrack === 'pcad'
+                    ? 'Assoc Analyst'
+                    : currentTrack === 'pcet'
+                    ? 'Tester'
+                    : currentTrack === 'pcat'
+                    ? 'Assoc Tester'
+                    : currentTrack === 'pces'
+                    ? 'Security'
+                    : currentTrack === 'pcea'
+                    ? 'Automation'
+                    : currentTrack === 'pcei'
+                    ? 'AI Specialist'
+                    : 'Associate'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Navigation & Functional Categories</p>
@@ -219,6 +428,94 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
 
         {/* Scrollable Navigation Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          {/* USER CLOUD ACCOUNT & FIRESTORE STATUS */}
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80">
+            {user ? (
+              <div className="space-y-2.5">
+                <div className="flex items-center space-x-3">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName || 'User'}
+                      className="w-9 h-9 rounded-xl object-cover ring-1 ring-cyan-500/50"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white text-xs font-bold ring-1 ring-cyan-500/50">
+                      {user.displayName?.[0] || user.email?.[0] || 'U'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white truncate">
+                      {user.displayName || 'Python Candidate'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                  </div>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" title="Firestore Connected" />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                  <div className="flex items-center space-x-1.5 text-[11px] text-emerald-400">
+                    <Cloud className="w-3.5 h-3.5" />
+                    <span>{isFrench ? 'Cloud Firestore Synchronisé' : 'Firestore Synced'}</span>
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="text-[11px] text-red-400 hover:text-red-300 font-medium flex items-center space-x-1"
+                  >
+                    <LogOut className="w-3 h-3" />
+                    <span>{isFrench ? 'Déconnexion' : 'Sign Out'}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Cloud className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-bold text-slate-200">
+                      {isFrench ? 'Synchronisation Cloud' : 'Firebase Cloud Sync'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    {isFrench ? 'Invité' : 'Guest'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  {isFrench
+                    ? 'Connectez-vous avec Google pour sauvegarder vos cartes et votre progression SRS.'
+                    : 'Sign in with Google to synchronize your custom cards and SRS recall across devices.'}
+                </p>
+                <button
+                  onClick={() => {
+                    signInWithGoogle();
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-gradient-to-r from-blue-600/30 to-cyan-500/30 hover:from-blue-600/40 hover:to-cyan-500/40 border border-cyan-500/40 text-cyan-300 hover:text-white text-xs font-semibold transition-all"
+                >
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>{isFrench ? 'Se connecter avec Google' : 'Sign in with Google'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* TRACK SWITCHER IN MENU */}
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
@@ -235,42 +532,194 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               <button
                 onClick={() => onSelectTrack('pcep')}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
+                className={`p-2 rounded-xl border text-left transition-all ${
                   currentTrack === 'pcep'
                     ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200 ring-1 ring-emerald-500/30'
                     : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-100">PCEP-30-0x</span>
+                  <span className="text-xs font-bold text-slate-100">PCEP</span>
                   {currentTrack === 'pcep' && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   )}
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1 line-clamp-1">
-                  {isFrench ? 'Niveau Débutant • 4 Sections' : 'Entry-Level • 4 Sections'}
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Débutant' : 'Entry'}
                 </p>
               </button>
 
               <button
                 onClick={() => onSelectTrack('pcap')}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
+                className={`p-2 rounded-xl border text-left transition-all ${
                   currentTrack === 'pcap'
                     ? 'bg-cyan-950/50 border-cyan-500/50 text-cyan-200 ring-1 ring-cyan-500/30'
                     : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-100">PCAP-31-03</span>
+                  <span className="text-xs font-bold text-slate-100">PCAP</span>
                   {currentTrack === 'pcap' && (
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                   )}
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1 line-clamp-1">
-                  {isFrench ? 'Niveau Associé • 5 Sections' : 'Associate • 5 Sections'}
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Associé' : 'Associate'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcpp')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcpp'
+                    ? 'bg-purple-950/50 border-purple-500/50 text-purple-200 ring-1 ring-purple-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCPP</span>
+                  {currentTrack === 'pcpp' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Pro (100k)' : 'Professional'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pced')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pced'
+                    ? 'bg-amber-950/50 border-amber-500/50 text-amber-200 ring-1 ring-amber-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCED</span>
+                  {currentTrack === 'pced' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Analyste' : 'Data Analyst'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcad')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcad'
+                    ? 'bg-blue-950/50 border-blue-500/50 text-blue-200 ring-1 ring-blue-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCAD</span>
+                  {currentTrack === 'pcad' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Analyste Pro' : 'Assoc Analyst'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcet')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcet'
+                    ? 'bg-rose-950/50 border-rose-500/50 text-rose-200 ring-1 ring-rose-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCET</span>
+                  {currentTrack === 'pcet' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Testeur' : 'Tester'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcat')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcat'
+                    ? 'bg-teal-950/50 border-teal-500/50 text-teal-200 ring-1 ring-teal-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCAT</span>
+                  {currentTrack === 'pcat' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Testeur Assoc' : 'Assoc Tester'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pces')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pces'
+                    ? 'bg-amber-950/50 border-amber-500/50 text-amber-200 ring-1 ring-amber-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCES</span>
+                  {currentTrack === 'pces' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Sécurité' : 'Security'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcea')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcea'
+                    ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200 ring-1 ring-emerald-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCEA</span>
+                  {currentTrack === 'pcea' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Automatisation' : 'Automation'}
+                </p>
+              </button>
+
+              <button
+                onClick={() => onSelectTrack('pcei')}
+                className={`p-2 rounded-xl border text-left transition-all ${
+                  currentTrack === 'pcei'
+                    ? 'bg-violet-950/50 border-violet-500/50 text-violet-200 ring-1 ring-violet-500/30'
+                    : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/50 text-slate-400'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-100">PCEI</span>
+                  {currentTrack === 'pcei' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  {isFrench ? 'Intelligence Artificielle' : 'Artificial Intelligence'}
                 </p>
               </button>
             </div>
@@ -387,14 +836,55 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
               <span>
-                {currentTrack === 'pcep' ? 'PCEP-30-0x Exam Blueprint' : 'PCAP-31-03 Exam Blueprint'}
+                {currentTrack === 'pcep'
+                  ? 'PCEP-30-0x Exam Blueprint'
+                  : currentTrack === 'pcpp'
+                  ? 'PCPP-32-10x Exam Blueprint'
+                  : currentTrack === 'pced'
+                  ? 'PCED-30-02 Exam Blueprint'
+                  : currentTrack === 'pcad'
+                  ? 'PCAD-31-02 Exam Blueprint'
+                  : currentTrack === 'pcet'
+                  ? 'PCET-30-01 Exam Blueprint'
+                  : currentTrack === 'pcat'
+                  ? 'PCAT-31-0x Exam Blueprint'
+                  : currentTrack === 'pces'
+                  ? 'PCES-30-01 Exam Blueprint'
+                  : currentTrack === 'pcea'
+                  ? 'PCEA-30-01 Exam Blueprint'
+                  : currentTrack === 'pcei'
+                  ? 'PCEI-30-01 Exam Blueprint'
+                  : 'PCAP-31-03 Exam Blueprint'}
               </span>
               <span className="text-[10px] text-slate-500 font-normal">
-                {currentTrack === 'pcep' ? '4 Sections' : '5 Sections'}
+                {currentTrack === 'pcep' || currentTrack === 'pced' || currentTrack === 'pcet' || currentTrack === 'pces' || currentTrack === 'pcea'
+                  ? '4 Blocks'
+                  : currentTrack === 'pcat' || currentTrack === 'pcei'
+                  ? '6 Blocks'
+                  : '5 Sections'}
               </span>
             </div>
             <div className="space-y-1.5">
-              {(currentTrack === 'pcep' ? pcepSyllabusSections : pcapSyllabusSections).map((sec) => {
+              {(currentTrack === 'pcep'
+                ? pcepSyllabusSections
+                : currentTrack === 'pcpp'
+                ? pcppSyllabusSections
+                : currentTrack === 'pced'
+                ? pcedSyllabusSections
+                : currentTrack === 'pcad'
+                ? pcadSyllabusSections
+                : currentTrack === 'pcet'
+                ? pcetSyllabusSections
+                : currentTrack === 'pcat'
+                ? pcatSyllabusSections
+                : currentTrack === 'pces'
+                ? pcesSyllabusSections
+                : currentTrack === 'pcea'
+                ? pceaSyllabusSections
+                : currentTrack === 'pcei'
+                ? pceiSyllabusSections
+                : pcapSyllabusSections
+              ).map((sec) => {
                 const isSelected = selectedSection === `Section ${sec.number}`;
                 const sectionCardCount = activeCards.filter(
                   (c) => c.section === `Section ${sec.number}`
