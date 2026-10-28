@@ -29,7 +29,7 @@
         },
         "selectedTrack": {
           "type": "string",
-          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat", "pces", "pcea", "pcei"],
           "description": "Active certification track"
         },
         "createdAt": {
@@ -64,7 +64,7 @@
         },
         "track": {
           "type": "string",
-          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat", "pces", "pcea", "pcei"],
           "description": "Associated certification track"
         },
         "section": {
@@ -189,7 +189,7 @@
         },
         "track": {
           "type": "string",
-          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat"],
+          "enum": ["pcap", "pcep", "pcpp", "pced", "pcad", "pcet", "pcat", "pces", "pcea", "pcei"],
           "description": "Certification track tested"
         },
         "section": {

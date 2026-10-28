@@ -33,7 +33,7 @@ service cloud.firestore {
     }
 
     function isValidTrack(t) {
-      return t in ['pcap', 'pcep', 'pcpp', 'pced', 'pcad', 'pcet', 'pcat'];
+      return t in ['pcap', 'pcep', 'pcpp', 'pced', 'pcad', 'pcet', 'pcat', 'pces', 'pcea', 'pcei'];
     }
 
     // --- Entity Validation Helpers ---

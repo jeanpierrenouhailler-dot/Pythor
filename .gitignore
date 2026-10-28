@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Firebase configuration (contains web client API keys flagged by GitHub secret scanner)
+firebase-applet-config.json
+firebase_applet_config.xml
