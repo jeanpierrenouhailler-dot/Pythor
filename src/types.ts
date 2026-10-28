@@ -6,7 +6,7 @@ export type CardDifficulty =
   | 'intermediate'
   | 'advanced';
 
-export type AppView = 'dashboard' | 'flashcards' | 'exam' | 'cheatsheet' | 'codelab';
+export type AppView = 'landing' | 'dashboard' | 'flashcards' | 'exam' | 'cheatsheet' | 'codelab';
 
 export type CertificationTrack = 'pcap' | 'pcep' | 'pcpp' | 'pced' | 'pcad' | 'pcet' | 'pcat' | 'pces' | 'pcea' | 'pcei';
 

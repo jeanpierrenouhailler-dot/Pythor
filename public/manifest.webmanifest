@@ -1,0 +1,70 @@
+{
+  "id": "/",
+  "name": "Pythor – Studio de Certification Python & SRS",
+  "short_name": "Pythor",
+  "description": "Studio interactif de préparation aux certifications Python Institute (PCEP, PCAP, PCPP, PCED, PCAD, PCET, PCAT, PCES, PCEA, PCEI) avec flashcards SRS et examens blancs.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "categories": ["education", "productivity", "utilities"],
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Simulateur d'Examen",
+      "short_name": "Examen",
+      "description": "Lancer un examen blanc chronométré selon les critères officiels",
+      "url": "/?view=exam",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Flashcards & Répétition Espacée",
+      "short_name": "Flashcards",
+      "description": "Réviser les cartes actives selon l'algorithme SRS SM-2",
+      "url": "/?view=flashcards",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Laboratoire de Code",
+      "short_name": "CodeLab",
+      "description": "Expérimenter avec des scripts Python et analyser les sorties",
+      "url": "/?view=codelab",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

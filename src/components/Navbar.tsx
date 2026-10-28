@@ -194,6 +194,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Center: Primary View Switcher Tabs */}
         <nav className="hidden sm:flex items-center space-x-1 bg-slate-900/70 border border-slate-800/90 p-1 rounded-xl">
           <button
+            onClick={() => onSelectView('landing')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 ${
+              currentView === 'landing'
+                ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+            title="Landing Page & Présentation"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden xl:inline">{isFrench ? 'Présentation' : 'Landing'}</span>
+          </button>
+
+          <button
             onClick={() => onSelectView('dashboard')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 ${
               currentView === 'dashboard'

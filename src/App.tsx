@@ -29,11 +29,22 @@ import { pcatAllFlashcards, pcatSyllabusSections } from './data/pcatData';
 import { pcesAllFlashcards, pcesSyllabusSections } from './data/pcesData';
 import { pceaAllFlashcards, pceaSyllabusSections } from './data/pceaData';
 import { pceiAllFlashcards, pceiSyllabusSections } from './data/pceiData';
+import { LandingPageView } from './components/views/LandingPageView';
 import { AppView, CertificationTrack, Flashcard } from './types';
 import { ShieldCheck, Settings, Sun, Moon, Globe } from 'lucide-react';
 
 function AppContent() {
-  const [currentView, setCurrentView] = useState<AppView>('dashboard');
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    try {
+      const path = window.location.pathname.toLowerCase();
+      const search = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.toLowerCase();
+      if (path === '/landing' || path === '/landing/' || search.get('view') === 'landing' || hash === '#landing') {
+        return 'landing';
+      }
+    } catch {}
+    return 'dashboard';
+  });
   const [currentTrack, setCurrentTrack] = useState<CertificationTrack>(() => {
     try {
       const saved = localStorage.getItem('py_cert_track');
@@ -177,11 +188,40 @@ function AppContent() {
     // Poll/listen to storage changes
     const handleStorage = () => updateReviewedCount();
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+
+    const handlePopState = () => {
+      try {
+        const path = window.location.pathname.toLowerCase();
+        const search = new URLSearchParams(window.location.search);
+        const hash = window.location.hash.toLowerCase();
+        if (path === '/landing' || path === '/landing/' || search.get('view') === 'landing' || hash === '#landing') {
+          setCurrentView('landing');
+        } else {
+          setCurrentView('dashboard');
+        }
+      } catch {}
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   const handleNavigate = (view: AppView, section?: string, chapter?: string) => {
     setCurrentView(view);
+    try {
+      if (view === 'landing') {
+        if (window.location.pathname !== '/landing') {
+          window.history.pushState({}, '', '/landing');
+        }
+      } else {
+        if (window.location.pathname === '/landing') {
+          window.history.pushState({}, '', '/');
+        }
+      }
+    } catch {}
     if (section) {
       setSelectedSection(section);
     }
@@ -243,156 +283,154 @@ function AppContent() {
         activeCards={activeCards}
       />
 
-      {/* Top Navigation Bar with track switcher and Create Card */}
-      <Navbar
-        totalCards={activeCards.length}
-        reviewedCount={reviewedCount}
-        selectedSection={selectedSection}
-        onSelectSection={setSelectedSection}
-        currentView={currentView}
-        onSelectView={(v) => {
-          setCurrentView(v);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onToggleMenu={() => setIsMenuOpen(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        currentTrack={currentTrack}
-        onSelectTrack={handleSelectTrack}
-        onOpenCreateCard={() => setIsCreateCardOpen(true)}
-      />
-
-      {/* Main Viewport Content */}
-      <main className="flex-1 py-4">
-        {currentView === 'dashboard' && (
-          <DashboardView
-            cards={activeCards}
-            onNavigate={handleNavigate}
+      {currentView === 'landing' ? (
+        <LandingPageView
+          onOpenApp={(view, track) => {
+            if (track) handleSelectTrack(track);
+            handleNavigate(view || 'dashboard');
+          }}
+          currentTrack={currentTrack}
+          onSelectTrack={handleSelectTrack}
+        />
+      ) : (
+        <>
+          {/* Top Navigation Bar with track switcher and Create Card */}
+          <Navbar
+            totalCards={activeCards.length}
             reviewedCount={reviewedCount}
-            currentTrack={currentTrack}
-            onSelectTrack={handleSelectTrack}
-            onOpenCreateCard={() => setIsCreateCardOpen(true)}
-            onDeleteCustomCard={handleDeleteCustomCard}
-          />
-        )}
-
-        {currentView === 'flashcards' && (
-          <FlashcardsSrsView
-            cards={activeCards}
             selectedSection={selectedSection}
             onSelectSection={setSelectedSection}
-            initialChapter={selectedChapter}
+            currentView={currentView}
+            onSelectView={(v) => handleNavigate(v)}
+            onToggleMenu={() => setIsMenuOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
             currentTrack={currentTrack}
             onSelectTrack={handleSelectTrack}
             onOpenCreateCard={() => setIsCreateCardOpen(true)}
-            onDeleteCard={handleDeleteCustomCard}
           />
-        )}
 
-        {currentView === 'exam' && (
-          <ExamSimulatorView
-            cards={activeCards}
-            onNavigate={handleNavigate}
-            currentTrack={currentTrack}
-          />
-        )}
+          {/* Main Viewport Content */}
+          <main className="flex-1 py-4">
+            {currentView === 'dashboard' && (
+              <DashboardView
+                cards={activeCards}
+                onNavigate={handleNavigate}
+                reviewedCount={reviewedCount}
+                currentTrack={currentTrack}
+                onSelectTrack={handleSelectTrack}
+                onOpenCreateCard={() => setIsCreateCardOpen(true)}
+                onDeleteCustomCard={handleDeleteCustomCard}
+              />
+            )}
 
-        {currentView === 'cheatsheet' && (
-          <CheatsheetView
-            onNavigate={handleNavigate}
-          />
-        )}
+            {currentView === 'flashcards' && (
+              <FlashcardsSrsView
+                cards={activeCards}
+                selectedSection={selectedSection}
+                onSelectSection={setSelectedSection}
+                initialChapter={selectedChapter}
+                currentTrack={currentTrack}
+                onSelectTrack={handleSelectTrack}
+                onOpenCreateCard={() => setIsCreateCardOpen(true)}
+                onDeleteCard={handleDeleteCustomCard}
+              />
+            )}
 
-        {currentView === 'codelab' && (
-          <CodeLabView
-            onNavigate={handleNavigate}
-            currentTrack={currentTrack}
-          />
-        )}
-      </main>
+            {currentView === 'exam' && (
+              <ExamSimulatorView
+                cards={activeCards}
+                onNavigate={handleNavigate}
+                currentTrack={currentTrack}
+              />
+            )}
 
-      {/* Create Flashcard Modal */}
-      <CreateFlashcardModal
-        isOpen={isCreateCardOpen}
-        onClose={() => setIsCreateCardOpen(false)}
-        onCardCreated={handleAddCustomCard}
-        defaultTrack={currentTrack}
-        defaultSection={selectedSection}
-      />
+            {currentView === 'cheatsheet' && (
+              <CheatsheetView
+                onNavigate={handleNavigate}
+              />
+            )}
 
-      {/* System Settings & Updates Modal */}
-      <SystemSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+            {currentView === 'codelab' && (
+              <CodeLabView
+                onNavigate={handleNavigate}
+                currentTrack={currentTrack}
+              />
+            )}
+          </main>
 
-      {/* Non-intrusive Update Notification Banner for background updates */}
-      <UpdateNotificationBanner />
+          {/* Universal Footer Exam Blueprint Bar */}
+          <footer className="border-t border-slate-800/80 bg-slate-950/90 py-6 text-xs text-slate-400">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span className="font-semibold text-slate-200">
+                  {currentTrack === 'pcep'
+                    ? 'PCEP-30-0x Certified Entry-Level Python Programmer'
+                    : currentTrack === 'pcpp'
+                    ? 'PCPP1-32-101 Certified Professional in Python Programming 1'
+                    : currentTrack === 'pced'
+                    ? 'PCED-30-02 Certified Entry-Level Data Analyst with Python'
+                    : currentTrack === 'pcad'
+                    ? 'PCAD-31-02 Certified Associate Data Analyst with Python'
+                    : currentTrack === 'pcet'
+                    ? 'PCET-30-01 Certified Entry-Level Tester with Python'
+                    : currentTrack === 'pcat'
+                    ? 'PCAT-31-0x Certified Associate Tester with Python'
+                    : currentTrack === 'pces'
+                    ? 'PCES-30-01 Certified Entry-Level Security Specialist with Python'
+                    : currentTrack === 'pcea'
+                    ? 'PCEA-30-01 Certified Entry-Level Automation Specialist with Python'
+                    : currentTrack === 'pcei'
+                    ? 'PCEI-30-01 Certified Entry-Level AI Specialist with Python'
+                    : 'PCAP-31-03 Certified Associate in Python Programming'}
+                </span>
+                <span className="text-slate-500">|</span>
+                <span>Python Institute Official Alignment</span>
+              </div>
 
-      {/* Universal Footer Exam Blueprint Bar */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/90 py-6 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span className="font-semibold text-slate-200">
-              {currentTrack === 'pcep'
-                ? 'PCEP-30-0x Certified Entry-Level Python Programmer'
-                : currentTrack === 'pcpp'
-                ? 'PCPP1-32-101 Certified Professional in Python Programming 1'
-                : currentTrack === 'pced'
-                ? 'PCED-30-02 Certified Entry-Level Data Analyst with Python'
-                : currentTrack === 'pcad'
-                ? 'PCAD-31-02 Certified Associate Data Analyst with Python'
-                : currentTrack === 'pcet'
-                ? 'PCET-30-01 Certified Entry-Level Tester with Python'
-                : currentTrack === 'pcat'
-                ? 'PCAT-31-0x Certified Associate Tester with Python'
-                : currentTrack === 'pces'
-                ? 'PCES-30-01 Certified Entry-Level Security Specialist with Python'
-                : currentTrack === 'pcea'
-                ? 'PCEA-30-01 Certified Entry-Level Automation Specialist with Python'
-                : currentTrack === 'pcei'
-                ? 'PCEI-30-01 Certified Entry-Level AI Specialist with Python'
-                : 'PCAP-31-03 Certified Associate in Python Programming'}
-            </span>
-            <span className="text-slate-500">|</span>
-            <span>Python Institute Official Alignment</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => handleNavigate('dashboard')}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                currentView === 'dashboard'
-                  ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Main Dashboard
-            </button>
-            <span className="text-slate-600">•</span>
-            {currentSyllabus.map((sec) => (
-              <button
-                key={sec.id}
-                onClick={() => handleNavigate('flashcards', `Section ${sec.number}`)}
-                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-colors ${
-                  currentView === 'flashcards' && selectedSection === `Section ${sec.number}`
-                    ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span className="font-mono font-medium">Sec {sec.number}</span>
-                <span className="text-[10px] text-slate-500">({sec.weight})</span>
-              </button>
-            ))}
-            <span className="text-slate-600">•</span>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
-              title="Open System Settings & Updates"
-            >
-              <Settings className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t.nav.settings} ({settings.currentVersion})</span>
-            </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => handleNavigate('landing')}
+                  className="px-2.5 py-1 rounded-md text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
+                  title="Voir la Landing Page de présentation"
+                >
+                  Landing Page
+                </button>
+                <span className="text-slate-600">•</span>
+                <button
+                  onClick={() => handleNavigate('dashboard')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    currentView === 'dashboard'
+                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Main Dashboard
+                </button>
+                <span className="text-slate-600">•</span>
+                {currentSyllabus.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => handleNavigate('flashcards', `Section ${sec.number}`)}
+                    className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-colors ${
+                      currentView === 'flashcards' && selectedSection === `Section ${sec.number}`
+                        ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <span className="font-mono font-medium">Sec {sec.number}</span>
+                    <span className="text-[10px] text-slate-500">({sec.weight})</span>
+                  </button>
+                ))}
+                <span className="text-slate-600">•</span>
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
+                  title="Open System Settings & Updates"
+                >
+                  <Settings className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{t.nav.settings} ({settings.currentVersion})</span>
+                </button>
             <span className="text-slate-600">•</span>
             {/* Quick Language Toggle */}
             <button
@@ -416,6 +454,8 @@ function AppContent() {
           </div>
         </div>
       </footer>
+        </>
+      )}
     </div>
   );
 }

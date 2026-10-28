@@ -733,6 +733,35 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             </div>
             <div className="space-y-1">
               <button
+                onClick={() => {
+                  onSelectView('landing');
+                  onClose();
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  currentView === 'landing'
+                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Sparkles className={`w-4 h-4 ${currentView === 'landing' ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <div className="text-left">
+                    <span className="block text-slate-100 font-medium leading-none">
+                      {isFrench ? 'Page de Présentation' : 'Landing Page'}
+                    </span>
+                    <span className="text-[11px] text-slate-400 mt-1 block">
+                      {isFrench ? 'Présentation PWA, catalogue & démo' : 'PWA overview, catalog & demo'}
+                    </span>
+                  </div>
+                </div>
+                {currentView === 'landing' ? (
+                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-500" />
+                )}
+              </button>
+
+              <button
                 onClick={() => handleNavigate('dashboard')}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   currentView === 'dashboard'
