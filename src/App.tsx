@@ -36,14 +36,15 @@ import { ShieldCheck, Settings, Sun, Moon, Globe } from 'lucide-react';
 function AppContent() {
   const [currentView, setCurrentView] = useState<AppView>(() => {
     try {
-      const path = window.location.pathname.toLowerCase();
       const search = new URLSearchParams(window.location.search);
       const hash = window.location.hash.toLowerCase();
-      if (path === '/landing' || path === '/landing/' || search.get('view') === 'landing' || hash === '#landing') {
-        return 'landing';
-      }
+      if (search.get('view') === 'dashboard' || hash === '#dashboard') return 'dashboard';
+      if (search.get('view') === 'flashcards' || hash === '#flashcards') return 'flashcards';
+      if (search.get('view') === 'exam' || hash === '#exam') return 'exam';
+      if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet') return 'cheatsheet';
+      if (search.get('view') === 'codelab' || hash === '#codelab') return 'codelab';
     } catch {}
-    return 'dashboard';
+    return 'landing';
   });
   const [currentTrack, setCurrentTrack] = useState<CertificationTrack>(() => {
     try {
@@ -191,13 +192,20 @@ function AppContent() {
 
     const handlePopState = () => {
       try {
-        const path = window.location.pathname.toLowerCase();
         const search = new URLSearchParams(window.location.search);
         const hash = window.location.hash.toLowerCase();
-        if (path === '/landing' || path === '/landing/' || search.get('view') === 'landing' || hash === '#landing') {
-          setCurrentView('landing');
-        } else {
+        if (search.get('view') === 'dashboard' || hash === '#dashboard') {
           setCurrentView('dashboard');
+        } else if (search.get('view') === 'flashcards' || hash === '#flashcards') {
+          setCurrentView('flashcards');
+        } else if (search.get('view') === 'exam' || hash === '#exam') {
+          setCurrentView('exam');
+        } else if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet') {
+          setCurrentView('cheatsheet');
+        } else if (search.get('view') === 'codelab' || hash === '#codelab') {
+          setCurrentView('codelab');
+        } else {
+          setCurrentView('landing');
         }
       } catch {}
     };
@@ -213,13 +221,9 @@ function AppContent() {
     setCurrentView(view);
     try {
       if (view === 'landing') {
-        if (window.location.pathname !== '/landing') {
-          window.history.pushState({}, '', '/landing');
-        }
+        window.history.pushState({}, '', '/');
       } else {
-        if (window.location.pathname === '/landing') {
-          window.history.pushState({}, '', '/');
-        }
+        window.history.pushState({}, '', `/?view=${view}`);
       }
     } catch {}
     if (section) {
