@@ -183,7 +183,15 @@ function AppContent() {
     openInstallModal,
     isNoviceMode,
     toggleNoviceMode,
+    hasAcceptedLegal,
   } = useNoviceMode();
+
+  // Trigger onboarding with mandatory legal disclaimer upon entering the application (never on the landing page)
+  useEffect(() => {
+    if (currentView !== 'landing' && !hasAcceptedLegal) {
+      openOnboarding();
+    }
+  }, [currentView, hasAcceptedLegal, openOnboarding]);
 
   // Read SRS state count from localStorage
   const updateReviewedCount = () => {
@@ -497,11 +505,13 @@ function AppContent() {
         </>
       )}
 
-      {/* Onboarding & Legal Disclaimer Modal */}
-      <OnboardingLegalModal
-        isOpen={isOnboardingOpen}
-        onClose={closeOnboarding}
-      />
+      {/* Onboarding & Legal Disclaimer Modal - only rendered when inside the application */}
+      {currentView !== 'landing' && (
+        <OnboardingLegalModal
+          isOpen={isOnboardingOpen}
+          onClose={closeOnboarding}
+        />
+      )}
 
       {/* PWA Installation Illustrated Guide Modal */}
       <InstallPwaModal
@@ -524,8 +534,8 @@ function AppContent() {
         onClose={() => setIsSettingsOpen(false)}
       />
 
-      {/* Non-intrusive Update Notification Banner for background updates */}
-      <UpdateNotificationBanner />
+      {/* Non-intrusive Update Notification Banner - only when active inside the application */}
+      {currentView !== 'landing' && <UpdateNotificationBanner />}
     </div>
   );
 }

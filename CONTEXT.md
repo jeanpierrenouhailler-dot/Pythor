@@ -22,10 +22,12 @@ L'auteur, le créateur et l'éditeur de l'application **Pythor** déclinent form
 Pythor est un projet éducatif indépendant, open-source et sans affiliation contractuelle avec l'OpenEDG Python Institute. Les acronymes et dénominations de certification (PCEP™, PCAP™, PCPP™, PCED™, PCAD™, PCET™, PCAT™, PCES™, PCEA™, PCEI™) sont des marques déposées de leurs propriétaires respectifs et ne sont cités qu'à des fins d'identification pédagogique.
 
 ### 🔐 Processus d'Onboarding Obligatoire
-Pour garantir l'information de chaque utilisateur :
-- Un modal d'onboarding s'affiche automatiquement lors de la première session (si la clé `pythor_legal_accepted` n'est pas présente dans `localStorage`).
-- L'utilisateur doit cocher explicitement une case d'acceptation de non-responsabilité avant de valider l'entrée dans l'application.
-- Les mentions légales restent consultables à tout moment via le lien « Mentions Légales & Guide » situé dans le menu et le pied de page de chaque écran.
+Pour garantir l'information de chaque utilisateur sans nuire à la découverte du produit :
+- La **Landing Page** reste totalement libre et non intrusive pour présenter les fonctionnalités, le catalogue et convertir les visiteurs.
+- Le **modal d'onboarding** s'affiche automatiquement dès l'entrée dans l'application (au clic sur « Ouvrir Pythor », sélection de parcours ou accès direct par URL profonde si la clé `pythor_legal_accepted` n'est pas encore présente dans `localStorage`).
+- Les **alertes de mise à jour système en arrière-plan** sont également réservées à l'espace applicatif actif afin de préserver la clarté de la vitrine d'accueil.
+- L'utilisateur doit cocher explicitement la case d'acceptation de non-responsabilité pour démarrer ses révisions.
+- Les mentions légales restent consultables à tout moment via le bouton « Aide & Mentions » dans la barre de navigation et le lien de pied de page de chaque écran.
 
 ---
 

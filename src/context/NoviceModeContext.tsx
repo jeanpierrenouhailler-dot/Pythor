@@ -37,14 +37,8 @@ export const NoviceModeProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   });
 
-  // Onboarding modal auto-opens on first visit if legal terms have not been accepted yet
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('pythor_legal_accepted') !== 'true';
-    } catch {
-      return true;
-    }
-  });
+  // Onboarding modal is opened explicitly when entering the app or via help buttons
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
 
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
 

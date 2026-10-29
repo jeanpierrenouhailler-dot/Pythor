@@ -7,10 +7,11 @@ Toutes les modifications notables apportées au projet **Pythor** sont document�
 ## [v2.5.0] — 2026-10-29
 
 ### 🛡️ Mentions Légales & Onboarding Novice
-- **Onboarding Obligatoire avec Mentions Légales :** Implémentation d'un parcours d'onboarding en 4 étapes (`OnboardingLegalModal.tsx`) exigeant l'acceptation explicite par l'utilisateur d'une clause de non-responsabilité légale :
+- **Onboarding Obligatoire au Démarrage de l'Application :** Implémentation d'un parcours d'onboarding en 4 étapes (`OnboardingLegalModal.tsx`) qui se déclenche exclusivement au lancement de l'application d'entraînement (et **jamais** sur la Landing Page de présentation) :
+  - *Séparation claire des rôles :* La Landing Page présente librement les fonctionnalités et la proposition de valeur sans être obstruée par un modal légal ou des alertes de mise à jour. Dès que le visiteur entre dans l'application (« Ouvrir Pythor », sélection de parcours, accès direct), le modal d'onboarding exige l'acceptation de la clause de non-responsabilité avant tout entraînement.
   - *Clause stricte :* L'auteur et l'éditeur ne sauraient être tenus responsables de l'exactitude, de l'exhaustivité ou de l'utilisation des données, questions, réponses, fragments de code et explications fournis dans l'application.
   - *Indépendance :* Rappel clair que Pythor est un projet indépendant sans affiliation avec l'OpenEDG Python Institute.
-  - *Persistance locale :* Mémorisation du consentement dans `localStorage` (`pythor_legal_accepted`), avec consultation possible à tout moment via le lien « Mentions Légales & Guide » présent dans la navigation et le pied de page.
+  - *Alertes de mise à jour ciblées :* Le bandeau d'alerte de mise à jour en arrière-plan (`UpdateNotificationBanner.tsx`) est restreint à l'application active pour ne pas perturber la vitrine publique.
 
 ### 💡 Mode Novice & Infobulles Contextuelles sur Tous les Écrans
 - **Système d'Infobulles Universel (`InfoTooltip.tsx`) :**
