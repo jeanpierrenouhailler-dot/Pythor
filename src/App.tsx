@@ -41,11 +41,14 @@ function AppContent() {
     try {
       const search = new URLSearchParams(window.location.search);
       const hash = window.location.hash.toLowerCase();
-      if (search.get('view') === 'dashboard' || hash === '#dashboard') return 'dashboard';
-      if (search.get('view') === 'flashcards' || hash === '#flashcards') return 'flashcards';
-      if (search.get('view') === 'exam' || hash === '#exam') return 'exam';
-      if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet') return 'cheatsheet';
-      if (search.get('view') === 'codelab' || hash === '#codelab') return 'codelab';
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+
+      if (search.get('view') === 'landing' || hash === '#landing' || path === '/landing') return 'landing';
+      if (search.get('view') === 'dashboard' || hash === '#dashboard' || path === '/dashboard' || path === '/app') return 'dashboard';
+      if (search.get('view') === 'flashcards' || hash === '#flashcards' || path === '/flashcards') return 'flashcards';
+      if (search.get('view') === 'exam' || hash === '#exam' || path === '/exam') return 'exam';
+      if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet' || path === '/cheatsheet') return 'cheatsheet';
+      if (search.get('view') === 'codelab' || hash === '#codelab' || path === '/codelab') return 'codelab';
     } catch {}
     return 'landing';
   });
@@ -207,15 +210,17 @@ function AppContent() {
       try {
         const search = new URLSearchParams(window.location.search);
         const hash = window.location.hash.toLowerCase();
-        if (search.get('view') === 'dashboard' || hash === '#dashboard') {
+        const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+
+        if (search.get('view') === 'dashboard' || hash === '#dashboard' || path === '/dashboard' || path === '/app') {
           setCurrentView('dashboard');
-        } else if (search.get('view') === 'flashcards' || hash === '#flashcards') {
+        } else if (search.get('view') === 'flashcards' || hash === '#flashcards' || path === '/flashcards') {
           setCurrentView('flashcards');
-        } else if (search.get('view') === 'exam' || hash === '#exam') {
+        } else if (search.get('view') === 'exam' || hash === '#exam' || path === '/exam') {
           setCurrentView('exam');
-        } else if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet') {
+        } else if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet' || path === '/cheatsheet') {
           setCurrentView('cheatsheet');
-        } else if (search.get('view') === 'codelab' || hash === '#codelab') {
+        } else if (search.get('view') === 'codelab' || hash === '#codelab' || path === '/codelab') {
           setCurrentView('codelab');
         } else {
           setCurrentView('landing');
