@@ -18,7 +18,12 @@ import { AppView, CertificationTrack } from '../types';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useI18n } from '../context/I18nContext';
+import { useNoviceMode } from '../context/NoviceModeContext';
+import { PythorLogo } from './common/PythorLogo';
+import { InstallPwaButton } from './common/InstallPwaButton';
+import { InfoTooltip } from './common/InfoTooltip';
 import { UserAuthButton } from './UserAuthButton';
+import { HelpCircle, Lightbulb } from 'lucide-react';
 
 interface NavbarProps {
   totalCards: number;
@@ -50,6 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { settings } = useSystemSettings();
   const { theme, toggleTheme, isDark } = useTheme();
   const { lang, setLang, t, isFrench } = useI18n();
+  const { openOnboarding, isNoviceMode, toggleNoviceMode } = useNoviceMode();
 
   const progressPercent = totalCards > 0 ? Math.round((reviewedCount / totalCards) * 100) : 0;
   const isUpdateReady = settings.status === 'ready';
@@ -78,32 +84,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center space-x-2.5 text-left group focus:outline-none"
             title={isFrench ? "Aller au tableau de bord" : "Go to Main Dashboard"}
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105 ${
-              currentTrack === 'pcep'
-                ? 'bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-600 shadow-emerald-500/20 ring-1 ring-emerald-400/30'
-                : currentTrack === 'pcpp'
-                ? 'bg-gradient-to-tr from-purple-600 via-indigo-500 to-cyan-500 shadow-purple-500/20 ring-1 ring-purple-400/30'
-                : currentTrack === 'pced'
-                ? 'bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-500 shadow-amber-500/20 ring-1 ring-amber-400/30'
-                : currentTrack === 'pcad'
-                ? 'bg-gradient-to-tr from-blue-600 via-cyan-500 to-teal-400 shadow-blue-500/20 ring-1 ring-blue-400/30'
-                : currentTrack === 'pcet'
-                ? 'bg-gradient-to-tr from-rose-600 via-pink-500 to-orange-400 shadow-rose-500/20 ring-1 ring-rose-400/30'
-                : currentTrack === 'pcat'
-                ? 'bg-gradient-to-tr from-teal-600 via-emerald-500 to-cyan-500 shadow-teal-500/20 ring-1 ring-teal-400/30'
-                : currentTrack === 'pces'
-                ? 'bg-gradient-to-tr from-red-600 via-amber-500 to-yellow-400 shadow-red-500/20 ring-1 ring-red-400/30'
-                : currentTrack === 'pcea'
-                ? 'bg-gradient-to-tr from-emerald-600 via-green-500 to-teal-400 shadow-emerald-500/20 ring-1 ring-emerald-400/30'
-                : currentTrack === 'pcei'
-                ? 'bg-gradient-to-tr from-violet-600 via-purple-500 to-indigo-400 shadow-violet-500/20 ring-1 ring-violet-400/30'
-                : 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-indigo-600 shadow-cyan-500/20 ring-1 ring-cyan-400/30'
-            }`}>
-              <span className="font-mono font-bold text-white text-base">Py</span>
-            </div>
+            <PythorLogo size="md" showText={false} />
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-slate-100 tracking-tight text-sm sm:text-base group-hover:text-cyan-300 transition-colors">
+                <span className="font-extrabold text-slate-100 tracking-tight text-sm sm:text-base group-hover:text-cyan-300 transition-colors">
+                  Pythor
+                </span>
+                <span className="font-semibold text-slate-300 tracking-tight text-xs sm:text-sm">
                   {currentTrack === 'pcep'
                     ? 'PCEP-30-0x'
                     : currentTrack === 'pcpp'
@@ -528,6 +515,41 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </>
             )}
+          </button>
+
+          {/* INSTALL APPLICATION PWA BUTTON */}
+          <InstallPwaButton variant="navbar" size="sm" />
+
+          {/* AIDE, GUIDE & MENTIONS LÉGALES BUTTON */}
+          <button
+            onClick={openOnboarding}
+            className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:text-amber-200 transition-all flex items-center space-x-1.5 shadow-xs"
+            title="Consulter le guide débutant, les mentions légales et la clause de non-responsabilité"
+            aria-label="Aide et Mentions Légales"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <span className="hidden xl:inline text-xs font-semibold">Aide & Mentions</span>
+          </button>
+
+          {/* MODE GUIDE NOVICE TOGGLE */}
+          <button
+            onClick={toggleNoviceMode}
+            className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all flex items-center space-x-1.5 shadow-xs ${
+              isNoviceMode
+                ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 ring-1 ring-cyan-500/30'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title={
+              isNoviceMode
+                ? 'Mode Guide Novice Actif (Infobulles et conseils d’aide activés)'
+                : 'Activer le Mode Guide Novice (Infobulles et conseils)'
+            }
+            aria-label="Basculer le mode guide novice"
+          >
+            <Lightbulb className={`w-3.5 h-3.5 ${isNoviceMode ? 'text-amber-400 animate-pulse' : 'text-slate-500'}`} />
+            <span className="hidden xl:inline">
+              {isNoviceMode ? 'Mode Novice : Actif' : 'Mode Novice'}
+            </span>
           </button>
 
           {/* Google Auth & User Cloud Sync Button */}

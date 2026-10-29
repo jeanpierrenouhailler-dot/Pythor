@@ -34,6 +34,7 @@ import { pceiSyllabusSections } from '../../data/pceiData';
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveUserSrsItem, subscribeUserSrsProgress } from '../../services/firestoreService';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface FlashcardsSrsViewProps {
   cards: Flashcard[];
@@ -2144,8 +2145,19 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   className="pt-4 border-t border-slate-800/80 space-y-3"
                 >
                   <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-medium text-slate-300">Rate your recall (1-4):</span>
-                    <span className="text-[11px] text-slate-500">Automatically advances to next card</span>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-semibold text-slate-200">
+                        {isFrench ? 'Évaluez votre souvenir (1-4) :' : 'Rate your recall (1-4):'}
+                      </span>
+                      <InfoTooltip
+                        title="Algorithme SuperMemo-2 (SM-2)"
+                        text="Indiquez votre aisance pour planifier la prochaine révision. Encore réinitialise la carte pour demain. Difficile planifie à 2 jours. Bon planifie à 4 jours. Facile espace à 7 jours et plus."
+                        tip="Soyez honnête envers vous-même : coter 'Difficile' ou 'Encore' permet à l’application de vous représenter les pièges au moment opportun."
+                      />
+                    </div>
+                    <span className="text-[11px] text-slate-500">
+                      {isFrench ? 'Passe automatiquement à la carte suivante' : 'Automatically advances to next card'}
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

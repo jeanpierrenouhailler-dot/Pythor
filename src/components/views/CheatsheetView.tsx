@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { AppView } from '../../types';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface CheatsheetViewProps {
   onNavigate: (view: AppView, section?: string) => void;
@@ -81,14 +82,20 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
           </p>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search dunder or gotcha..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Rechercher une méthode dunder ou un piège..."
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+            />
+          </div>
+          <InfoTooltip
+            title="Recherche instantanée"
+            content="Filtrez par nom de méthode (ex: __init__, __str__), par type d'opérateur ou par mot-clé pour retrouver la syntaxe exacte."
           />
         </div>
       </div>
@@ -96,11 +103,18 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
       {/* Section 1: Special Dunder Methods Table */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <Code2 className="w-4 h-4 text-cyan-400" />
-            <span>Section 4: Essential Dunder (Magic) Methods</span>
-          </h2>
-          <span className="text-xs text-slate-500">{filteredDunders.length} entries</span>
+            <h2 className="text-base font-bold text-slate-100">
+              Méthodes Spéciales Dunder (Magic Methods)
+            </h2>
+            <InfoTooltip
+              title="Méthodes Dunder (Double Underscore)"
+              content="Méthodes réservées de Python permettant la surcharge d'opérateurs (+, -, ==) ou l'intégration aux fonctions intégrées comme len() et str()."
+              noviceTip="Retenez bien : __init__ doit toujours retourner None sous peine de TypeError !"
+            />
+          </div>
+          <span className="text-xs text-slate-500">{filteredDunders.length} entrées</span>
         </div>
 
         <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg">
@@ -149,10 +163,17 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
 
       {/* Section 2: Name Mangling & Access Mechanics */}
       <section className="space-y-3">
-        <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <ShieldAlert className="w-4 h-4 text-amber-400" />
-          <span>Name Mangling & Underscore Conventions</span>
-        </h2>
+          <h2 className="text-base font-bold text-slate-100">
+            Name Mangling & Conventions de Nommage
+          </h2>
+          <InfoTooltip
+            title="Name Mangling"
+            content="En Python, préfixer un attribut par deux underscores sans underscore final (ex: __x) active le mangling : Python le renomme en _NomClasse__x pour éviter les collisions de sous-classes."
+            noviceTip="Attention : ce n'est pas une véritable sécurité privée au sens C++ ou Java !"
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {nameManglingRules.map((rule, idx) => (
@@ -174,10 +195,17 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
 
       {/* Section 3: Built-in Exception Hierarchy (PCAP Core) */}
       <section className="space-y-3">
-        <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <Layers className="w-4 h-4 text-purple-400" />
-          <span>Python Institute Built-in Exception Hierarchy</span>
-        </h2>
+          <h2 className="text-base font-bold text-slate-100">
+            Hiérarchie des Exceptions Officielles du Python Institute
+          </h2>
+          <InfoTooltip
+            title="Hiérarchie des exceptions"
+            content="Dans un bloc try/except, les exceptions filles (plus spécifiques) doivent TOUJOURS précéder les exceptions mères (plus générales). Sinon, la clause générale intercepte tout !"
+            noviceTip="Exemple : interceptez ZeroDivisionError AVANT ArithmeticError !"
+          />
+        </div>
 
         <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
           <p className="text-xs text-slate-400">

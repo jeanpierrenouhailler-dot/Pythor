@@ -1,0 +1,255 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="50%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="pyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="675" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="150" r="300" fill="#06b6d4" opacity="0.08" filter="blur(60px)"/>
+  <circle cx="1000" cy="500" r="350" fill="#6366f1" opacity="0.08" filter="blur(70px)"/>
+
+  <!-- App Window Container -->
+  <g transform="translate(60, 40)" filter="url(#shadow)">
+    <!-- App Outer Border & Glass BG -->
+    <rect width="1080" height="595" rx="16" fill="#0b1329" stroke="#1e293b" stroke-width="1.5"/>
+    
+    <!-- Titlebar -->
+    <rect width="1080" height="48" rx="16" fill="#0f172a"/>
+    <rect y="32" width="1080" height="16" fill="#0f172a"/>
+    <line x1="0" y1="48" x2="1080" y2="48" stroke="#1e293b" stroke-width="1"/>
+
+    <!-- Mac-style Window Controls -->
+    <circle cx="28" cy="24" r="6" fill="#ef4444"/>
+    <circle cx="48" cy="24" r="6" fill="#f59e0b"/>
+    <circle cx="68" cy="24" r="6" fill="#10b981"/>
+
+    <!-- App Brand & Title -->
+    <g transform="translate(95, 12)">
+      <!-- Mini Shield -->
+      <path d="M4 12 L12 4 L20 12 L20 20 L12 24 L4 20 Z" fill="#0ea5e9" opacity="0.8"/>
+      <text x="28" y="16" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700">PYTHOR</text>
+      <text x="94" y="16" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600">PWA v2.5</text>
+      <rect x="156" y="2" width="230" height="20" rx="10" fill="#1e293b"/>
+      <text x="168" y="16" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10">https://pythor.swinux.ch</text>
+    </g>
+
+    <!-- Top Navigation Actions -->
+    <g transform="translate(730, 12)">
+      <rect x="0" y="2" width="100" height="22" rx="11" fill="#064e3b" stroke="#059669" stroke-width="1"/>
+      <text x="12" y="17" fill="#34d399" font-family="sans-serif" font-size="10" font-weight="600">✓ Hors-ligne Prêt</text>
+
+      <rect x="110" y="2" width="105" height="22" rx="11" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+      <text x="122" y="17" fill="#a5b4fc" font-family="sans-serif" font-size="10" font-weight="600">Mode Novice Actif</text>
+
+      <rect x="225" y="0" width="115" height="25" rx="12" fill="#0ea5e9"/>
+      <text x="238" y="17" fill="#020617" font-family="sans-serif" font-size="11" font-weight="700">Installer l'App</text>
+    </g>
+
+    <!-- App Body Layout -->
+    <!-- Left Sidebar (250px) -->
+    <g transform="translate(0, 48)">
+      <rect width="240" height="547" fill="#090e1f"/>
+      <line x1="240" y1="0" x2="240" y2="547" stroke="#1e293b" stroke-width="1"/>
+
+      <!-- Certification Track Selector -->
+      <g transform="translate(16, 20)">
+        <text x="0" y="0" fill="#64748b" font-family="sans-serif" font-size="10" font-weight="700" letter-spacing="1">10 CERTIFICATIONS PYTHON</text>
+        
+        <!-- Active Track: PCAP -->
+        <g transform="translate(0, 12)">
+          <rect width="208" height="36" rx="8" fill="#0284c7" fill-opacity="0.15" stroke="#0284c7" stroke-width="1"/>
+          <circle cx="18" cy="18" r="8" fill="#0284c7"/>
+          <text x="14" y="22" fill="#fff" font-family="sans-serif" font-size="9" font-weight="bold">★</text>
+          <text x="34" y="18" fill="#f1f5f9" font-family="sans-serif" font-size="11" font-weight="bold">PCAP-31-03</text>
+          <text x="34" y="28" fill="#38bdf8" font-family="sans-serif" font-size="9">Associate in Python • 500 Cards</text>
+        </g>
+
+        <!-- Other Tracks -->
+        <g transform="translate(0, 56)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCEP-30-02 (Entry-Level)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">400 c.</text>
+        </g>
+        <g transform="translate(0, 92)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCPP-32-10x (Professional)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">500 c.</text>
+        </g>
+        <g transform="translate(0, 128)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCED &amp; PCAD (Data)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">800 c.</text>
+        </g>
+        <g transform="translate(0, 164)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCET &amp; PCAT (Testing/QA)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">700 c.</text>
+        </g>
+        <g transform="translate(0, 200)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCES (Cybersecurity)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">400 c.</text>
+        </g>
+        <g transform="translate(0, 236)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCEA (Automation)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">500 c.</text>
+        </g>
+        <g transform="translate(0, 272)">
+          <rect width="208" height="30" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="12" y="19" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="600">PCEI (Artificial Intelligence)</text>
+          <text x="175" y="19" fill="#64748b" font-family="sans-serif" font-size="9">500 c.</text>
+        </g>
+      </g>
+
+      <!-- SRS Quick Stats Box -->
+      <g transform="translate(16, 360)">
+        <rect width="208" height="150" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <text x="14" y="24" fill="#f8fafc" font-family="sans-serif" font-size="11" font-weight="bold">Moteur Cognitif SM-2</text>
+        <text x="14" y="42" fill="#94a3b8" font-family="sans-serif" font-size="10">Cartes à réviser aujourd'hui :</text>
+        <text x="14" y="70" fill="#38bdf8" font-family="monospace" font-size="24" font-weight="bold">24 / 500</text>
+        <line x1="14" y1="85" x2="194" y2="85" stroke="#1e293b" stroke-width="1"/>
+        <text x="14" y="104" fill="#10b981" font-family="sans-serif" font-size="10">✓ Rétention estimée : 94%</text>
+        <text x="14" y="122" fill="#cbd5e1" font-family="sans-serif" font-size="9">Base 100% locale (IndexedDB)</text>
+        <text x="14" y="136" fill="#f59e0b" font-family="sans-serif" font-size="9">Mentions légales acceptées ✓</text>
+      </g>
+    </g>
+
+    <!-- Main Workspace Stage (840px) -->
+    <g transform="translate(260, 68)">
+      <!-- Top Workspace Tabs -->
+      <g>
+        <rect x="0" y="0" width="120" height="32" rx="8" fill="#0284c7" fill-opacity="0.2" stroke="#0284c7" stroke-width="1"/>
+        <text x="16" y="20" fill="#38bdf8" font-family="sans-serif" font-size="11" font-weight="bold">⚡ Flashcards SRS</text>
+
+        <rect x="130" y="0" width="130" height="32" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <text x="144" y="20" fill="#94a3b8" font-family="sans-serif" font-size="11" font-weight="600">🎯 Simulateur Examen</text>
+
+        <rect x="270" y="0" width="110" height="32" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <text x="286" y="20" fill="#94a3b8" font-family="sans-serif" font-size="11" font-weight="600">💻 Code Lab</text>
+
+        <rect x="390" y="0" width="110" height="32" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <text x="406" y="20" fill="#94a3b8" font-family="sans-serif" font-size="11" font-weight="600">📖 Cheatsheet</text>
+      </g>
+
+      <!-- Active Flashcard Container -->
+      <g transform="translate(0, 48)">
+        <!-- Card Frame -->
+        <rect width="780" height="450" rx="16" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.5"/>
+
+        <!-- Flashcard Header & Chapter Badge -->
+        <g transform="translate(24, 24)">
+          <rect x="0" y="0" width="90" height="24" rx="6" fill="#0284c7" fill-opacity="0.2" stroke="#0284c7" stroke-width="1"/>
+          <text x="10" y="16" fill="#38bdf8" font-family="monospace" font-size="10" font-weight="bold">SECTION 4</text>
+
+          <text x="104" y="16" fill="#94a3b8" font-family="sans-serif" font-size="11">Programmation Orientée Objet • Héritage &amp; MRO</text>
+          
+          <rect x="640" y="0" width="90" height="24" rx="6" fill="#1e293b"/>
+          <text x="652" y="16" fill="#cbd5e1" font-family="monospace" font-size="10">Carte #142/500</text>
+        </g>
+
+        <!-- Question Prompt -->
+        <g transform="translate(24, 66)">
+          <text x="0" y="16" fill="#f8fafc" font-family="sans-serif" font-size="15" font-weight="bold">
+            Quelle est la sortie stdout exacte produite par l'exécution du script Python suivant ?
+          </text>
+        </g>
+
+        <!-- Code Snippet Display -->
+        <g transform="translate(24, 98)">
+          <rect width="732" height="155" rx="10" fill="#050814" stroke="#1e293b" stroke-width="1"/>
+          <!-- Code line numbers & syntax -->
+          <text x="20" y="28" fill="#475569" font-family="monospace" font-size="11">1</text>
+          <text x="42" y="28" fill="#f43f5e" font-family="monospace" font-size="11">class</text>
+          <text x="82" y="28" fill="#38bdf8" font-family="monospace" font-size="11">Device</text>
+          <text x="126" y="28" fill="#f8fafc" font-family="monospace" font-size="11">:</text>
+
+          <text x="20" y="48" fill="#475569" font-family="monospace" font-size="11">2</text>
+          <text x="60" y="48" fill="#f43f5e" font-family="monospace" font-size="11">def</text>
+          <text x="90" y="48" fill="#a78bfa" font-family="monospace" font-size="11">__init__</text>
+          <text x="146" y="48" fill="#f8fafc" font-family="monospace" font-size="11">(self, model):</text>
+
+          <text x="20" y="68" fill="#475569" font-family="monospace" font-size="11">3</text>
+          <text x="80" y="68" fill="#f8fafc" font-family="monospace" font-size="11">self.__model = model</text>
+          <text x="240" y="68" fill="#64748b" font-family="monospace" font-size="11"># Name mangling -&gt; _Device__model</text>
+
+          <text x="20" y="94" fill="#475569" font-family="monospace" font-size="11">4</text>
+          <text x="42" y="94" fill="#f8fafc" font-family="monospace" font-size="11">dev = Device(</text>
+          <text x="134" y="94" fill="#34d399" font-family="monospace" font-size="11">"Alpha-9"</text>
+          <text x="194" y="94" fill="#f8fafc" font-family="monospace" font-size="11">)</text>
+
+          <text x="20" y="114" fill="#475569" font-family="monospace" font-size="11">5</text>
+          <text x="42" y="114" fill="#38bdf8" font-family="monospace" font-size="11">print</text>
+          <text x="78" y="114" fill="#f8fafc" font-family="monospace" font-size="11">(hasattr(dev, </text>
+          <text x="170" y="114" fill="#34d399" font-family="monospace" font-size="11">"__model"</text>
+          <text x="234" y="114" fill="#f8fafc" font-family="monospace" font-size="11">), hasattr(dev, </text>
+          <text x="340" y="114" fill="#34d399" font-family="monospace" font-size="11">"_Device__model"</text>
+          <text x="456" y="114" fill="#f8fafc" font-family="monospace" font-size="11">))</text>
+
+          <text x="20" y="140" fill="#475569" font-family="monospace" font-size="11">&gt;&gt;&gt;</text>
+          <text x="48" y="140" fill="#34d399" font-family="monospace" font-size="11" font-weight="bold">False True</text>
+        </g>
+
+        <!-- Explanation Drawer Box -->
+        <g transform="translate(24, 268)">
+          <rect width="732" height="74" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+          <text x="14" y="22" fill="#38bdf8" font-family="sans-serif" font-size="11" font-weight="bold">💡 Règle PCAP-31-03 / Name Mangling :</text>
+          <text x="14" y="42" fill="#cbd5e1" font-family="sans-serif" font-size="10 leading-normal">
+            Les attributs commençant par deux underscores (sans trailing underscore) sont renommés automatiquement
+          </text>
+          <text x="14" y="58" fill="#cbd5e1" font-family="sans-serif" font-size="10 leading-normal">
+            en _NomDeClasse__attribut lors de la compilation pour éviter tout conflit d'héritage.
+          </text>
+        </g>
+
+        <!-- SM-2 Rating Evaluation Buttons -->
+        <g transform="translate(24, 362)">
+          <text x="0" y="14" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="bold" letter-spacing="0.5">AUTO-ÉVALUATION SRS (ALGORITHME SM-2) :</text>
+          
+          <g transform="translate(0, 24)">
+            <!-- Again Button -->
+            <rect x="0" y="0" width="170" height="42" rx="10" fill="#7f1d1d" fill-opacity="0.3" stroke="#ef4444" stroke-width="1"/>
+            <text x="16" y="22" fill="#fca5a5" font-family="sans-serif" font-size="11" font-weight="bold">1. À Revoir (Again)</text>
+            <text x="16" y="34" fill="#f87171" font-family="sans-serif" font-size="9">&lt; 10 minutes</text>
+
+            <!-- Hard Button -->
+            <rect x="186" y="0" width="170" height="42" rx="10" fill="#78350f" fill-opacity="0.3" stroke="#f59e0b" stroke-width="1"/>
+            <text x="202" y="22" fill="#fde68a" font-family="sans-serif" font-size="11" font-weight="bold">2. Difficile (Hard)</text>
+            <text x="202" y="34" fill="#fbbf24" font-family="sans-serif" font-size="9">Dans 1 jour</text>
+
+            <!-- Good Button -->
+            <rect x="372" y="0" width="170" height="42" rx="10" fill="#064e3b" fill-opacity="0.3" stroke="#10b981" stroke-width="1"/>
+            <text x="388" y="22" fill="#a7f3d0" font-family="sans-serif" font-size="11" font-weight="bold">3. Bon (Good)</text>
+            <text x="388" y="34" fill="#34d399" font-family="sans-serif" font-size="9">Dans 3 jours</text>
+
+            <!-- Easy Button -->
+            <rect x="558" y="0" width="174" height="42" rx="10" fill="#0c4a6e" fill-opacity="0.3" stroke="#0ea5e9" stroke-width="1"/>
+            <text x="574" y="22" fill="#bae6fd" font-family="sans-serif" font-size="11" font-weight="bold">4. Facile (Easy)</text>
+            <text x="574" y="34" fill="#38bdf8" font-family="sans-serif" font-size="9">Dans 7 jours</text>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

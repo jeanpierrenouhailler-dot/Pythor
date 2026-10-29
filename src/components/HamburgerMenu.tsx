@@ -41,7 +41,9 @@ import { useSystemSettings } from '../context/SystemSettingsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useI18n } from '../context/I18nContext';
 import { useAuth } from '../context/AuthContext';
-import { Cloud, LogOut, RefreshCw } from 'lucide-react';
+import { useNoviceMode } from '../context/NoviceModeContext';
+import { PythorLogo } from './common/PythorLogo';
+import { Cloud, LogOut, RefreshCw, Download, Lightbulb } from 'lucide-react';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -80,6 +82,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   const { theme, toggleTheme, isDark } = useTheme();
   const { lang, setLang, t, isFrench } = useI18n();
   const { user, signInWithGoogle, signOut, syncState, syncLocalStorageToCloud } = useAuth();
+  const { openOnboarding, triggerInstall, isNoviceMode, toggleNoviceMode } = useNoviceMode();
 
   if (!isOpen) return null;
 
@@ -306,32 +309,13 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
         {/* Drawer Header */}
         <div className="px-5 py-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/40 ${
-              currentTrack === 'pcep'
-                ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
-                : currentTrack === 'pcpp'
-                ? 'bg-gradient-to-tr from-purple-600 to-indigo-600'
-                : currentTrack === 'pced'
-                ? 'bg-gradient-to-tr from-amber-600 to-orange-600'
-                : currentTrack === 'pcad'
-                ? 'bg-gradient-to-tr from-blue-600 to-teal-500'
-                : currentTrack === 'pcet'
-                ? 'bg-gradient-to-tr from-rose-600 to-pink-500'
-                : currentTrack === 'pcat'
-                ? 'bg-gradient-to-tr from-teal-600 to-emerald-500'
-                : currentTrack === 'pces'
-                ? 'bg-gradient-to-tr from-red-600 to-amber-500'
-                : currentTrack === 'pcea'
-                ? 'bg-gradient-to-tr from-emerald-600 to-teal-500'
-                : currentTrack === 'pcei'
-                ? 'bg-gradient-to-tr from-violet-600 to-purple-500'
-                : 'bg-gradient-to-tr from-cyan-600 to-indigo-600'
-            }`}>
-              <span className="font-mono font-bold text-white text-base">Py</span>
-            </div>
+            <PythorLogo size="md" showText={false} />
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-slate-100 text-sm sm:text-base">
+                <span className="font-extrabold text-slate-100 text-sm sm:text-base">
+                  Pythor
+                </span>
+                <span className="font-semibold text-slate-300 text-xs sm:text-sm">
                   {currentTrack === 'pcep'
                     ? 'PCEP-30-0x'
                     : currentTrack === 'pcpp'
@@ -424,6 +408,23 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               {progressPercent}%
             </span>
           </div>
+        </div>
+
+        {/* PWA INSTALL QUICK BANNER */}
+        <div className="px-5 py-2.5 bg-emerald-950/40 border-b border-emerald-500/30 flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-emerald-300 text-xs font-semibold">
+            <Download className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Mode Hors-Ligne (PWA)</span>
+          </div>
+          <button
+            onClick={() => {
+              triggerInstall();
+              onClose();
+            }}
+            className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            Installer
+          </button>
         </div>
 
         {/* Scrollable Navigation Body */}
@@ -1078,6 +1079,36 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 </div>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
                   {settings.currentVersion}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  openOnboarding();
+                }}
+                className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span>Mentions Légales, Avertissements & Guide Novice</span>
+              </button>
+
+              <button
+                onClick={toggleNoviceMode}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-colors ${
+                  isNoviceMode
+                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5">
+                  <Lightbulb className={`w-3.5 h-3.5 ${isNoviceMode ? 'text-amber-400 animate-pulse' : 'text-slate-500'}`} />
+                  <span>Mode Guide Novice (Infobulles actives)</span>
+                </div>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  isNoviceMode ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-400'
+                }`}>
+                  {isNoviceMode ? 'ON' : 'OFF'}
                 </span>
               </button>
 

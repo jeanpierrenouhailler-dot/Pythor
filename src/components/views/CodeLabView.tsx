@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { AppView, CertificationTrack } from '../../types';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface CodeLabViewProps {
   onNavigate: (view: AppView, section?: string) => void;
@@ -652,9 +653,16 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Experiments Navigation Sidebar */}
         <div className="lg:col-span-4 space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block px-1 mb-2">
-            {currentTrack.toUpperCase()} Code Experiments ({filteredExperiments.length})
-          </span>
+          <div className="flex items-center space-x-1 px-1 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              {currentTrack.toUpperCase()} Expériences ({filteredExperiments.length})
+            </span>
+            <InfoTooltip
+              title="Laboratoire de code interactif"
+              content="Sélectionnez un cas pratique pour analyser son comportement, ses subtilités de syntaxe et la règle officielle du Python Institute associée."
+              noviceTip="Exécutez chaque script pour comprendre comment Python gère la mémoire, l'héritage ou les exceptions !"
+            />
+          </div>
           {filteredExperiments.map((exp) => {
             const isActive = activeExp.id === exp.id;
             return (
@@ -695,19 +703,25 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
                 <button
                   onClick={() => handleCopy(activeExp.code)}
                   className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                  title="Copy code"
+                  title="Copier le code"
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 </button>
 
-                <button
-                  onClick={handleRun}
-                  disabled={isRunning}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>{isRunning ? 'Executing...' : 'Run Code'}</span>
-                </button>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={handleRun}
+                    disabled={isRunning}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{isRunning ? 'Exécution...' : 'Exécuter le Code'}</span>
+                  </button>
+                  <InfoTooltip
+                    title="Exécuter le code"
+                    content="Simule l'exécution de l'interpréteur CPython et affiche la sortie stdout standard ou les traces d'erreurs en temps réel."
+                  />
+                </div>
               </div>
             </div>
 
@@ -718,9 +732,15 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
 
             {/* Terminal Console Output */}
             <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 space-y-2">
-              <div className="flex items-center space-x-2 text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
-                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Console stdout</span>
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
+                <div className="flex items-center space-x-2">
+                  <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Sortie standard console (stdout)</span>
+                </div>
+                <InfoTooltip
+                  title="Console stdout"
+                  content="Résultat textuel exact produit par print() ou par le flux d'erreur standard de Python."
+                />
               </div>
               <div className="font-mono text-xs sm:text-sm text-emerald-400 whitespace-pre-wrap">
                 {hasRun ? activeExp.output : 'Press "Run Code" to inspect output...'}

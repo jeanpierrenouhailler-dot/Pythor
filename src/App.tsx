@@ -30,8 +30,11 @@ import { pcesAllFlashcards, pcesSyllabusSections } from './data/pcesData';
 import { pceaAllFlashcards, pceaSyllabusSections } from './data/pceaData';
 import { pceiAllFlashcards, pceiSyllabusSections } from './data/pceiData';
 import { LandingPageView } from './components/views/LandingPageView';
+import { OnboardingLegalModal } from './components/onboarding/OnboardingLegalModal';
+import { InstallPwaModal } from './components/common/InstallPwaModal';
+import { NoviceModeProvider, useNoviceMode } from './context/NoviceModeContext';
 import { AppView, CertificationTrack, Flashcard } from './types';
-import { ShieldCheck, Settings, Sun, Moon, Globe } from 'lucide-react';
+import { ShieldCheck, Settings, Sun, Moon, Globe, HelpCircle, Download } from 'lucide-react';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState<AppView>(() => {
@@ -168,6 +171,16 @@ function AppContent() {
   const { settings, isSettingsOpen, setIsSettingsOpen } = useSystemSettings();
   const { theme, toggleTheme, isDark } = useTheme();
   const { lang, setLang, toggleLang, t, isFrench } = useI18n();
+  const {
+    isOnboardingOpen,
+    closeOnboarding,
+    openOnboarding,
+    isInstallModalOpen,
+    closeInstallModal,
+    openInstallModal,
+    isNoviceMode,
+    toggleNoviceMode,
+  } = useNoviceMode();
 
   // Read SRS state count from localStorage
   const updateReviewedCount = () => {
@@ -428,6 +441,24 @@ function AppContent() {
                 ))}
                 <span className="text-slate-600">•</span>
                 <button
+                  onClick={openOnboarding}
+                  className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+                  title="Consulter les mentions légales, la clause de non-responsabilité et le guide novice"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>Mentions Légales & Guide</span>
+                </button>
+                <span className="text-slate-600">•</span>
+                <button
+                  onClick={openInstallModal}
+                  className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors"
+                  title="Installer Pythor sur smartphone ou ordinateur"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Installer l’App</span>
+                </button>
+                <span className="text-slate-600">•</span>
+                <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="flex items-center space-x-1 px-2.5 py-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
                   title="Open System Settings & Updates"
@@ -460,6 +491,36 @@ function AppContent() {
       </footer>
         </>
       )}
+
+      {/* Onboarding & Legal Disclaimer Modal */}
+      <OnboardingLegalModal
+        isOpen={isOnboardingOpen}
+        onClose={closeOnboarding}
+      />
+
+      {/* PWA Installation Illustrated Guide Modal */}
+      <InstallPwaModal
+        isOpen={isInstallModalOpen}
+        onClose={closeInstallModal}
+      />
+
+      {/* Create Flashcard Modal */}
+      <CreateFlashcardModal
+        isOpen={isCreateCardOpen}
+        onClose={() => setIsCreateCardOpen(false)}
+        onCardCreated={handleAddCustomCard}
+        defaultTrack={currentTrack}
+        defaultSection={selectedSection}
+      />
+
+      {/* System Settings & Updates Modal */}
+      <SystemSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Non-intrusive Update Notification Banner for background updates */}
+      <UpdateNotificationBanner />
     </div>
   );
 }
@@ -470,7 +531,9 @@ export function App() {
       <I18nProvider>
         <AuthProvider>
           <SystemSettingsProvider>
-            <AppContent />
+            <NoviceModeProvider>
+              <AppContent />
+            </NoviceModeProvider>
           </SystemSettingsProvider>
         </AuthProvider>
       </I18nProvider>

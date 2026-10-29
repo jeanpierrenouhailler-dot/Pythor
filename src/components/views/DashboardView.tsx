@@ -31,6 +31,7 @@ import { pceaSyllabusSections, pceaTrackInfo } from '../../data/pceaData';
 import { pceiSyllabusSections, pceiTrackInfo } from '../../data/pceiData';
 import { useSystemSettings } from '../../context/SystemSettingsContext';
 import { useI18n } from '../../context/I18nContext';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface DashboardViewProps {
   cards: Flashcard[];
@@ -2260,13 +2261,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </>
               )}
 
-              <button
-                onClick={() => onNavigate('exam')}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-medium text-xs transition-colors flex items-center space-x-1.5"
-              >
-                <GraduationCap className="w-4 h-4 text-amber-400" />
-                <span>{t.dashboard.startExamBtn}</span>
-              </button>
+              <div className="inline-flex items-center space-x-1">
+                <button
+                  onClick={() => onNavigate('exam')}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-medium text-xs transition-colors flex items-center space-x-1.5"
+                >
+                  <GraduationCap className="w-4 h-4 text-amber-400" />
+                  <span>{t.dashboard.startExamBtn}</span>
+                </button>
+                <InfoTooltip
+                  title="Simulateur d’Examen"
+                  text="Simulez l’épreuve officielle en temps limité (40 à 65 min selon la certification). Votre note et le débriefing s’affichent à la fin."
+                  tip="Le seuil officiel de réussite fixé par le Python Institute est de 70%."
+                />
+              </div>
 
               <button
                 onClick={() => onNavigate('cheatsheet')}
@@ -2276,22 +2284,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>{t.dashboard.cheatsheetBtn}</span>
               </button>
 
-              <button
-                onClick={onOpenCreateCard}
-                className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-medium text-xs transition-colors flex items-center space-x-1.5"
-              >
-                <Plus className="w-4 h-4 text-cyan-400" />
-                <span>{isFrench ? '+ Créer une carte' : '+ New Card'}</span>
-              </button>
+              <div className="inline-flex items-center space-x-1">
+                <button
+                  onClick={onOpenCreateCard}
+                  className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-medium text-xs transition-colors flex items-center space-x-1.5"
+                >
+                  <Plus className="w-4 h-4 text-cyan-400" />
+                  <span>{isFrench ? '+ Créer une carte' : '+ New Card'}</span>
+                </button>
+                <InfoTooltip
+                  title="Cartes Personnalisées"
+                  text="Ajoutez vos propres flashcards pour cibler vos points faibles ou consigner des astuces de code personnelles."
+                />
+              </div>
             </div>
           </div>
 
           {/* Exam Readiness Card */}
           <div className="w-full lg:w-80 bg-slate-950/80 border border-slate-800 rounded-2xl p-5 backdrop-blur-md shadow-inner">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {t.dashboard.examReadiness}
-              </span>
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {t.dashboard.examReadiness}
+                </span>
+                <InfoTooltip
+                  title="Score de Rétention Mémorielle"
+                  text="Calculé grâce à l'algorithme SuperMemo-2 en fonction des cartes maîtrisées et de vos cotations lors des révisions."
+                  tip="Pour réussir votre examen réel, visez un score supérieur à 70%."
+                />
+              </div>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                 {t.dashboard.passMark}
               </span>

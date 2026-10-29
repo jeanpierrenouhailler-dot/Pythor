@@ -19,6 +19,7 @@ import { Flashcard, AppView, CertificationTrack, UserExamAttemptRecord } from '.
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveUserExamAttempt, subscribeUserExamAttempts } from '../../services/firestoreService';
+import { InfoTooltip } from '../common/InfoTooltip';
 
 interface ExamSimulatorViewProps {
   cards: Flashcard[];
@@ -335,9 +336,20 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
           {/* Section Filter */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              {isFrench ? "Sélectionner la Portée de l'Examen" : 'Select Exam Scope'}
-            </label>
+            <div className="flex items-center space-x-1 mb-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {isFrench ? "Sélectionner la Portée de l'Examen" : 'Select Exam Scope'}
+              </label>
+              <InfoTooltip
+                title={isFrench ? "Portée de l'examen" : "Exam Scope"}
+                content={
+                  isFrench
+                    ? "Choisissez de tester toutes les sections ou ciblez un module précis où vous avez des doutes (ex: POO ou Chaînes). Idéal pour les révisions ciblées."
+                    : "Choose to test across all sections or focus on a specific module (e.g. OOP or Strings). Great for focused drills."
+                }
+                noviceTip={isFrench ? "Novice : commencez par une seule section pour vous familiariser avec le format !" : "Beginner: start with a single section first!"}
+              />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {scopeOptions.map((opt) => (
                 <button
@@ -357,9 +369,19 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
           {/* Question Count */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              {isFrench ? "Nombre de Questions" : 'Question Count'}
-            </label>
+            <div className="flex items-center space-x-1 mb-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {isFrench ? "Nombre de Questions" : 'Question Count'}
+              </label>
+              <InfoTooltip
+                title={isFrench ? "Nombre de questions" : "Question Count"}
+                content={
+                  isFrench
+                    ? "10 questions pour un test express de 10 min, 20 pour un entraînement moyen, ou 30 pour simuler les conditions complètes de l'examen officiel."
+                    : "10 questions for a quick 10-min sprint, 20 for balanced practice, or 30 to replicate real exam volume."
+                }
+              />
+            </div>
             <div className="grid grid-cols-3 gap-3">
               {[10, 20, 30].map((count) => (
                 <button
@@ -648,6 +670,14 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           <div className="flex items-center space-x-1.5 text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
             <Clock className="w-3.5 h-3.5" />
             <span>{formatTime(secondsElapsed)}</span>
+            <InfoTooltip
+              title={isFrench ? "Chronomètre d'examen" : "Exam Timer"}
+              content={
+                isFrench
+                  ? "Mesure votre temps total. Lors de l'examen réel, vous disposez d'environ 65 minutes pour 40 questions (soit ~1 min 30 par question)."
+                  : "Tracks elapsed time. Official exams usually provide 65 minutes for 40 questions (~90 seconds per question)."
+              }
+            />
           </div>
 
           <button
@@ -695,11 +725,22 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
         {/* Answer Options */}
         <div className="space-y-2.5 pt-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
-            {isFrench
-              ? 'Sélectionnez la sortie console stdout ou la valeur attendue :'
-              : 'Select Expected Console Output / Return Value:'}
-          </span>
+          <div className="flex items-center space-x-1">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
+              {isFrench
+                ? 'Sélectionnez la sortie console stdout ou la valeur attendue :'
+                : 'Select Expected Console Output / Return Value:'}
+            </span>
+            <InfoTooltip
+              title={isFrench ? "Choix de la réponse" : "Choosing an answer"}
+              content={
+                isFrench
+                  ? "Analysez attentivement le code Python ci-dessus. Cliquez sur une option pour sélectionner votre réponse. Vous pouvez changer d'avis jusqu'à la soumission finale."
+                  : "Analyze the Python snippet. Click an option to pick your answer. You can change your choice until final submission."
+              }
+              noviceTip={isFrench ? "Méfiez-vous des pièges de syntaxe ou des exceptions fréquentes (ex: TypeError, AttributeError)." : "Watch out for syntax traps or common exceptions."}
+            />
+          </div>
           {options.map((option, idx) => {
             const isSelected = selectedOption === option;
             const letter = String.fromCharCode(65 + idx);
