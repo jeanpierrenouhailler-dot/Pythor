@@ -269,7 +269,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
                         {settings.releaseDate}
                       </span>
                       <span className="text-[11px] text-slate-500 block mt-0.5">
-                        {isFrench ? 'Version certifiée officielle candidat Associate' : 'Official Certified Associate candidate build'}
+                        {isFrench ? 'Version stable de préparation aux examens' : 'Stable exam preparation build'}
                       </span>
                     </div>
                   </div>
@@ -762,7 +762,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
         <div className="px-5 sm:px-6 py-3.5 border-t border-slate-800 bg-slate-950 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            <span>Python Institute Alignment: PCAP-31-03 Certified</span>
+            <span>Python Institute Alignment: PCAP-31-03 Exam Blueprint</span>
           </div>
 
           <button

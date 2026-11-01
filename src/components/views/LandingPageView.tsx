@@ -427,7 +427,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden sm:block">
-                {isFrench ? 'Studio d’Entraînement Certifié Python' : 'Python Certification Study Studio'}
+                {isFrench ? 'Studio d’Entraînement aux Certifications Python' : 'Python Certification Study Studio'}
               </p>
             </div>
           </div>

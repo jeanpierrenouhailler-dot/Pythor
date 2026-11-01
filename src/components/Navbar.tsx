@@ -155,24 +155,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <p className="text-[11px] text-slate-400 hidden lg:block leading-none">
                 {currentTrack === 'pcep'
-                  ? (isFrench ? 'Certifié Python Institute Débutant' : 'Python Institute Certified Entry-Level')
+                  ? (isFrench ? 'Préparation Certification PCEP' : 'PCEP Certification Prep')
                   : currentTrack === 'pcpp'
-                  ? (isFrench ? 'Certifié Python Institute Professionnel' : 'Python Institute Certified Professional')
+                  ? (isFrench ? 'Préparation Certification PCPP' : 'PCPP Certification Prep')
                   : currentTrack === 'pced'
-                  ? (isFrench ? 'Certifié Python Institute Data Analyst' : 'Python Institute Certified Data Analyst')
+                  ? (isFrench ? 'Préparation Certification PCED' : 'PCED Certification Prep')
                   : currentTrack === 'pcad'
-                  ? (isFrench ? 'Certifié Python Institute Associate Data Analyst' : 'Python Institute Certified Associate Data Analyst')
+                  ? (isFrench ? 'Préparation Certification PCAD' : 'PCAD Certification Prep')
                   : currentTrack === 'pcet'
-                  ? (isFrench ? 'Certifié Python Institute Testeur' : 'Python Institute Certified Entry-Level Tester')
+                  ? (isFrench ? 'Préparation Certification PCET' : 'PCET Certification Prep')
                   : currentTrack === 'pcat'
-                  ? (isFrench ? 'Certifié Python Institute Associate Tester' : 'Python Institute Certified Associate Tester')
+                  ? (isFrench ? 'Préparation Certification PCAT' : 'PCAT Certification Prep')
                   : currentTrack === 'pces'
-                  ? (isFrench ? 'Certifié Python Institute Sécurité' : 'Python Institute Certified Security Specialist')
+                  ? (isFrench ? 'Préparation Certification PCES' : 'PCES Certification Prep')
                   : currentTrack === 'pcea'
-                  ? (isFrench ? 'Certifié Python Institute Automatisation' : 'Python Institute Certified Automation Specialist')
+                  ? (isFrench ? 'Préparation Certification PCEA' : 'PCEA Certification Prep')
                   : currentTrack === 'pcei'
-                  ? (isFrench ? 'Certifié Python Institute Spécialiste IA' : 'Python Institute Certified AI Specialist')
-                  : (isFrench ? 'Certifié Python Institute Associate' : 'Python Institute Certified Associate')}
+                  ? (isFrench ? 'Préparation Certification PCEI' : 'PCEI Certification Prep')
+                  : (isFrench ? 'Préparation Certification PCAP' : 'PCAP Certification Prep')}
               </p>
             </div>
           </button>
