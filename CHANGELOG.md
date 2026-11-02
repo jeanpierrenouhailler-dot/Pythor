@@ -4,6 +4,19 @@ Toutes les modifications notables apportées au projet **Pythor** sont document�
 
 ---
 
+## [v2.5.1] — 2026-11-02
+
+### 🌐 Architecture Tout-en-Un & Déploiement Cloudflare Pages
+- **Architecture SPA Unifiée Confirmée :** La landing page accueille les visiteurs par défaut sur `https://pythor.swinux.ch/`, présentant l'écosystème et permettant de basculer vers l'espace d'entraînement au clic sur « Ouvrir Pythor » ou sur l'un des 10 parcours.
+- **Accès Direct & Raccourcis :** Prise en charge des URL directes (`/#dashboard`, `/?view=dashboard`, `/app`) pour les utilisateurs réguliers et raccourci « Présentation » dans la barre d'onglets pour revenir à la vitrine à tout moment.
+- **Guide Cloudflare Dédié :** Ajout de `CLOUDFLARE_DEPLOY.md` précisant les paramètres de build (`npm run build`, `dist`, `NODE_VERSION=20`), le routage SPA (`_redirects`) et les en-têtes HTTP de sécurité/cache PWA (`_headers`).
+- **Correction des Dépendances :** Suppression de la dépendance native `sharp` du `package.json`, garantissant une installation sans faille avec Bun et npm.
+
+### ⚖️ Suppression des Allégations de Certification Personnelle
+- Remplacement systématique de toute mention ambiguë (« Certifié Python Institute Associate », « candidat certifié », etc.) par des libellés rigoureux d'entraînement et de préparation : **« Préparation Certification PCAP »**, **« Studio d’Entraînement aux Certifications Python »**, et **« Version stable de préparation aux examens »**.
+
+---
+
 ## [v2.5.0] — 2026-10-29
 
 ### 🛡️ Mentions Légales & Onboarding Novice

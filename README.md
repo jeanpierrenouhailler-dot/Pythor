@@ -209,6 +209,16 @@ npm run dev
 npm run build
 ```
 
+### ☁️ Déploiement sur Cloudflare Pages
+Un guide complet dédié est disponible dans [CLOUDFLARE_DEPLOY.md](./CLOUDFLARE_DEPLOY.md).
+
+- **Framework preset :** `Vite`
+- **Build command :** `npm run build`
+- **Build output directory :** `dist`
+- **Variable d'environnement recommandée :** `NODE_VERSION=20`
+- Déploiement direct avec Wrangler : `npx wrangler pages deploy dist --project-name=pythor`
+- Configuration du domaine : brancher `pythor.swinux.ch` sur `pythor.pages.dev` via CNAME.
+
 ---
 
 ## 📄 Licence
