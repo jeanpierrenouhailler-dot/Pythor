@@ -19,22 +19,22 @@ import {
   BookOpen,
   Plus,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import { Flashcard, CardSRSData, CertificationTrack } from '../../types';
-import { pcapSyllabusSections } from '../../data/pcapData';
-import { pcepSyllabusSections } from '../../data/pcepData';
-import { pcppSyllabusSections } from '../../data/pcppData';
-import { pcedSyllabusSections } from '../../data/pcedData';
-import { pcadSyllabusSections } from '../../data/pcadData';
-import { pcetSyllabusSections } from '../../data/pcetData';
-import { pcatSyllabusSections } from '../../data/pcatData';
-import { pcesSyllabusSections } from '../../data/pcesData';
-import { pceaSyllabusSections } from '../../data/pceaData';
-import { pceiSyllabusSections } from '../../data/pceiData';
+import { CERTIFICATION_BY_ID } from '../../data/certifications';
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveUserSrsItem, subscribeUserSrsProgress } from '../../services/firestoreService';
 import { InfoTooltip } from '../common/InfoTooltip';
+import {
+  persistSrsMapByTrack,
+  mergeSrsProgress,
+  readAllTrackSrsStates,
+  readTrackSrsState,
+  writeAllTrackSrsStates,
+} from '../../utils/srsStorage';
+import { calculateSrsCardStats } from '../../utils/srsStats';
 
 interface FlashcardsSrsViewProps {
   cards: Flashcard[];
@@ -42,9 +42,11 @@ interface FlashcardsSrsViewProps {
   onSelectSection: (section: string) => void;
   initialChapter?: string;
   currentTrack?: CertificationTrack;
-  onSelectTrack?: (track: CertificationTrack) => void;
   onOpenCreateCard?: () => void;
   onDeleteCard?: (id: string) => void;
+  onEditCard?: (card: Flashcard) => void;
+  dueOnly?: boolean;
+  customOnly?: boolean;
 }
 
 export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
@@ -53,9 +55,11 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   onSelectSection,
   initialChapter,
   currentTrack = 'pcap',
-  onSelectTrack,
   onOpenCreateCard,
   onDeleteCard,
+  onEditCard,
+  dueOnly = false,
+  customOnly = false,
 }) => {
   const { t, isFrench } = useI18n();
   const { user } = useAuth();
@@ -73,38 +77,33 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
     }
   }, [initialChapter]);
 
-  // SRS State stored locally
-  const [srsState, setSrsState] = useState<Record<string, CardSRSData>>(() => {
-    try {
-      const saved = localStorage.getItem('pcap_srs_state');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  // SRS State stored locally by certification track to avoid mixing progress across tracks.
+  const [srsState, setSrsState] = useState<Record<string, CardSRSData>>(() => readTrackSrsState(currentTrack));
+
+  useEffect(() => {
+    setSrsState(readTrackSrsState(currentTrack));
+  }, [currentTrack]);
 
   // Real-time synchronization of SRS progress from Firestore when user is authenticated
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeUserSrsProgress(user.uid, (cloudSrs) => {
-      setSrsState((prev) => {
-        const merged = { ...prev, ...cloudSrs };
-        try {
-          localStorage.setItem('pcap_srs_state', JSON.stringify(merged));
-        } catch {}
-        return merged;
-      });
+      const localSrs = Object.values(readAllTrackSrsStates()).reduce(
+        (allStates, trackStates) => ({ ...allStates, ...trackStates }),
+        {} as Record<string, CardSRSData>,
+      );
+      const merged = mergeSrsProgress(localSrs, cloudSrs);
+      persistSrsMapByTrack(merged);
+      setSrsState(merged);
     });
     return () => unsubscribe();
   }, [user]);
 
   const saveSrsState = (newState: Record<string, CardSRSData>) => {
     setSrsState(newState);
-    try {
-      localStorage.setItem('pcap_srs_state', JSON.stringify(newState));
-    } catch {
-      // ignore
-    }
+    const allStates = readAllTrackSrsStates();
+    allStates[currentTrack] = { ...allStates[currentTrack], ...newState };
+    writeAllTrackSrsStates(allStates);
   };
 
   // Filter cards based on section, chapter, category, difficulty, search
@@ -126,6 +125,18 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       if (selectedDifficulty !== 'all' && card.difficulty !== selectedDifficulty) {
         return false;
       }
+      if (customOnly && !card.isUserCreated) {
+        return false;
+      }
+      if (dueOnly) {
+        const state = srsState[card.id];
+        if (
+          !state
+          || state.status === 'new'
+          || state.status === 'mastered'
+          || (state.dueDate !== undefined && state.dueDate > Date.now())
+        ) return false;
+      }
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -137,7 +148,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       }
       return true;
     });
-  }, [cards, selectedSection, selectedChapter, selectedCategory, selectedDifficulty, searchQuery]);
+  }, [cards, selectedSection, selectedChapter, selectedCategory, selectedDifficulty, searchQuery, srsState, dueOnly, customOnly]);
 
   // Adjust current index if out of bounds
   useEffect(() => {
@@ -148,6 +159,22 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   }, [filteredCards.length, currentIndex]);
 
   const currentCard: Flashcard | undefined = filteredCards[currentIndex];
+  const currentCardLastReviewed = currentCard ? srsState[currentCard.id]?.lastReviewed : undefined;
+  const currentSyllabus = CERTIFICATION_BY_ID[currentTrack].syllabus;
+
+  useEffect(() => {
+    if (!currentCard) return;
+    try {
+      localStorage.setItem('py_last_study_activity', JSON.stringify({
+        track: currentTrack,
+        cardId: currentCard.id,
+        section: currentCard.section,
+        chapter: currentCard.chapter,
+        timestamp: Date.now(),
+      }));
+      window.dispatchEvent(new Event('pythor-study-activity'));
+    } catch {}
+  }, [currentCard?.id, currentTrack, currentCardLastReviewed]);
 
   const handleNext = useCallback(() => {
     if (filteredCards.length === 0) return;
@@ -264,145 +291,23 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   }, [handleFlip, handleNext, handlePrev, isFlipped, currentCard, srsState]);
 
   // Stats calculation
-  const stats = useMemo(() => {
-    let mastered = 0;
-    let review = 0;
-    let learning = 0;
-    let fresh = 0;
-
-    cards.forEach((c) => {
-      const s = srsState[c.id];
-      if (!s) fresh++;
-      else if (s.status === 'mastered') mastered++;
-      else if (s.status === 'review') review++;
-      else learning++;
-    });
-
-    return { mastered, review, learning, fresh, total: cards.length };
-  }, [cards, srsState]);
+  const stats = useMemo(() => calculateSrsCardStats(cards, srsState), [cards, srsState]);
 
   const currentCardSRS = currentCard ? srsState[currentCard.id] : undefined;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <div className="py-page-container max-w-5xl space-y-6">
       {/* Top Banner / Section Header */}
-      <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-sm">
-        {/* Track switch bar if onSelectTrack provided */}
-        {onSelectTrack && (
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800/60">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-400 font-medium">Certification Track:</span>
-              <div className="inline-flex rounded-lg bg-slate-950 p-1 border border-slate-800">
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcap');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcap'
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCAP-31-03 (Associate)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcep');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcep'
-                      ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCEP-30-0x (Entry-Level)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcpp');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcpp'
-                      ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCPP-32-10x (Professional)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pced');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pced'
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCED-30-02 (Entry Data)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcad');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcad'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCAD-31-02 (Data Analyst)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcet');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcet'
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCET-30-01 (Entry Tester)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTrack('pcat');
-                    onSelectSection('Section 1');
-                    setSelectedChapter('all');
-                  }}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                    currentTrack === 'pcat'
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  PCAT-31-0x (Associate Tester)
-                </button>
-              </div>
-            </div>
-
-            {onOpenCreateCard && (
-              <button
-                onClick={onOpenCreateCard}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5 text-cyan-400" />
-                <span>+ Create Flashcard</span>
-              </button>
-            )}
+      <div className="py-surface p-4 shadow-sm sm:p-6">
+        {onOpenCreateCard && (
+          <div className="mb-4 flex justify-end">
+            <button
+              onClick={onOpenCreateCard}
+              className="py-button py-button--secondary"
+            >
+              <Plus className="mr-2 inline h-4 w-4" />
+              {isFrench ? 'Créer une carte' : 'Create a card'}
+            </button>
           </div>
         )}
 
@@ -421,26 +326,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           >
             All Sections
           </button>
-          {(currentTrack === 'pcep'
-            ? pcepSyllabusSections
-            : currentTrack === 'pcpp'
-            ? pcppSyllabusSections
-            : currentTrack === 'pced'
-            ? pcedSyllabusSections
-            : currentTrack === 'pcad'
-            ? pcadSyllabusSections
-            : currentTrack === 'pcet'
-            ? pcetSyllabusSections
-            : currentTrack === 'pcat'
-            ? pcatSyllabusSections
-            : currentTrack === 'pces'
-            ? pcesSyllabusSections
-            : currentTrack === 'pcea'
-            ? pceaSyllabusSections
-            : currentTrack === 'pcei'
-            ? pceiSyllabusSections
-            : pcapSyllabusSections
-          ).map((sec) => (
+          {currentSyllabus.map((sec) => (
             <button
               key={sec.id}
               onClick={() => {
@@ -462,13 +348,22 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                {currentTrack.toUpperCase()} • {selectedSection === 'all' ? 'Complete Bank' : selectedSection}
+                {currentTrack.toUpperCase()} • {selectedSection === 'all'
+                  ? (isFrench ? 'Toutes les cartes' : 'All cards')
+                  : selectedSection}
               </span>
               <span className="text-xs text-slate-400">
-                {filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'} available
+                {filteredCards.length} {isFrench ? 'cartes disponibles' : 'cards available'}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white mt-1 tracking-tight">
+            <h1 className="mt-1 text-xl font-bold tracking-tight text-[var(--py-color-text)] sm:text-2xl">
+              {CERTIFICATION_BY_ID[currentTrack].info.code} — {
+                selectedSection === 'all'
+                  ? (isFrench ? CERTIFICATION_BY_ID[currentTrack].nameFr : CERTIFICATION_BY_ID[currentTrack].info.name)
+                  : currentSyllabus.find((section) => `Section ${section.number}` === selectedSection)?.title ?? selectedSection
+              }
+            </h1>
+            <h1 className="hidden">
               {currentTrack === 'pcei' ? (
                 selectedSection === 'Section 1'
                   ? 'PCEI Section 1: Artificial Intelligence Fundamentals (100 Cards)'
@@ -585,7 +480,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   : 'PCAP-31-03 Interactive Active Recall & SRS Flashcards'
               )}
             </h1>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+            <p className="hidden">
               {currentTrack === 'pcei' ? (
                 selectedSection === 'Section 6' ? (
                   'Comprehensive 100-card deep dive into identifying AI opportunities vs deterministic software, resource and cloud GPU economics, agile AI project lifecycle, Git/DVC collaboration, and audience-tailored communication of results.'
@@ -714,24 +609,29 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                 'Spaced repetition system designed for rapid mastery of Python syntax nuances, runtime exceptions, and exam traps.'
               )}
             </p>
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-[var(--py-color-text-muted)]">
+              {isFrench
+                ? CERTIFICATION_BY_ID[currentTrack].descriptionFr
+                : CERTIFICATION_BY_ID[currentTrack].info.description}
+            </p>
           </div>
 
           {/* Mini Stats Badges */}
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl px-2.5 py-1.5">
-              <span className="text-[10px] uppercase font-semibold text-slate-400 block">Fresh</span>
+              <span className="text-[10px] uppercase font-semibold text-slate-400 block">{isFrench ? 'Nouvelles' : 'New'}</span>
               <span className="text-sm font-bold text-slate-200">{stats.fresh}</span>
             </div>
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-2.5 py-1.5">
-              <span className="text-[10px] uppercase font-semibold text-amber-300 block">Learning</span>
+              <span className="text-[10px] uppercase font-semibold text-amber-300 block">{isFrench ? 'En cours' : 'Learning'}</span>
               <span className="text-sm font-bold text-amber-300">{stats.learning}</span>
             </div>
             <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl px-2.5 py-1.5">
-              <span className="text-[10px] uppercase font-semibold text-sky-300 block">Review</span>
+              <span className="text-[10px] uppercase font-semibold text-sky-300 block">{isFrench ? 'Révision' : 'Review'}</span>
               <span className="text-sm font-bold text-sky-300">{stats.review}</span>
             </div>
             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-2.5 py-1.5">
-              <span className="text-[10px] uppercase font-semibold text-emerald-300 block">Mastered</span>
+              <span className="text-[10px] uppercase font-semibold text-emerald-300 block">{isFrench ? 'Maîtrisées' : 'Mastered'}</span>
               <span className="text-sm font-bold text-emerald-300">{stats.mastered}</span>
             </div>
           </div>
@@ -1896,29 +1796,58 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       {filteredCards.length === 0 ? (
         <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-12 text-center">
           <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-slate-200">No flashcards found</h3>
+          <h3 className="text-lg font-semibold text-slate-200">
+            {dueOnly
+              ? (isFrench ? 'Aucune carte à réviser' : 'No cards due for review')
+              : customOnly
+                ? (isFrench ? 'Aucune carte personnalisée pour le moment' : 'No custom flashcards yet')
+                : (isFrench ? 'Aucune flashcard trouvée' : 'No flashcards found')}
+          </h3>
           <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
-            Try resetting your search query or selecting another chapter/section filter.
+            {dueOnly
+              ? (isFrench ? 'Votre file de répétition espacée est à jour. Revenez lorsque de nouvelles cartes seront à réviser.' : 'Your spaced-repetition queue is clear. Come back when more cards are due.')
+              : customOnly
+                ? (isFrench ? 'Créez une carte personnalisée pour constituer votre collection.' : 'Create a custom flashcard to build your own study collection.')
+                : (isFrench ? 'Modifiez la recherche ou choisissez un autre chapitre ou domaine.' : 'Try resetting your search query or selecting another chapter/section filter.')}
           </p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedChapter('all');
-              setSelectedCategory('all');
-              setSelectedDifficulty('all');
-            }}
-            className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-cyan-600/20"
-          >
-            Clear All Filters
-          </button>
+          {customOnly && onOpenCreateCard ? (
+            <button onClick={onOpenCreateCard} className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-cyan-600/20">
+              {isFrench ? 'Créer une carte personnalisée' : 'Create a custom flashcard'}
+            </button>
+          ) : !dueOnly && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedChapter('all');
+                setSelectedCategory('all');
+                setSelectedDifficulty('all');
+              }}
+              className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-cyan-600/20"
+            >
+              Clear All Filters
+            </button>
+          )}
         </div>
       ) : currentCard ? (
         <div className="space-y-4">
+          <div
+            className="py-progress"
+            role="progressbar"
+            aria-label={isFrench ? 'Progression dans le jeu de cartes' : 'Flashcard deck progress'}
+            aria-valuemin={0}
+            aria-valuemax={filteredCards.length}
+            aria-valuenow={currentIndex + 1}
+          >
+            <div
+              className="py-progress__value"
+              style={{ width: `${((currentIndex + 1) / filteredCards.length) * 100}%` }}
+            />
+          </div>
           {/* Card Top Navigator Bar */}
           <div className="flex items-center justify-between px-2 text-xs text-slate-400">
             <div className="flex items-center space-x-2">
               <span className="font-mono text-cyan-400 font-semibold">
-                Card {currentIndex + 1} of {filteredCards.length}
+                {isFrench ? `Carte ${currentIndex + 1} sur ${filteredCards.length}` : `Card ${currentIndex + 1} of ${filteredCards.length}`}
               </span>
               <span>•</span>
               <span className="text-slate-300 font-medium">
@@ -1973,19 +1902,39 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                       <span className="text-slate-200 font-medium">
                         {currentCard.topic || `Chapter ${currentCard.chapter}`}
                       </span>
-                      {currentCard.isUserCreated && onDeleteCard && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm('Delete this custom flashcard?')) {
-                              onDeleteCard(currentCard.id);
-                            }
-                          }}
-                          className="ml-2 p-1 rounded-md text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors"
-                          title="Delete custom card"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      {currentCard.isUserCreated && (
+                        <span className="ml-2 flex items-center gap-1">
+                          {onEditCard && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditCard(currentCard);
+                              }}
+                              className="rounded-md border border-[var(--py-color-border)] p-1 text-[var(--py-color-text-muted)] hover:bg-[var(--py-color-surface-raised)] hover:text-[var(--py-color-text)]"
+                              title={isFrench ? 'Modifier cette carte' : 'Edit custom card'}
+                              aria-label={isFrench ? 'Modifier cette carte personnalisée' : 'Edit this custom card'}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          {onDeleteCard && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm(isFrench ? 'Supprimer cette carte personnalisée ?' : 'Delete this custom flashcard?')) {
+                                  onDeleteCard(currentCard.id);
+                                }
+                              }}
+                              className="rounded-md border border-rose-500/30 p-1 text-rose-400 hover:bg-rose-500/20"
+                              title={isFrench ? 'Supprimer cette carte' : 'Delete custom card'}
+                              aria-label={isFrench ? 'Supprimer cette carte personnalisée' : 'Delete this custom card'}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </span>
                       )}
                     </div>
                   </div>

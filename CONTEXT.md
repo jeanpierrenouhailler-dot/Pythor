@@ -34,14 +34,15 @@ Pour garantir l'information de chaque utilisateur sans nuire à la découverte d
 ## 3. Architecture Technique
 
 ### 3.1 Stack & Bibliothèques
-- **Frontend :** React 18, TypeScript en mode strict, Vite 5.
-- **Styling :** Tailwind CSS avec palette sombre inspirée des environnements de développement intégrés (IDE) modernes (ardoise/cyan/ambre/indigo).
+- **Frontend :** React 18, TypeScript, Vite 6 et Tailwind CSS 4.
 - **Icônes :** Lucide React.
-- **Service Worker :** Service Worker PWA (`public/sw.js`) gérant le pré-cache des assets et le fonctionnement 100% hors-ligne.
+- **Navigation :** routes et alias centralisés dans `src/navigation/routes.ts`; barre de navigation responsive partagée.
+- **Données de certification :** métadonnées et programmes légers dans `src/data/metadata/`; les cartes sont chargées à la demande via `src/data/certificationDataLoader.ts`.
+- **Service Worker :** `public/sw.js` pré-cache le shell PWA et met en cache les ressources demandées. Les jeux de cartes sont disponibles hors ligne après leur premier chargement.
 - **Stockage Données :** Approche *Local-First* :
-  - `localStorage` pour les préférences utilisateur (mode novice, accord légal, langue, certifications favorites).
-  - IndexedDB pour les métriques de répétition espacée (historique des révisions, scores d'aisance SM-2).
-  - Firebase Firestore (optionnel) : synchronisation cloud sécurisée des résultats d'examens lorsque l'utilisateur s'identifie, avec repli gracieux en mode invité si aucune configuration Firebase n'est fournie.
+  - `localStorage` pour les préférences, les cartes personnalisées et les états SRS isolés par certification.
+  - Firebase Firestore (optionnel) : synchronisation des profils, cartes, états SRS et tentatives d'examen lorsque l'utilisateur s'identifie.
+- **Tests :** Vitest (`npm test`), avec cas ciblés pour l'isolation des parcours, la fusion des états SRS et les volumes des jeux de cartes.
 
 ### 3.2 Composants Clés d'Accompagnement Novice
 - `NoviceModeContext.tsx` : Fournisseur de contexte global gérant l'état du mode débutant, l'ouverture des fenêtres modales et la capture de l'événement d'installation PWA (`beforeinstallprompt`).
@@ -54,19 +55,11 @@ Pour garantir l'information de chaque utilisateur sans nuire à la découverte d
 
 ## 4. Périmètre Fonctionnel Actuel
 
-1. **Parcours 10 Certifications (4 300+ Cartes) :**
-   - PCEP-30-02 : 400 questions
-   - PCAP-31-03 : 500 questions
-   - PCPP-32-10x : 500 questions
-   - PCED-30-02 : 400 questions
-   - PCAD-31-02 : 400 questions
-   - PCET-30-01 : 300 questions
-   - PCAT-31-0x : 400 questions
-   - PCES-30-01 : 400 questions
-   - PCEA-30-01 : 500 questions
-   - PCEI-30-01 : 500 questions
-2. **Moteur Cognitif SM-2 :** Calcul de l'intervalle optimal ($I_1 = 1$, $I_2 = 6$, $I_n = I_{n-1} \times EF$) et du facteur de facilité ($EF' = EF + (0.1 - (5 - q) \times (0.08 + (5 - q) \times 0.02))$).
-3. **Simulateur d'Examen :** Sélecteur de portée (module précis ou examen complet), options de 10, 20 ou 30 questions, chronomètre et notation à 70% ou 75%.
-4. **Laboratoire de Code (Code Lab) :** Exécution simulée de scripts Python illustrant les subtilités d'héritage (C3 MRO), de métaprogrammation, de test et de sécurité.
-5. **Cheatsheet Méthodes Dunder & Exceptions :** Moteur de recherche instantané des méthodes spéciales et arbre d'héritage des exceptions.
-6. **Éditeur de Cartes Personnalisées :** Création locale de questions personnalisées par l'utilisateur.
+1. **Dix parcours, 4 700 cartes :** PCEP (400), PCAP (500), PCPP (500), PCED (400), PCAD (500), PCET (400), PCAT (600), PCES (400), PCEA (400) et PCEI (600).
+2. **Moteur cognitif SM-2 :** répétition espacée et progression indépendante par certification.
+3. **Navigation et vues :** tableau de bord, programme détaillé, flashcards/révisions, statistiques, examens, Code Lab et Cheatsheet.
+4. **Données réelles :** reprise de la dernière session, progression et cartes dues, statistiques de maîtrise, activité récente et tentatives d'examen.
+5. **Cartes personnalisées :** création, édition et suppression, avec stockage local et synchronisation facultative.
+6. **PWA local-first :** thèmes clair/sombre, français/anglais, cache hors ligne des ressources consultées et synchronisation Firebase facultative.
+
+Les contrôles usuels sont `npm test`, `npm run lint` et `npm run build`.

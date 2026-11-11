@@ -271,7 +271,8 @@ export async function saveUserExamAttempt(
  */
 export function subscribeUserExamAttempts(
   userId: string,
-  onAttempts: (attempts: UserExamAttemptRecord[]) => void
+  onAttempts: (attempts: UserExamAttemptRecord[]) => void,
+  onError?: (error: Error) => void
 ): Unsubscribe {
   const path = `users/${userId}/examAttempts`;
   const colRef = collection(db, 'users', userId, 'examAttempts');
@@ -298,6 +299,7 @@ export function subscribeUserExamAttempts(
     },
     (error) => {
       handleFirestoreError(error, OperationType.LIST, path);
+      onError?.(error);
     }
   );
 }

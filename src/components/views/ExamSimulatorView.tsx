@@ -19,6 +19,7 @@ import { Flashcard, AppView, CertificationTrack, UserExamAttemptRecord } from '.
 import { useI18n } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveUserExamAttempt, subscribeUserExamAttempts } from '../../services/firestoreService';
+import { CERTIFICATION_BY_ID } from '../../data/certifications';
 import { InfoTooltip } from '../common/InfoTooltip';
 
 interface ExamSimulatorViewProps {
@@ -44,6 +45,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [copied, setCopied] = useState(false);
   const [previousAttempts, setPreviousAttempts] = useState<UserExamAttemptRecord[]>([]);
+  const [startError, setStartError] = useState<string | null>(null);
 
   // Subscribe to cloud exam attempt history when user is authenticated
   useEffect(() => {
@@ -82,6 +84,11 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
     // Shuffle pool and slice
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, Math.min(questionCount, shuffled.length));
+    if (selected.length === 0) {
+      setStartError(isFrench ? 'Aucune question n’est disponible dans ce périmètre.' : 'No questions are available in this scope.');
+      return;
+    }
+    setStartError(null);
     setExamCards(selected);
     setCurrentIndex(0);
     setUserAnswers({});
@@ -156,6 +163,16 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
   };
 
   const handleFinishExam = () => {
+    const unanswered = examCards.length - Object.keys(userAnswers).length;
+    if (
+      unanswered > 0
+      && !window.confirm(
+        isFrench
+          ? `${unanswered} question${unanswered > 1 ? 's' : ''} sans réponse. Terminer l’examen ?`
+          : `${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Finish the exam?`,
+      )
+    ) return;
+
     setExamFinished(true);
     if (user && examCards.length > 0) {
       const correctCount = calculateScore();
@@ -276,7 +293,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           ];
 
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <div className="py-page-container max-w-3xl space-y-6">
         <div className="text-center space-y-3">
           <div className="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-2">
             <GraduationCap className="w-8 h-8" />
@@ -331,6 +348,11 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               ? `Test your Python ${currentTrack === 'pcei' ? 'AI specialist' : 'automation'} readiness with realistic, timed questions. Passing mark is 75% (Python Institute official standard).`
               : "Test your Python certification readiness with realistic, timed questions. Passing mark is 70% (Python Institute official standard)."}
           </p>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[var(--py-color-text-muted)]">
+            <span>{isFrench ? 'Examen officiel :' : 'Official exam:'} {CERTIFICATION_BY_ID[currentTrack].info.durationMinutes} {isFrench ? 'min' : 'min'}</span>
+            <span>·</span>
+            <span>{CERTIFICATION_BY_ID[currentTrack].info.questionCount} {isFrench ? 'questions' : 'questions'}</span>
+          </div>
         </div>
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
@@ -423,11 +445,17 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
           <button
             onClick={handleStartExam}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center space-x-2"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={cards.length === 0}
           >
             <span>{isFrench ? "Commencer l'Examen Pratique Chronométré" : 'Begin Timed Practice Exam'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+          {startError && (
+            <p className="text-center text-sm text-[var(--py-color-danger)]" role="alert">
+              {startError}
+            </p>
+          )}
 
           {/* Cloud Exam History if authenticated */}
           {user && previousAttempts.length > 0 && (
@@ -486,7 +514,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
     const isPassed = scorePercent >= passingScore;
 
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <div className="py-page-container max-w-4xl space-y-8">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
           <div className={`inline-flex p-4 rounded-2xl ${isPassed ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
             {isPassed ? <Award className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />}
@@ -604,11 +632,13 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
                           <CheckCircle2 className="w-4 h-4" />
                           <span>{isFrench ? 'Correct' : 'Correct'}</span>
                         </span>
-                      ) : (
+                      ) : userAns ? (
                         <span className="text-rose-400 flex items-center space-x-1">
                           <XCircle className="w-4 h-4" />
                           <span>{isFrench ? 'Incorrect' : 'Incorrect'}</span>
                         </span>
+                      ) : (
+                        <span className="text-amber-400">{isFrench ? 'Sans réponse' : 'Unanswered'}</span>
                       )}
                     </div>
                   </div>
@@ -632,7 +662,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
                       <span className="text-slate-500 block mb-0.5">
                         {isFrench ? 'Réponse Attendue :' : 'Expected Correct:'}
                       </span>
-                      <span className="text-emerald-400 font-mono">{card.stdoutExpected}</span>
+                      <span className="text-emerald-400 font-mono">{correct}</span>
                     </div>
                   </div>
 
@@ -655,7 +685,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
   const progress = Math.round(((currentIndex + 1) / examCards.length) * 100);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <div className="py-page-container max-w-3xl space-y-6">
       {/* Exam Header */}
       <div className="flex items-center justify-between bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl">
         <div className="flex items-center space-x-3">
@@ -690,7 +720,14 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+      <div
+        className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden"
+        role="progressbar"
+        aria-label={isFrench ? 'Progression de l’examen' : 'Exam progress'}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progress}
+      >
         <div
           className="h-full bg-cyan-500 transition-all duration-300"
           style={{ width: `${progress}%` }}

@@ -124,7 +124,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({ isOpen
       />
 
       {/* Modal Dialog Content Container */}
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-cyan-950/30 flex flex-col max-h-[92vh] z-10 overflow-hidden text-slate-100">
+      <div className="py-surface relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden text-slate-100 shadow-2xl shadow-cyan-950/30">
         {/* Header */}
         <div className="px-5 sm:px-6 py-4 border-b border-slate-800 bg-slate-950/90 flex items-center justify-between">
           <div className="flex items-center space-x-3">

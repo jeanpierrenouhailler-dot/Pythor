@@ -33,6 +33,7 @@ import {
 import { AppView, CertificationTrack } from '../../types';
 import { useI18n } from '../../context/I18nContext';
 import { useTheme } from '../../context/ThemeContext';
+import { CERTIFICATIONS, CERTIFICATION_IDS } from '../../data/certifications';
 
 interface LandingPageViewProps {
   onOpenApp: (view?: AppView, track?: CertificationTrack) => void;
@@ -88,169 +89,23 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
     setDeferredPrompt(null);
   };
 
-  // Verified 10 Certification Tracks Data from the codebase
-  const certificationTracks = [
-    {
-      id: 'pcep' as CertificationTrack,
-      code: 'PCEP-30-0x',
-      title: isFrench ? 'Certified Entry-Level Python Programmer' : 'Certified Entry-Level Python Programmer',
-      level: isFrench ? 'Débutant (Entry-Level)' : 'Entry-Level',
-      badgeColor: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-      icon: Terminal,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Fondations absolues : syntaxe, types primitifs, entrées/sorties, boucles for/while, conditionnels et fonctions basiques.'
-        : 'Foundations: syntax, primitive types, I/O, for/while loops, conditionals and basic functions.',
-    },
-    {
-      id: 'pcap' as CertificationTrack,
-      code: 'PCAP-31-03',
-      title: isFrench ? 'Certified Associate in Python Programming' : 'Certified Associate in Python Programming',
-      level: isFrench ? 'Associé (Associate)' : 'Associate',
-      badgeColor: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400',
-      icon: Layers,
-      questions: 500,
-      sections: 5,
-      examDuration: '65 min',
-      examQuestions: '40 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Programmation orientée objet, héritage, gestion des exceptions avancée, modules, packages, closures, générateurs et I/O de fichiers.'
-        : 'Object-oriented programming, inheritance, advanced exceptions, modules, packages, closures, generators, and file I/O.',
-    },
-    {
-      id: 'pcpp' as CertificationTrack,
-      code: 'PCPP1-32-101',
-      title: isFrench ? 'Certified Professional in Python Programming 1' : 'Certified Professional in Python Programming 1',
-      level: isFrench ? 'Professionnel (Professional)' : 'Professional',
-      badgeColor: 'border-purple-500/30 bg-purple-500/10 text-purple-400',
-      icon: Cpu,
-      questions: 500,
-      sections: 5,
-      examDuration: '65 min',
-      examQuestions: '45 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'POO avancée, métaclasses, MRO, design patterns PEP, interfaces graphiques Tkinter, programmation réseau (sockets, REST) et logging.'
-        : 'Advanced OOP, metaclasses, MRO, PEP design patterns, Tkinter GUIs, network programming (sockets, REST), and logging.',
-    },
-    {
-      id: 'pced' as CertificationTrack,
-      code: 'PCED-30-02',
-      title: isFrench ? 'Certified Entry-Level Data Analyst with Python' : 'Certified Entry-Level Data Analyst with Python',
-      level: isFrench ? 'Data Débutant (Entry-Level)' : 'Entry Data Analyst',
-      badgeColor: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
-      icon: Database,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Concepts de données, typologie, NumPy, bases de pandas, statistiques descriptives fondamentales et visualisation Matplotlib.'
-        : 'Data concepts, typology, NumPy, pandas basics, foundational descriptive statistics, and Matplotlib visualization.',
-    },
-    {
-      id: 'pcad' as CertificationTrack,
-      code: 'PCAD-31-02',
-      title: isFrench ? 'Certified Associate Data Analyst with Python' : 'Certified Associate Data Analyst with Python',
-      level: isFrench ? 'Data Associé (Associate)' : 'Associate Data Analyst',
-      badgeColor: 'border-blue-500/30 bg-blue-500/10 text-blue-400',
-      icon: Database,
-      questions: 500,
-      sections: 5,
-      examDuration: '65 min',
-      examQuestions: '45 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Acquisition SQL, manipulation avancée pandas, statistiques inférentielles, tests d’hypothèses, régressions et narration de données.'
-        : 'SQL acquisition, advanced pandas manipulation, inferential stats, hypothesis testing, regressions, and data storytelling.',
-    },
-    {
-      id: 'pcet' as CertificationTrack,
-      code: 'PCET-30-01',
-      title: isFrench ? 'Certified Entry-Level Tester with Python' : 'Certified Entry-Level Tester with Python',
-      level: isFrench ? 'Test Débutant (Entry-Level)' : 'Entry Tester',
-      badgeColor: 'border-rose-500/30 bg-rose-500/10 text-rose-400',
-      icon: Bug,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Principes du test logiciel, assertions, tests unitaires avec unittest, structure de cas de test, test fixtures et reporting.'
-        : 'Software testing principles, assertions, unit testing with unittest, test case structures, test fixtures, and test reporting.',
-    },
-    {
-      id: 'pcat' as CertificationTrack,
-      code: 'PCAT-31-0x',
-      title: isFrench ? 'Certified Associate Tester with Python' : 'Certified Associate Tester with Python',
-      level: isFrench ? 'Test Associé (Associate)' : 'Associate Tester',
-      badgeColor: 'border-teal-500/30 bg-teal-500/10 text-teal-400',
-      icon: Bug,
-      questions: 400,
-      sections: 4,
-      examDuration: '65 min',
-      examQuestions: '40 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Automatisation pytest, fixtures avancées, paramétrage, mocking avec unittest.mock, tests d’intégration et couverture de code.'
-        : 'pytest automation, advanced fixtures, test parameterization, mocking with unittest.mock, integration tests, and test coverage.',
-    },
-    {
-      id: 'pces' as CertificationTrack,
-      code: 'PCES-30-01',
-      title: isFrench ? 'Certified Entry-Level Security Specialist with Python' : 'Certified Entry-Level Security Specialist with Python',
-      level: isFrench ? 'Sécurité Débutant (Entry-Level)' : 'Entry Security Specialist',
-      badgeColor: 'border-red-500/30 bg-red-500/10 text-red-400',
-      icon: Lock,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Cybersécurité avec Python : cryptographie (hashs, hachage salé, AES), analyse de paquets réseau, scan de ports et codage défensif.'
-        : 'Cybersecurity with Python: cryptography (hashing, salted hashes, AES), network packet inspection, port scanning, and secure coding.',
-    },
-    {
-      id: 'pcea' as CertificationTrack,
-      code: 'PCEA-30-01',
-      title: isFrench ? 'Certified Entry-Level Automation Specialist with Python' : 'Certified Entry-Level Automation Specialist with Python',
-      level: isFrench ? 'Automatisation Débutant (Entry-Level)' : 'Entry Automation Specialist',
-      badgeColor: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-      icon: Zap,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Scripts d’automatisation système : manipulation de fichiers, os/shutil/pathlib, web scraping BeautifulSoup, API REST et parsing CSV/JSON.'
-        : 'System automation scripting: file manipulation, os/shutil/pathlib, web scraping with BeautifulSoup, REST APIs, and CSV/JSON parsing.',
-    },
-    {
-      id: 'pcei' as CertificationTrack,
-      code: 'PCEI-30-01',
-      title: isFrench ? 'Certified Entry-Level AI Specialist with Python' : 'Certified Entry-Level AI Specialist with Python',
-      level: isFrench ? 'IA Débutant (Entry-Level)' : 'Entry AI Specialist',
-      badgeColor: 'border-violet-500/30 bg-violet-500/10 text-violet-400',
-      icon: Brain,
-      questions: 400,
-      sections: 4,
-      examDuration: '40 min',
-      examQuestions: '30 questions',
-      passRate: '70%',
-      desc: isFrench
-        ? 'Fondations du Machine Learning, scikit-learn, régression, classification, matrices de confusion, NLP de base et éthique de l’IA.'
-        : 'Machine Learning foundations, scikit-learn, regression, classification, confusion matrices, basic NLP, and AI ethics.',
-    },
-  ];
+  const certificationTracks = CERTIFICATIONS.map((certification) => ({
+    id: certification.id,
+    code: certification.info.code,
+    title: isFrench ? certification.nameFr : certification.info.name,
+    level: isFrench ? certification.levelFr : certification.info.level,
+    badgeColor: certification.accentClass,
+    icon: certification.icon,
+    questions: certification.syllabus.reduce(
+      (total, section) => total + section.chapters.reduce((sectionTotal, chapter) => sectionTotal + chapter.cardCount, 0),
+      0,
+    ),
+    sections: certification.syllabus.length,
+    examDuration: `${certification.info.durationMinutes} min`,
+    examQuestions: `${certification.info.questionCount} questions`,
+    passRate: `${certification.info.passingScore}%`,
+    desc: isFrench ? certification.descriptionFr : certification.info.description,
+  }));
 
   // Verified real demo questions taken directly from Pythor data sets
   const demoQuestions: Record<
@@ -787,7 +642,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
           {/* Track selector for the demo */}
           <div className="flex flex-wrap items-center justify-center gap-1.5 mb-6">
-            {(['pcep', 'pcap', 'pcpp', 'pced', 'pcad', 'pcet', 'pcat', 'pces', 'pcea', 'pcei'] as CertificationTrack[]).map((trk) => (
+            {CERTIFICATION_IDS.map((trk) => (
               <button
                 key={trk}
                 onClick={() => {

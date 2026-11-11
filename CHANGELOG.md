@@ -4,6 +4,26 @@ Toutes les modifications notables apportées au projet **Pythor** sont document�
 
 ---
 
+## [Unreleased] — 2026-11-11
+
+### 🧭 Parcours et navigation
+- Remplacement du tableau de bord monolithique par des vues dédiées au tableau de bord, au programme et aux statistiques.
+- Centralisation des routes et amélioration de la navigation responsive.
+- Harmonisation des vues Flashcards, Examens, Code Lab, Cheatsheet et Paramètres ; ajout de l'édition des cartes personnalisées.
+- Isolation de la progression SRS par certification et migration compatible des données existantes.
+
+### ⚡ Performance et fiabilité
+- Séparation des métadonnées et des cartes ; chargement différé des dix jeux de cartes selon le parcours sélectionné.
+- Fusion SRS locale/Firestore qui conserve l'état le plus récent et protège les données locales contre les instantanés distants incomplets.
+- Les échecs partiels de synchronisation sont désormais reflétés dans l'état de synchronisation.
+- Préservation des caches étrangers au service worker et correction du fallback de navigation hors ligne.
+- Les préférences de thème et de langue restent utilisables si `localStorage` est indisponible.
+
+### 🧪 Vérification
+- Ajout de Vitest et de tests ciblés sur l'isolation des parcours, les statistiques SRS, la fusion des états et le nombre de cartes par certification.
+
+---
+
 ## [v2.5.1] — 2026-11-02
 
 ### 🌐 Architecture Tout-en-Un & Déploiement Cloudflare Pages

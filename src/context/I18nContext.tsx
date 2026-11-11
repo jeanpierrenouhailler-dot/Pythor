@@ -14,8 +14,12 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pythor_lang') as Language;
-      if (saved === 'en' || saved === 'fr') return saved;
+      try {
+        const saved = localStorage.getItem('pythor_lang') as Language;
+        if (saved === 'en' || saved === 'fr') return saved;
+      } catch {
+        // Storage can be unavailable in private browsing contexts.
+      }
       // Detect browser language if French
       if (navigator.language && navigator.language.toLowerCase().startsWith('fr')) {
         return 'fr';
@@ -27,7 +31,11 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setLang = (newLang: Language) => {
     setLangState(newLang);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('pythor_lang', newLang);
+      try {
+        localStorage.setItem('pythor_lang', newLang);
+      } catch {
+        // Keep the in-memory preference even when persistence is unavailable.
+      }
       document.documentElement.lang = newLang;
     }
   };
