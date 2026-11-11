@@ -8,7 +8,8 @@ import {
   User,
 } from '../lib/firebase';
 import { syncUserProfile, saveUserCustomCard, saveUserSrsItem } from '../services/firestoreService';
-import { Flashcard, CardSRSData } from '../types';
+import { Flashcard } from '../types';
+import { flattenTrackSrsStates, readAllTrackSrsStates } from '../utils/srsStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -34,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!auth.currentUser) return;
     const uid = auth.currentUser.uid;
     setSyncState('syncing');
+    let syncHadErrors = false;
 
     try {
       // 1. Sync User Profile
@@ -50,32 +52,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localCardsRaw) {
           const localCards: Flashcard[] = JSON.parse(localCardsRaw);
           if (Array.isArray(localCards) && localCards.length > 0) {
-            await Promise.allSettled(
-              localCards.map((c) => saveUserCustomCard(uid, c))
-            );
+            const results = await Promise.allSettled(localCards.map((card) => saveUserCustomCard(uid, card)));
+            results.forEach((result) => {
+              if (result.status === 'rejected') {
+                syncHadErrors = true;
+                console.warn('Could not sync a local custom card:', result.reason);
+              }
+            });
           }
         }
       } catch (err) {
+        syncHadErrors = true;
         console.warn('Could not sync local custom cards:', err);
       }
 
       // 3. Sync Local SRS State
       try {
-        const localSrsRaw = localStorage.getItem('pcap_srs_state');
-        if (localSrsRaw) {
-          const localSrs: Record<string, CardSRSData> = JSON.parse(localSrsRaw);
-          const entries = Object.entries(localSrs);
-          if (entries.length > 0) {
-            await Promise.allSettled(
-              entries.map(([cardId, srsData]) => saveUserSrsItem(uid, cardId, srsData))
-            );
-          }
+        const localSrs = flattenTrackSrsStates(readAllTrackSrsStates());
+        const entries = Object.entries(localSrs);
+        if (entries.length > 0) {
+          const results = await Promise.allSettled(
+            entries.map(([cardId, srsData]) => saveUserSrsItem(uid, cardId, srsData)),
+          );
+          results.forEach((result) => {
+            if (result.status === 'rejected') {
+              syncHadErrors = true;
+              console.warn('Could not sync a local SRS item:', result.reason);
+            }
+          });
         }
       } catch (err) {
+        syncHadErrors = true;
         console.warn('Could not sync local SRS state:', err);
       }
 
-      setSyncState('synced');
+      setSyncState(syncHadErrors ? 'error' : 'synced');
     } catch (err: any) {
       console.error('Error syncing local storage to Firestore:', err);
       setSyncState('error');
@@ -90,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (currentUser) {
         // Sync profile & local progress upon authenticated state
-        syncLocalStorageToCloud().catch(() => {});
+        void syncLocalStorageToCloud();
       } else {
         setSyncState('idle');
       }

@@ -14,8 +14,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pythor_theme') as Theme;
-      if (saved === 'dark' || saved === 'light') return saved;
+      try {
+        const saved = localStorage.getItem('pythor_theme') as Theme;
+        if (saved === 'dark' || saved === 'light') return saved;
+      } catch {
+        // Storage can be unavailable in private browsing contexts.
+      }
       // Default to dark mode as per original app design
       return 'dark';
     }
@@ -25,7 +29,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('pythor_theme', newTheme);
+      try {
+        localStorage.setItem('pythor_theme', newTheme);
+      } catch {
+        // Keep the in-memory preference even when persistence is unavailable.
+      }
     }
   };
 

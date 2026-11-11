@@ -8,10 +8,11 @@ import {
   ShieldAlert,
   ArrowRight,
   Layers,
-  Sparkles,
 } from 'lucide-react';
 import { AppView } from '../../types';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { useI18n } from '../../context/I18nContext';
+import { PageContainer, PageHeader } from '../common/ui';
 
 interface CheatsheetViewProps {
   onNavigate: (view: AppView, section?: string) => void;
@@ -20,6 +21,7 @@ interface CheatsheetViewProps {
 export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const { isFrench } = useI18n();
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -69,36 +71,43 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center space-x-2">
-            <BookMarked className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">PCAP-31-03 Cheatsheet & Dunder Guide</h1>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Quick-reference compendium for special dunder methods, name mangling mechanics, and exception inheritance.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher une méthode dunder ou un piège..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+    <PageContainer className="max-w-6xl space-y-8">
+      <PageHeader
+        eyebrow={(
+          <span className="flex items-center gap-2">
+            <BookMarked size={16} aria-hidden="true" />
+            {isFrench ? 'Référence Python' : 'Python reference'}
+          </span>
+        )}
+        title={isFrench ? 'Aide-mémoire Python' : 'Python cheatsheet'}
+        description={isFrench
+          ? 'Retrouvez rapidement des méthodes spéciales, conventions et règles d’exception.'
+          : 'Quickly find special methods, naming conventions, and exception rules.'}
+        actions={(
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <label className="relative min-w-0 flex-1 sm:w-72">
+              <span className="sr-only">{isFrench ? 'Rechercher dans l’aide-mémoire' : 'Search the cheatsheet'}</span>
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={isFrench ? 'Rechercher une méthode ou un sujet…' : 'Search methods or topics…'}
+                className="w-full rounded-xl border border-[var(--py-color-border)] bg-[var(--py-color-surface)] py-2 pl-9 pr-4 text-sm text-[var(--py-color-text)] placeholder:text-[var(--py-color-text-muted)]"
+              />
+            </label>
+            <InfoTooltip
+              title={isFrench ? 'Recherche instantanée' : 'Instant search'}
+              content={isFrench
+                ? 'Filtrez par nom de méthode, catégorie ou mot-clé.'
+                : 'Filter by method name, category, or keyword.'}
             />
+            <button type="button" className="py-button py-button--secondary" onClick={() => onNavigate('flashcards')}>
+              {isFrench ? 'Étudier' : 'Study'} <ArrowRight size={16} className="ml-2 inline" />
+            </button>
           </div>
-          <InfoTooltip
-            title="Recherche instantanée"
-            content="Filtrez par nom de méthode (ex: __init__, __str__), par type d'opérateur ou par mot-clé pour retrouver la syntaxe exacte."
-          />
-        </div>
-      </div>
+        )}
+      />
 
       {/* Section 1: Special Dunder Methods Table */}
       <section className="space-y-3">
@@ -114,7 +123,7 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
               noviceTip="Retenez bien : __init__ doit toujours retourner None sous peine de TypeError !"
             />
           </div>
-          <span className="text-xs text-slate-500">{filteredDunders.length} entrées</span>
+          <span className="text-xs text-slate-500">{filteredDunders.length} {isFrench ? 'entrées' : 'entries'}</span>
         </div>
 
         <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg">
@@ -129,7 +138,13 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {filteredDunders.map((dunder, idx) => (
+              {filteredDunders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">
+                    {isFrench ? 'Aucun résultat pour cette recherche.' : 'No results match this search.'}
+                  </td>
+                </tr>
+              ) : filteredDunders.map((dunder, idx) => (
                 <tr key={idx} className="hover:bg-slate-850/50 transition-colors">
                   <td className="px-4 py-3 font-mono font-bold text-cyan-300">
                     {dunder.name}
@@ -225,6 +240,6 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
           </div>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 };

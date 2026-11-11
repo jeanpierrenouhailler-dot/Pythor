@@ -6,7 +6,17 @@ export type CardDifficulty =
   | 'intermediate'
   | 'advanced';
 
-export type AppView = 'landing' | 'dashboard' | 'flashcards' | 'exam' | 'cheatsheet' | 'codelab';
+export type AppView =
+  | 'landing'
+  | 'dashboard'
+  | 'flashcards'
+  | 'review'
+  | 'custom-cards'
+  | 'syllabus'
+  | 'statistics'
+  | 'exam'
+  | 'cheatsheet'
+  | 'codelab';
 
 export type CertificationTrack = 'pcap' | 'pcep' | 'pcpp' | 'pced' | 'pcad' | 'pcet' | 'pcat' | 'pces' | 'pcea' | 'pcei';
 
@@ -75,6 +85,14 @@ export interface CardSRSData {
   lastReviewed?: number;
   dueDate?: number;
   status: 'new' | 'learning' | 'review' | 'mastered';
+}
+
+export interface LastStudyActivity {
+  track: CertificationTrack;
+  cardId: string;
+  section: string;
+  chapter: string;
+  timestamp: number;
 }
 
 export interface UserExamAttemptRecord {

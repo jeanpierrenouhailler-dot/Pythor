@@ -1,11 +1,6 @@
 import React from 'react';
 import {
   X,
-  LayoutDashboard,
-  Layers,
-  GraduationCap,
-  Code2,
-  BookMarked,
   Package,
   AlertTriangle,
   Zap,
@@ -27,16 +22,6 @@ import {
   Plus,
 } from 'lucide-react';
 import { AppView, CertificationTrack, Flashcard } from '../types';
-import { pcapSyllabusSections, pcapFlashcardsData } from '../data/pcapData';
-import { pcepSyllabusSections } from '../data/pcepData';
-import { pcppSyllabusSections } from '../data/pcppData';
-import { pcedSyllabusSections } from '../data/pcedData';
-import { pcadSyllabusSections } from '../data/pcadData';
-import { pcetSyllabusSections } from '../data/pcetData';
-import { pcatSyllabusSections } from '../data/pcatData';
-import { pcesSyllabusSections } from '../data/pcesData';
-import { pceaSyllabusSections } from '../data/pceaData';
-import { pceiSyllabusSections } from '../data/pceiData';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useI18n } from '../context/I18nContext';
@@ -44,6 +29,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNoviceMode } from '../context/NoviceModeContext';
 import { PythorLogo } from './common/PythorLogo';
 import { Cloud, LogOut, RefreshCw, Download, Lightbulb } from 'lucide-react';
+import { CERTIFICATION_BY_ID } from '../data/certifications';
+import { MENU_ROUTES } from '../navigation/routes';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -83,6 +70,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   const { lang, setLang, t, isFrench } = useI18n();
   const { user, signInWithGoogle, signOut, syncState, syncLocalStorageToCloud } = useAuth();
   const { openOnboarding, triggerInstall, isNoviceMode, toggleNoviceMode } = useNoviceMode();
+  const certification = CERTIFICATION_BY_ID[currentTrack];
 
   if (!isOpen) return null;
 
@@ -316,66 +304,10 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                   Pythor
                 </span>
                 <span className="font-semibold text-slate-300 text-xs sm:text-sm">
-                  {currentTrack === 'pcep'
-                    ? 'PCEP-30-0x'
-                    : currentTrack === 'pcpp'
-                    ? 'PCPP-32-10x'
-                    : currentTrack === 'pced'
-                    ? 'PCED-30-02'
-                    : currentTrack === 'pcad'
-                    ? 'PCAD-31-02'
-                    : currentTrack === 'pcet'
-                    ? 'PCET-30-01'
-                    : currentTrack === 'pcat'
-                    ? 'PCAT-31-0x'
-                    : currentTrack === 'pces'
-                    ? 'PCES-30-01'
-                    : currentTrack === 'pcea'
-                    ? 'PCEA-30-01'
-                    : currentTrack === 'pcei'
-                    ? 'PCEI-30-01'
-                    : 'PCAP-31-03'}
+                  {certification.info.code}
                 </span>
-                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${
-                  currentTrack === 'pcep'
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : currentTrack === 'pcpp'
-                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
-                    : currentTrack === 'pced'
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    : currentTrack === 'pcad'
-                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/30'
-                    : currentTrack === 'pcet'
-                    ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                    : currentTrack === 'pcat'
-                    ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
-                    : currentTrack === 'pces'
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    : currentTrack === 'pcea'
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : currentTrack === 'pcei'
-                    ? 'bg-violet-500/10 text-violet-300 border-violet-500/30'
-                    : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
-                }`}>
-                  {currentTrack === 'pcep'
-                    ? 'Entry'
-                    : currentTrack === 'pcpp'
-                    ? 'Professional'
-                    : currentTrack === 'pced'
-                    ? 'Data Analyst'
-                    : currentTrack === 'pcad'
-                    ? 'Assoc Analyst'
-                    : currentTrack === 'pcet'
-                    ? 'Tester'
-                    : currentTrack === 'pcat'
-                    ? 'Assoc Tester'
-                    : currentTrack === 'pces'
-                    ? 'Security'
-                    : currentTrack === 'pcea'
-                    ? 'Automation'
-                    : currentTrack === 'pcei'
-                    ? 'AI Specialist'
-                    : 'Associate'}
+                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-medium border ${certification.accentClass}`}>
+                  {isFrench ? certification.levelFr : certification.info.level}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Navigation & Functional Categories</p>
@@ -426,6 +358,18 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             Installer
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            onOpenCreateCard();
+            onClose();
+          }}
+          className="mx-4 mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 focus-visible:outline-cyan-400"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          {isFrench ? 'Créer une carte' : 'Create a flashcard'}
+        </button>
 
         {/* Scrollable Navigation Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
@@ -519,7 +463,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
 
           {/* TRACK SWITCHER IN MENU */}
           <div>
-            <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <div className="hidden">
               <span>{isFrench ? 'Parcours de certification' : 'Certification Track'}</span>
               <button
                 onClick={() => {
@@ -533,7 +477,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+            <div className="hidden">
               <button
                 onClick={() => onSelectTrack('pcep')}
                 className={`p-2 rounded-xl border text-left transition-all ${
@@ -729,136 +673,31 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           {/* CATEGORY 1: Core Views & Workspaces */}
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>Main Workspaces</span>
-              <span className="text-[10px] text-slate-500 font-normal">Primary Modules</span>
+              <span>{isFrench ? 'Navigation' : 'Navigation'}</span>
+              <span className="text-[10px] text-slate-500 font-normal">{MENU_ROUTES.length}</span>
             </div>
             <div className="space-y-1">
-              <button
-                onClick={() => {
-                  onSelectView('landing');
-                  onClose();
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'landing'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Sparkles className={`w-4 h-4 ${currentView === 'landing' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">
-                      {isFrench ? 'Page de Présentation' : 'Landing Page'}
-                    </span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      {isFrench ? 'Présentation PWA, catalogue & démo' : 'PWA overview, catalog & demo'}
-                    </span>
-                  </div>
-                </div>
-                {currentView === 'landing' ? (
-                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
-                )}
-              </button>
-
-              <button
-                onClick={() => handleNavigate('dashboard')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'dashboard'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <LayoutDashboard className={`w-4 h-4 ${currentView === 'dashboard' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">Main Dashboard</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">Blueprint overview & readiness statistics</span>
-                  </div>
-                </div>
-                {currentView === 'dashboard' ? (
-                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
-                )}
-              </button>
-
-              <button
-                onClick={() => handleNavigate('flashcards')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'flashcards'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Layers className={`w-4 h-4 ${currentView === 'flashcards' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">Flashcards & SRS Studio</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">100+ cards with active recall rating engine</span>
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                  {totalCards} Cards
-                </span>
-              </button>
-
-              <button
-                onClick={() => handleNavigate('exam')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'exam'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <GraduationCap className={`w-4 h-4 ${currentView === 'exam' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">Exam Simulator & Quiz</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">Timed practice test with scoring & explanations</span>
-                  </div>
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30">
-                  Practice
-                </span>
-              </button>
-
-              <button
-                onClick={() => handleNavigate('codelab')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'codelab'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Code2 className={`w-4 h-4 ${currentView === 'codelab' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">Python OOP Code Lab</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">MRO, name mangling & syntax execution inspect</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-500" />
-              </button>
-
-              <button
-                onClick={() => handleNavigate('cheatsheet')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  currentView === 'cheatsheet'
-                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <BookMarked className={`w-4 h-4 ${currentView === 'cheatsheet' ? 'text-cyan-400' : 'text-slate-400'}`} />
-                  <div className="text-left">
-                    <span className="block text-slate-100 font-medium leading-none">PCAP Dunder & OOP Cheatsheet</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">Full reference table for dunders, MRO & gotchas</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-500" />
-              </button>
+              {MENU_ROUTES.map(({ view, labelFr, labelEn, icon: RouteIcon }) => (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => handleNavigate(view)}
+                  aria-current={currentView === view ? 'page' : undefined}
+                  className={`w-full flex min-h-11 items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    currentView === view
+                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                      : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <RouteIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{isFrench ? labelFr : labelEn}</span>
+                  </span>
+                  {currentView === view
+                    ? <span className="h-2 w-2 rounded-full bg-cyan-400" aria-hidden="true" />
+                    : <ChevronRight className="h-4 w-4 text-slate-500" aria-hidden="true" />}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -866,55 +705,14 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           <div>
             <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
               <span>
-                {currentTrack === 'pcep'
-                  ? 'PCEP-30-0x Exam Blueprint'
-                  : currentTrack === 'pcpp'
-                  ? 'PCPP-32-10x Exam Blueprint'
-                  : currentTrack === 'pced'
-                  ? 'PCED-30-02 Exam Blueprint'
-                  : currentTrack === 'pcad'
-                  ? 'PCAD-31-02 Exam Blueprint'
-                  : currentTrack === 'pcet'
-                  ? 'PCET-30-01 Exam Blueprint'
-                  : currentTrack === 'pcat'
-                  ? 'PCAT-31-0x Exam Blueprint'
-                  : currentTrack === 'pces'
-                  ? 'PCES-30-01 Exam Blueprint'
-                  : currentTrack === 'pcea'
-                  ? 'PCEA-30-01 Exam Blueprint'
-                  : currentTrack === 'pcei'
-                  ? 'PCEI-30-01 Exam Blueprint'
-                  : 'PCAP-31-03 Exam Blueprint'}
+                {certification.info.code} {isFrench ? 'Programme officiel' : 'Exam Blueprint'}
               </span>
               <span className="text-[10px] text-slate-500 font-normal">
-                {currentTrack === 'pcep' || currentTrack === 'pced' || currentTrack === 'pcet' || currentTrack === 'pces' || currentTrack === 'pcea'
-                  ? '4 Blocks'
-                  : currentTrack === 'pcat' || currentTrack === 'pcei'
-                  ? '6 Blocks'
-                  : '5 Sections'}
+                {certification.syllabus.length} sections
               </span>
             </div>
             <div className="space-y-1.5">
-              {(currentTrack === 'pcep'
-                ? pcepSyllabusSections
-                : currentTrack === 'pcpp'
-                ? pcppSyllabusSections
-                : currentTrack === 'pced'
-                ? pcedSyllabusSections
-                : currentTrack === 'pcad'
-                ? pcadSyllabusSections
-                : currentTrack === 'pcet'
-                ? pcetSyllabusSections
-                : currentTrack === 'pcat'
-                ? pcatSyllabusSections
-                : currentTrack === 'pces'
-                ? pcesSyllabusSections
-                : currentTrack === 'pcea'
-                ? pceaSyllabusSections
-                : currentTrack === 'pcei'
-                ? pceiSyllabusSections
-                : pcapSyllabusSections
-              ).map((sec) => {
+              {certification.syllabus.map((sec) => {
                 const isSelected = selectedSection === `Section ${sec.number}`;
                 const sectionCardCount = activeCards.filter(
                   (c) => c.section === `Section ${sec.number}`

@@ -24,6 +24,8 @@ import { InstallPwaButton } from './common/InstallPwaButton';
 import { InfoTooltip } from './common/InfoTooltip';
 import { UserAuthButton } from './UserAuthButton';
 import { HelpCircle, Lightbulb } from 'lucide-react';
+import { CertificationSelector } from './common/CertificationSelector';
+import { CERTIFICATION_BY_ID } from '../data/certifications';
 
 interface NavbarProps {
   totalCards: number;
@@ -57,6 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { lang, setLang, t, isFrench } = useI18n();
   const { openOnboarding, isNoviceMode, toggleNoviceMode } = useNoviceMode();
 
+  const certification = CERTIFICATION_BY_ID[currentTrack];
   const progressPercent = totalCards > 0 ? Math.round((reviewedCount / totalCards) * 100) : 0;
   const isUpdateReady = settings.status === 'ready';
 
@@ -69,8 +72,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onToggleMenu}
             className="flex items-center space-x-2 p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 group"
-            aria-label="Open Navigation Menu"
-            title="Open Categories & Functions Menu"
+            aria-label={isFrench ? 'Ouvrir le menu secondaire' : 'Open the secondary menu'}
+            title={isFrench ? 'Ouvrir les outils et préférences' : 'Open tools and preferences'}
           >
             <Menu className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span className="hidden md:inline text-xs font-semibold tracking-wide text-slate-200">
@@ -91,95 +94,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Pythor
                 </span>
                 <span className="font-semibold text-slate-300 tracking-tight text-xs sm:text-sm">
-                  {currentTrack === 'pcep'
-                    ? 'PCEP-30-0x'
-                    : currentTrack === 'pcpp'
-                    ? 'PCPP-32-10x'
-                    : currentTrack === 'pced'
-                    ? 'PCED-30-02'
-                    : currentTrack === 'pcad'
-                    ? 'PCAD-31-02'
-                    : currentTrack === 'pcet'
-                    ? 'PCET-30-01'
-                    : currentTrack === 'pcat'
-                    ? 'PCAT-31-0x'
-                    : currentTrack === 'pces'
-                    ? 'PCES-30-01'
-                    : currentTrack === 'pcea'
-                    ? 'PCEA-30-01'
-                    : currentTrack === 'pcei'
-                    ? 'PCEI-30-01'
-                    : 'PCAP-31-03'}
+                  {certification.info.code}
                 </span>
-                <span className={`hidden sm:inline px-1.5 py-0.2 rounded-full text-[10px] font-medium border ${
-                  currentTrack === 'pcep'
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : currentTrack === 'pcpp'
-                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
-                    : currentTrack === 'pced'
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    : currentTrack === 'pcad'
-                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/30'
-                    : currentTrack === 'pcet'
-                    ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                    : currentTrack === 'pcat'
-                    ? 'bg-teal-500/10 text-teal-300 border-teal-500/30'
-                    : currentTrack === 'pces'
-                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    : currentTrack === 'pcea'
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                    : currentTrack === 'pcei'
-                    ? 'bg-violet-500/10 text-violet-300 border-violet-500/30'
-                    : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
-                }`}>
-                  {currentTrack === 'pcep'
-                    ? 'Entry-Level'
-                    : currentTrack === 'pcpp'
-                    ? 'Professional'
-                    : currentTrack === 'pced'
-                    ? 'Data Analyst'
-                    : currentTrack === 'pcad'
-                    ? 'Associate DA'
-                    : currentTrack === 'pcet'
-                    ? 'Tester'
-                    : currentTrack === 'pcat'
-                    ? 'Associate Tester'
-                    : currentTrack === 'pces'
-                    ? 'Security Specialist'
-                    : currentTrack === 'pcea'
-                    ? 'Automation Specialist'
-                    : currentTrack === 'pcei'
-                    ? 'AI Specialist'
-                    : 'Associate'}
+                <span className={`hidden sm:inline px-1.5 py-0.2 rounded-full text-[10px] font-medium border ${certification.accentClass}`}>
+                  {isFrench ? certification.levelFr : certification.info.level}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden lg:block leading-none">
-                {currentTrack === 'pcep'
-                  ? (isFrench ? 'Préparation Certification PCEP' : 'PCEP Certification Prep')
-                  : currentTrack === 'pcpp'
-                  ? (isFrench ? 'Préparation Certification PCPP' : 'PCPP Certification Prep')
-                  : currentTrack === 'pced'
-                  ? (isFrench ? 'Préparation Certification PCED' : 'PCED Certification Prep')
-                  : currentTrack === 'pcad'
-                  ? (isFrench ? 'Préparation Certification PCAD' : 'PCAD Certification Prep')
-                  : currentTrack === 'pcet'
-                  ? (isFrench ? 'Préparation Certification PCET' : 'PCET Certification Prep')
-                  : currentTrack === 'pcat'
-                  ? (isFrench ? 'Préparation Certification PCAT' : 'PCAT Certification Prep')
-                  : currentTrack === 'pces'
-                  ? (isFrench ? 'Préparation Certification PCES' : 'PCES Certification Prep')
-                  : currentTrack === 'pcea'
-                  ? (isFrench ? 'Préparation Certification PCEA' : 'PCEA Certification Prep')
-                  : currentTrack === 'pcei'
-                  ? (isFrench ? 'Préparation Certification PCEI' : 'PCEI Certification Prep')
-                  : (isFrench ? 'Préparation Certification PCAP' : 'PCAP Certification Prep')}
+                {isFrench ? `Préparation ${certification.info.shortName}` : `${certification.info.shortName} Certification Prep`}
               </p>
             </div>
           </button>
         </div>
 
         {/* Center: Primary View Switcher Tabs */}
-        <nav className="hidden sm:flex items-center space-x-1 bg-slate-900/70 border border-slate-800/90 p-1 rounded-xl">
+        <nav className="hidden" aria-hidden="true">
           <button
             onClick={() => onSelectView('landing')}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 ${
@@ -281,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* CERTIFICATION TRACK SELECTOR PILL */}
           <div
-            className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 shadow-xs"
+            className="hidden"
             role="group"
             aria-label="Certification Track"
           >
@@ -446,11 +375,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>PCEI</span>
             </button>
           </div>
+          <CertificationSelector
+            value={currentTrack}
+            onChange={onSelectTrack}
+            isFrench={isFrench}
+            label={isFrench ? 'Certification active' : 'Active certification'}
+            className="max-w-[8rem] sm:max-w-[13rem]"
+          />
 
           {/* CREATE FLASHCARD BUTTON */}
           <button
             onClick={onOpenCreateCard}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 hover:text-white font-semibold text-xs transition-all shadow-xs"
+            className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 hover:text-white font-semibold text-xs transition-all shadow-xs"
             title={isFrench ? 'Créer une nouvelle carte mémoire' : 'Create a custom flashcard'}
           >
             <Plus className="w-3.5 h-3.5 text-cyan-400" />
@@ -461,7 +397,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* LANGUAGE SELECTOR BUTTON */}
           <div
-            className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-xs"
+            className="hidden sm:flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-xs"
             role="group"
             aria-label="Language Selector"
           >
@@ -496,7 +432,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* LIGHT / DARK THEME SWITCH BUTTON */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 flex items-center space-x-1.5 shadow-xs"
+            className="hidden md:flex p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 items-center space-x-1.5 shadow-xs"
             title={isDark ? t.nav.themeLight : t.nav.themeDark}
             aria-label={isDark ? t.nav.themeLight : t.nav.themeDark}
           >
@@ -518,12 +454,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* INSTALL APPLICATION PWA BUTTON */}
-          <InstallPwaButton variant="navbar" size="sm" />
+          <InstallPwaButton variant="navbar" size="sm" className="hidden lg:inline-flex" />
 
           {/* AIDE, GUIDE & MENTIONS LÉGALES BUTTON */}
           <button
             onClick={openOnboarding}
-            className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:text-amber-200 transition-all flex items-center space-x-1.5 shadow-xs"
+            className="hidden lg:flex p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:text-amber-200 transition-all items-center space-x-1.5 shadow-xs"
             title="Consulter le guide débutant, les mentions légales et la clause de non-responsabilité"
             aria-label="Aide et Mentions Légales"
           >
@@ -538,7 +474,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               isNoviceMode
                 ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 ring-1 ring-cyan-500/30'
                 : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
+            } hidden xl:flex`}
             title={
               isNoviceMode
                 ? 'Mode Guide Novice Actif (Infobulles et conseils d’aide activés)'
@@ -553,12 +489,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Google Auth & User Cloud Sync Button */}
-          <UserAuthButton />
+          <div className="hidden sm:block"><UserAuthButton /></div>
 
           {/* System Settings Button */}
           <button
             onClick={onOpenSettings}
-            className={`flex items-center space-x-2 px-2.5 py-1.5 rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 group shadow-xs ${
+            className={`hidden md:flex items-center space-x-2 px-2.5 py-1.5 rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 group shadow-xs ${
               isUpdateReady
                 ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/40 shadow-sm shadow-emerald-950/40'
                 : 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white'

@@ -2,13 +2,13 @@
 
 <p align="center">
   <strong>Plateforme PWA d'Entraînement Intensif aux Certifications Officielles Python</strong><br>
-  <em>Spaced Repetition System (SM-2) • Simulateur d'Examen Réaliste • Laboratoire de Code • 100% Hors-Ligne & Local-First</em>
+  <em>Spaced Repetition System (SM-2) • Simulateur d'Examen • Laboratoire de Code • Cache Hors-Ligne & Local-First</em>
 </p>
 
 <p align="center">
   <a href="https://pythor.swinux.ch/"><img src="https://img.shields.io/badge/Production-pythor.swinux.ch-0284c7?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Live App" /></a>
   <img src="https://img.shields.io/badge/Certifications-10_Tracks-6366f1?style=for-the-badge&logo=python&logoColor=white" alt="10 Certification Tracks" />
-  <img src="https://img.shields.io/badge/Flashcards-4%2C300%2B_Cartes-10b981?style=for-the-badge&logo=codewars&logoColor=white" alt="4,300+ Flashcards" />
+  <img src="https://img.shields.io/badge/Flashcards-4%2C700_Cartes-10b981?style=for-the-badge&logo=codewars&logoColor=white" alt="4,700 Flashcards" />
   <img src="https://img.shields.io/badge/PWA-Installable_%26_Offline-f59e0b?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA Ready" />
   <img src="https://img.shields.io/badge/TypeScript-Strict_5.x-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Licence-MIT-slate?style=for-the-badge" alt="MIT License" />
@@ -30,7 +30,7 @@
 
 L'application intègre un **moteur de répétition espacée (SRS) fondé sur l'algorithme SuperMemo SM-2**, un **simulateur d'examen chronométré** reproduisant fidèlement les critères officiels de certification, un **laboratoire de code interactif (Code Lab)** pour décortiquer les pièges syntaxiques, ainsi qu'un **guide complet des méthodes magiques (Dunder)**.
 
-L'ensemble de vos révisions, scores et cartes personnalisées est stocké **localement sur votre appareil** (IndexedDB / LocalStorage) pour une confidentialité totale et un fonctionnement instantané, même sans connexion Internet.
+Vos révisions SRS, cartes personnalisées et préférences sont d'abord conservées **localement sur votre appareil** (LocalStorage). La synchronisation Firebase est facultative. Le service worker met en cache les ressources et les jeux de cartes consultés ; un jeu jamais chargé nécessite une connexion lors de sa première ouverture.
 
 ---
 
@@ -49,7 +49,7 @@ L'ensemble de vos révisions, scores et cartes personnalisées est stocké **loc
 ## 🌟 Fonctionnalités Clés
 
 ### 🎓 1. Parcours Complet de 10 Certifications Python
-Plus de **4 300 questions et flashcards techniques** structurées en 100 cartes par bloc de compétences :
+**4 700 questions et flashcards techniques** réparties par certification :
 
 | Code | Intitulé Officiel | Niveau | Volume |
 | :--- | :--- | :--- | :--- |
@@ -57,14 +57,16 @@ Plus de **4 300 questions et flashcards techniques** structurées en 100 cartes 
 | **PCAP-31-03** | *Certified Associate in Python Programming* | Intermédiaire | 500 cartes (5 sections) |
 | **PCPP-32-10x** | *Certified Professional in Python Programming* | Avancé | 500 cartes (5 sections) |
 | **PCED-30-02** | *Certified Entry-Level Data Analyst with Python* | Données | 400 cartes (4 sections) |
-| **PCAD-31-02** | *Certified Associate Data Analyst with Python* | Données Avancé | 400 cartes (4 sections) |
-| **PCET-30-01** | *Certified Entry-Level Python Tester* | Test & QA | 300 cartes (3 sections) |
-| **PCAT-31-0x** | *Certified Associate in Python Testing* | Test Automatisé | 400 cartes (4 sections) |
+| **PCAD-31-02** | *Certified Associate Data Analyst with Python* | Données Avancé | 500 cartes (5 sections) |
+| **PCET-30-01** | *Certified Entry-Level Python Tester* | Test & QA | 400 cartes (4 sections) |
+| **PCAT-31-0x** | *Certified Associate in Python Testing* | Test Automatisé | 600 cartes (6 sections) |
 | **PCES-30-01** | *Certified Entry-Level Cybersecurity with Python* | Sécurité / SecOps | 400 cartes (4 sections) |
-| **PCEA-30-01** | *Certified Entry-Level Automation Specialist* | Automatisation | 500 cartes (5 sections) |
-| **PCEI-30-01** | *Certified Entry-Level AI Specialist with Python* | IA & Machine Learning | 500 cartes (5 sections) |
+| **PCEA-30-01** | *Certified Entry-Level Automation Specialist* | Automatisation | 400 cartes (4 sections) |
+| **PCEI-30-01** | *Certified Entry-Level AI Specialist with Python* | IA & Machine Learning | 600 cartes (6 sections) |
 
 ---
+
+Les cartes sont chargées à la demande par certification afin de limiter le JavaScript initial. La progression SRS et les statistiques sont isolées par parcours.
 
 ### 🧠 2. Moteur de Répétition Espacée (Algorithme SM-2)
 - **Calcul scientifique de l'oubli :** Facteur de facilité (*Ease Factor*), intervalle de répétition et compteur de répétitions consécutives.
@@ -91,7 +93,15 @@ Plus de **4 300 questions et flashcards techniques** structurées en 100 cartes 
 
 ---
 
-### 📖 5. Compendium & Cheatsheet Dunder
+### 📊 5. Tableau de bord, programme et statistiques
+- Tableau de bord avec reprise de la dernière session, progression réelle et révisions dues.
+- Programme détaillé par certification, section et chapitre.
+- Statistiques de maîtrise, activité récente et résultats d'examens.
+- Création et édition de cartes personnalisées.
+
+---
+
+### 📖 6. Compendium & Cheatsheet Dunder
 - Table de référence exhaustive des méthodes dunder (`__init__`, `__str__`, `__repr__`, `__getitem__`, etc.).
 - Règles de *Name Mangling* (convention `_privé` vs `__mangled`).
 - Hiérarchie intégrée des classes d'exceptions Python.
@@ -109,13 +119,13 @@ Pythor a été spécialement pensé pour guider les débutants et les utilisateu
    - Sur les filtres de modules et jauges d'examen.
    - Sur les champs du créateur de cartes personnalisées.
    - Sur la console et le bouton d'exécution du Code Lab.
-   - Accessibles au survol (desktop) et par tapotement (mobile), avec navigation clavier complète (Accessibilité WCAG 2.1 AA).
+   - Accessibles au survol (desktop), par tapotement (mobile) et au clavier.
 
 ---
 
 ## 📱 Bouton « Installer l'Application » (Guide PWA)
 
-Pythor est une **Progressive Web App (PWA)** certifiée, installable sur tous vos écrans en un seul clic, sans passer par un magasin d'applications.
+Pythor est une **Progressive Web App (PWA) installable** sur vos appareils, sans passer par un magasin d'applications.
 
 Un bouton distinctif **« Installer l'App »** est présent en haut de l'écran ainsi que dans le pied de page. En cliquant dessus, l'application vous propose soit l'installation automatique immédiate, soit un guide visuel adapté à votre système :
 
@@ -133,7 +143,7 @@ Un bouton distinctif **« Installer l'App »** est présent en haut de l'écran 
 ### 💻 Sur Ordinateur (Chrome, Edge, Brave sur Windows / macOS / Linux)
 1. Cliquez sur l'icône d'installation dans la barre d'adresse du navigateur ($\oplus$ ou petite icône d'ordinateur).
 2. Ou cliquez sur le bouton **« Installer l'App »** dans Pythor, puis confirmez l'invite système.
-3. L'application s'ouvre dans sa propre fenêtre indépendante, sans barre de navigation web, avec support hors-ligne intégral.
+3. L'application s'ouvre dans sa propre fenêtre indépendante. Les ressources et certifications déjà consultées restent disponibles hors ligne.
 
 ---
 
@@ -142,47 +152,39 @@ Un bouton distinctif **« Installer l'App »** est présent en haut de l'écran 
 ```
 pythor/
 ├── public/
-│   ├── assets/
-│   │   └── pythor_preview.svg     # Illustration vectorielle de l'interface
-│   ├── logo.svg                   # Logo vectoriel Pythor
-│   ├── manifest.json              # Web App Manifest PWA (standalone)
-│   └── sw.js                      # Service Worker & stratégies de cache hors-ligne
+│   ├── manifest.webmanifest       # Manifeste PWA
+│   └── sw.js                      # Service worker et cache hors ligne
 ├── src/
 │   ├── components/
-│   │   ├── common/
-│   │   │   ├── InfoTooltip.tsx       # Infobulles accessibles avec conseils novices
-│   │   │   ├── InstallPwaButton.tsx  # Bouton d'installation multi-emplacements
-│   │   │   ├── InstallPwaModal.tsx   # Modal explicatif d'installation PWA
-│   │   │   └── PythorLogo.tsx        # Composant Logo SVG officiel
-│   │   ├── onboarding/
-│   │   │   └── OnboardingLegalModal.tsx # Onboarding en 4 étapes & mentions légales
 │   │   ├── views/
-│   │   │   ├── DashboardView.tsx     # Hub des certifications & cartes personnalisées
-│   │   │   ├── FlashcardsSrsView.tsx # Moteur de répétition espacée SM-2
-│   │   │   ├── ExamSimulatorView.tsx # Simulateur chronométré 70% / 75%
-│   │   │   ├── CodeLabView.tsx       # Sandbox d'exécution Python
-│   │   │   ├── CheatsheetView.tsx    # Référence Dunder & hiérarchie exceptions
-│   │   │   └── LandingPageView.tsx   # Vitrine produit & accès direct
-│   │   ├── Navbar.tsx             # En-tête avec raccourcis, logo, PWA & Mode Novice
-│   │   └── HamburgerMenu.tsx      # Menu mobile responsive
+│   │   │   ├── DashboardOverview.tsx
+│   │   │   ├── ProgramView.tsx
+│   │   │   ├── StatisticsView.tsx
+│   │   │   ├── FlashcardsSrsView.tsx
+│   │   │   ├── ExamSimulatorView.tsx
+│   │   │   ├── CodeLabView.tsx
+│   │   │   ├── CheatsheetView.tsx
+│   │   │   └── LandingPageView.tsx
+│   │   ├── AppNavigation.tsx       # Navigation responsive centralisée
+│   │   ├── Navbar.tsx
+│   │   └── HamburgerMenu.tsx
 │   ├── context/
-│   │   ├── NoviceModeContext.tsx  # Gestion de l'aide novice & prompt d'installation
-│   │   ├── AuthContext.tsx        # Authentification Google / Firebase optionnelle
-│   │   └── I18nContext.tsx        # Bilinguisme Français / Anglais
+│   │   ├── AuthContext.tsx         # Authentification/synchronisation facultatives
+│   │   ├── I18nContext.tsx         # Français / anglais
+│   │   └── ThemeContext.tsx
 │   ├── data/
-│   │   ├── pcapCards.ts           # 500 questions PCAP-31-03
-│   │   ├── pcepCards.ts           # 400 questions PCEP-30-02
-│   │   ├── pcppCards.ts           # 500 questions PCPP-32-10x
-│   │   ├── pcedCards.ts           # 400 questions PCED-30-02
-│   │   ├── pcadCards.ts           # 400 questions PCAD-31-02
-│   │   ├── pcetCards.ts           # 300 questions PCET-30-01
-│   │   ├── pcatCards.ts           # 400 questions PCAT-31-0x
-│   │   ├── pcesCards.ts           # 400 questions PCES-30-01
-│   │   ├── pceaCards.ts           # 500 questions PCEA-30-01
-│   │   └── pceiCards.ts           # 500 questions PCEI-30-01
+│   │   ├── certifications.ts       # Catalogue de métadonnées léger
+│   │   ├── certificationDataLoader.ts # Chargement différé des cartes
+│   │   ├── metadata/               # Programmes et informations de certification
+│   │   └── *Data.ts                # Jeux de cartes chargés à la demande
+│   ├── navigation/
+│   │   └── routes.ts               # Routes, alias et libellés de navigation
+│   ├── utils/
+│   │   ├── srsStorage.ts           # Progression locale isolée par certification
+│   │   └── srsStats.ts             # Statistiques SRS partagées
 │   ├── lib/
-│   │   └── firebase.ts            # Client Firebase avec fallback invité robuste
-│   └── App.tsx                    # Routeur racine & orchestration des modals
+│   │   └── firebase.ts             # Client Firebase facultatif
+│   └── App.tsx                     # Orchestration de l'application
 ```
 
 ---
@@ -207,6 +209,12 @@ npm run dev
 
 # 4. Compiler pour la production (Cloudflare Pages)
 npm run build
+
+# Exécuter les tests automatisés
+npm test
+
+# Vérifier les types TypeScript
+npm run lint
 ```
 
 ### ☁️ Déploiement sur Cloudflare Pages

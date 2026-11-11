@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   Plus,
@@ -13,16 +13,13 @@ import {
 } from 'lucide-react';
 import { CardDifficulty, CertificationTrack, Flashcard } from '../types';
 import { useI18n } from '../context/I18nContext';
-import { pcapSyllabusSections } from '../data/pcapData';
-import { pcepSyllabusSections } from '../data/pcepData';
-import { pcppSyllabusSections } from '../data/pcppData';
-import { pcedSyllabusSections } from '../data/pcedData';
-import { pcadSyllabusSections } from '../data/pcadData';
+import { CERTIFICATIONS, CERTIFICATION_BY_ID } from '../data/certifications';
 
 interface CreateFlashcardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCardCreated: (newCard: Flashcard) => void;
+  editingCard?: Flashcard | null;
   defaultTrack?: CertificationTrack;
   defaultSection?: string;
 }
@@ -31,6 +28,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
   isOpen,
   onClose,
   onCardCreated,
+  editingCard = null,
   defaultTrack = 'pcep',
   defaultSection,
 }) => {
@@ -50,33 +48,55 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (editingCard) {
+      const editingTrack = editingCard.track ?? defaultTrack;
+      setTrack(editingTrack);
+      setTopic(editingCard.topic ?? '');
+      setCategory(editingCard.category ?? 'Syntax');
+      setDifficulty(editingCard.difficulty ?? 'Beginner');
+      setQuestion(editingCard.question);
+      setCodeSnippet(editingCard.codeSnippet ?? '');
+      setStdoutExpected(editingCard.stdoutExpected ?? '');
+      setExplanationTitle(editingCard.explanationTitle ?? '');
+      setExplanationText(editingCard.explanationText ?? editingCard.explanation ?? '');
+      const sectionNumberFromCard = Number(editingCard.section.replace('Section ', ''));
+      const trackSections = CERTIFICATION_BY_ID[editingTrack].syllabus;
+      const targetSection = trackSections.find((section) => section.number === sectionNumberFromCard) ?? trackSections[0];
+      setSectionNumber(targetSection.number);
+      setChapter(editingCard.chapter || targetSection.chapters[0]?.id || '1.1');
+      setErrorMsg(null);
+      return;
+    }
+
+    setTrack(defaultTrack);
+    const defaultSectionNumber = Number(defaultSection?.replace('Section ', ''));
+    const targetSection = CERTIFICATION_BY_ID[defaultTrack].syllabus.find(
+      (section) => section.number === defaultSectionNumber,
+    ) ?? CERTIFICATION_BY_ID[defaultTrack].syllabus[0];
+    setSectionNumber(targetSection.number);
+    setChapter(targetSection.chapters[0]?.id ?? '1.1');
+    setTopic('');
+    setCategory('Syntax');
+    setDifficulty('Beginner');
+    setQuestion('');
+    setCodeSnippet('');
+    setStdoutExpected('');
+    setExplanationTitle('');
+    setExplanationText('');
+    setErrorMsg(null);
+  }, [defaultTrack, defaultSection, editingCard, isOpen]);
+
   if (!isOpen) return null;
 
-  const currentSections =
-    track === 'pcep'
-      ? pcepSyllabusSections
-      : track === 'pcpp'
-      ? pcppSyllabusSections
-      : track === 'pced'
-      ? pcedSyllabusSections
-      : track === 'pcad'
-      ? pcadSyllabusSections
-      : pcapSyllabusSections;
+  const currentSections = CERTIFICATION_BY_ID[track].syllabus;
   const currentSection = currentSections.find((s) => s.number === sectionNumber) || currentSections[0];
 
   const handleTrackChange = (newTrack: CertificationTrack) => {
     setTrack(newTrack);
-    setSectionNumber(1);
-    const newSections =
-      newTrack === 'pcep'
-        ? pcepSyllabusSections
-        : newTrack === 'pcpp'
-        ? pcppSyllabusSections
-        : newTrack === 'pced'
-        ? pcedSyllabusSections
-        : newTrack === 'pcad'
-        ? pcadSyllabusSections
-        : pcapSyllabusSections;
+    const newSections = CERTIFICATION_BY_ID[newTrack].syllabus;
+    setSectionNumber(newSections[0].number);
     setChapter(newSections[0].chapters[0]?.id || '1.1');
   };
 
@@ -109,9 +129,9 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
       return;
     }
 
-    const prefix = track === 'pcep' ? 'PCEP' : track === 'pcpp' ? 'PCPP' : 'PCAP';
+    const prefix = track.toUpperCase();
     const newCard: Flashcard = {
-      id: `${prefix}-CUSTOM-${Date.now().toString().slice(-6)}`,
+      id: editingCard?.id ?? `${prefix}-CUSTOM-${Date.now().toString().slice(-6)}`,
       track,
       cardType: `${prefix} Custom Card`,
       topic: topic.trim(),
@@ -156,7 +176,9 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100">
-                {isFrench ? 'Créer une carte mémoire' : 'Create Custom Flashcard'}
+                {editingCard
+                  ? (isFrench ? 'Modifier la carte mémoire' : 'Edit Custom Flashcard')
+                  : (isFrench ? 'Créer une carte mémoire' : 'Create Custom Flashcard')}
               </h2>
               <p className="text-xs text-slate-400">
                 {isFrench
@@ -189,62 +211,22 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 {isFrench ? 'Programme de Certification' : 'Target Certification Track'}
               </label>
-              <div className="grid grid-cols-5 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleTrackChange('pcep')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
-                    track === 'pcep'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/30'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <span>PCEP</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTrackChange('pcap')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
-                    track === 'pcap'
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 ring-1 ring-cyan-500/30'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <span>PCAP</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTrackChange('pcpp')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
-                    track === 'pcpp'
-                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 ring-1 ring-purple-500/30'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <span>PCPP</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTrackChange('pced')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
-                    track === 'pced'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 ring-1 ring-amber-500/30'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <span>PCED</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTrackChange('pcad')}
-                  className={`py-2 px-1.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center space-x-1 ${
-                    track === 'pcad'
-                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 ring-1 ring-blue-500/30'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <span>PCAD</span>
-                </button>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3" role="group" aria-label={isFrench ? 'Choisir la certification' : 'Choose certification'}>
+                {CERTIFICATIONS.map(({ id, info }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleTrackChange(id)}
+                    aria-pressed={track === id}
+                    className={`min-h-10 rounded-xl border px-2 py-2 text-xs font-bold transition-all ${
+                      track === id
+                        ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-300 ring-1 ring-cyan-500/30'
+                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {info.code}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -419,7 +401,9 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
                 className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all flex items-center space-x-1.5"
               >
                 <Plus className="w-4 h-4" />
-                <span>{isFrench ? 'Enregistrer la carte' : 'Save Flashcard'}</span>
+                <span>{editingCard
+                  ? (isFrench ? 'Enregistrer les modifications' : 'Save Changes')
+                  : (isFrench ? 'Enregistrer la carte' : 'Save Flashcard')}</span>
               </button>
             </div>
           </div>

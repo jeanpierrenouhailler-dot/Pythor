@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Code2,
   Play,
   CheckCircle2,
   Terminal,
@@ -12,6 +11,8 @@ import {
 } from 'lucide-react';
 import { AppView, CertificationTrack } from '../../types';
 import { InfoTooltip } from '../common/InfoTooltip';
+import { useI18n } from '../../context/I18nContext';
+import { PageContainer, PageHeader } from '../common/ui';
 
 interface CodeLabViewProps {
   onNavigate: (view: AppView, section?: string) => void;
@@ -31,6 +32,7 @@ interface CodeLabExperiment {
 }
 
 export const CodeLabView: React.FC<CodeLabViewProps> = ({ onNavigate, currentTrack = 'pcap' }) => {
+  const { isFrench } = useI18n();
   const experiments: CodeLabExperiment[] = [
     // PCAP Experiments
     {
@@ -614,48 +616,29 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center space-x-2">
-            <Code2 className="w-5 h-5 text-indigo-400" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">
-              {currentTrack === 'pcpp'
-                ? 'Python PCPP-32-10x Advanced Code Lab'
-                : currentTrack === 'pcet'
-                ? 'Python PCET-30-01 Testing & QA Code Lab'
-                : currentTrack === 'pcat'
-                ? 'Python PCAT-31-0x Automated Testing Code Lab'
-                : 'Python Code Lab & Sandbox'}
-            </h1>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">
-            {currentTrack === 'pcpp'
-              ? 'Interactive execution sandbox for metaclasses, descriptors, ABCs, and __slots__ in PCPP-32-10x.'
-              : currentTrack === 'pcet'
-              ? 'Interactive execution sandbox for pytest fixtures, assertions, and test double mock patterns in PCET-30-01.'
-              : currentTrack === 'pcat'
-              ? 'Interactive execution sandbox for self.subTest(), mock doubles, and BDD Given-When-Then patterns in PCAT-31-0x.'
-              : 'Interactive syntax runner and mechanics breakdown for the trickiest PCAP-31-03 topics.'}
-          </p>
-        </div>
-
-        <button
-          onClick={() => onNavigate('flashcards', currentTrack === 'pcpp' ? 'Section 1' : 'Section 4')}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/25 transition-colors flex items-center space-x-2"
-        >
-          <span>Jump to {currentTrack.toUpperCase()} Flashcards</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
+    <PageContainer className="max-w-6xl space-y-6">
+      <PageHeader
+        eyebrow={currentTrack.toUpperCase()}
+        title={isFrench ? 'Laboratoire Python' : 'Python Code Lab'}
+        description={isFrench
+          ? 'Explorez des exemples guidés et leurs sorties attendues.'
+          : 'Explore guided examples and inspect their expected output.'}
+        actions={(
+          <button
+            onClick={() => onNavigate('flashcards', currentTrack === 'pcpp' ? 'Section 1' : 'Section 4')}
+            className="py-button py-button--secondary"
+          >
+            {isFrench ? 'Flashcards' : 'Flashcards'} <ArrowRight className="ml-2 inline h-4 w-4" />
+          </button>
+        )}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Experiments Navigation Sidebar */}
         <div className="lg:col-span-4 space-y-2">
           <div className="flex items-center space-x-1 px-1 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              {currentTrack.toUpperCase()} Expériences ({filteredExperiments.length})
+              {isFrench ? `Expériences ${currentTrack.toUpperCase()} (${filteredExperiments.length})` : `${currentTrack.toUpperCase()} experiments (${filteredExperiments.length})`}
             </span>
             <InfoTooltip
               title="Laboratoire de code interactif"
@@ -692,7 +675,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
 
         {/* Code Runner & Console Output Main Stage */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+          <div className="py-surface p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-mono text-indigo-400 font-bold">{activeExp.category}</span>
@@ -703,7 +686,8 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
                 <button
                   onClick={() => handleCopy(activeExp.code)}
                   className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                  title="Copier le code"
+                  title={isFrench ? 'Copier le code' : 'Copy code'}
+                  aria-label={isFrench ? 'Copier le code' : 'Copy code'}
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 </button>
@@ -715,11 +699,13 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
                     className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{isRunning ? 'Exécution...' : 'Exécuter le Code'}</span>
+                    <span>{isRunning
+                      ? (isFrench ? 'Préparation…' : 'Preparing…')
+                      : (isFrench ? 'Afficher le résultat' : 'Show expected output')}</span>
                   </button>
                   <InfoTooltip
                     title="Exécuter le code"
-                    content="Simule l'exécution de l'interpréteur CPython et affiche la sortie stdout standard ou les traces d'erreurs en temps réel."
+                    content={isFrench ? 'Affiche la sortie attendue de cet exemple guidé ; le code présenté n’est pas exécuté dans le navigateur.' : 'Shows this guided example’s expected output; the displayed code is not executed in the browser.'}
                   />
                 </div>
               </div>
@@ -727,7 +713,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
 
             {/* Python Code Window */}
             <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 font-mono text-xs sm:text-sm text-slate-200 overflow-x-auto">
-              <pre>{activeExp.code}</pre>
+              <pre><code>{activeExp.code}</code></pre>
             </div>
 
             {/* Terminal Console Output */}
@@ -735,15 +721,17 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
               <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Sortie standard console (stdout)</span>
+                  <span>{isFrench ? 'Sortie attendue (exemple)' : 'Expected output (example)'}</span>
                 </div>
                 <InfoTooltip
                   title="Console stdout"
                   content="Résultat textuel exact produit par print() ou par le flux d'erreur standard de Python."
                 />
               </div>
-              <div className="font-mono text-xs sm:text-sm text-emerald-400 whitespace-pre-wrap">
-                {hasRun ? activeExp.output : 'Press "Run Code" to inspect output...'}
+              <div className="font-mono text-xs sm:text-sm text-emerald-400 whitespace-pre-wrap" role="status" aria-live="polite">
+                {hasRun
+                  ? activeExp.output
+                  : (isFrench ? 'Affichez la sortie attendue de cet exemple.' : 'Show this example’s expected output.')}
               </div>
             </div>
 
@@ -751,12 +739,12 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
             <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-2">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <strong className="text-slate-200">How Python Executes This:</strong>
+                <strong className="text-slate-200">{isFrench ? 'Comment Python traite cet exemple :' : 'How Python handles this example:'}</strong>
               </div>
               <p className="text-slate-400 leading-relaxed">{activeExp.explanation}</p>
               <div className="pt-2 border-t border-slate-800/80">
                 <span className="font-mono text-cyan-300 font-semibold">
-                  {currentTrack === 'pcpp' ? 'PCPP Blueprint Rule: ' : 'PCAP Blueprint Rule: '}
+                  {currentTrack.toUpperCase()} {isFrench ? 'Notion clé :' : 'Key concept:'}
                 </span>
                 <span className="text-slate-300">{activeExp.pcapRule}</span>
               </div>
@@ -764,6 +752,6 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };

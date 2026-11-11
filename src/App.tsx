@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Navbar } from './components/Navbar';
 import { HamburgerMenu } from './components/HamburgerMenu';
-import { DashboardView } from './components/views/DashboardView';
+import { DashboardOverview } from './components/views/DashboardOverview';
+import { ProgramView } from './components/views/ProgramView';
+import { StatisticsView } from './components/views/StatisticsView';
 import { FlashcardsSrsView } from './components/views/FlashcardsSrsView';
 import { ExamSimulatorView } from './components/views/ExamSimulatorView';
 import { CheatsheetView } from './components/views/CheatsheetView';
@@ -19,43 +21,24 @@ import {
   subscribeUserCustomCards,
   syncUserProfile,
 } from './services/firestoreService';
-import { pcapFlashcardsData, pcapSyllabusSections } from './data/pcapData';
-import { pcepStarterFlashcards, pcepSyllabusSections } from './data/pcepData';
-import { pcppStarterFlashcards, pcppSyllabusSections } from './data/pcppData';
-import { pcedStarterFlashcards, pcedSyllabusSections } from './data/pcedData';
-import { pcadStarterFlashcards, pcadSyllabusSections } from './data/pcadData';
-import { pcetAllFlashcards, pcetSyllabusSections } from './data/pcetData';
-import { pcatAllFlashcards, pcatSyllabusSections } from './data/pcatData';
-import { pcesAllFlashcards, pcesSyllabusSections } from './data/pcesData';
-import { pceaAllFlashcards, pceaSyllabusSections } from './data/pceaData';
-import { pceiAllFlashcards, pceiSyllabusSections } from './data/pceiData';
 import { LandingPageView } from './components/views/LandingPageView';
 import { OnboardingLegalModal } from './components/onboarding/OnboardingLegalModal';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
 import { NoviceModeProvider, useNoviceMode } from './context/NoviceModeContext';
 import { AppView, CertificationTrack, Flashcard } from './types';
+import { readTrackSrsState, writeTrackSrsState } from './utils/srsStorage';
 import { ShieldCheck, Settings, Sun, Moon, Globe, HelpCircle, Download } from 'lucide-react';
+import { getAppViewFromLocation, getAppViewUrl } from './navigation/routes';
+import { CERTIFICATION_BY_ID, CERTIFICATION_IDS } from './data/certifications';
+import { loadCertificationCards } from './data/certificationDataLoader';
+import { AppNavigation } from './components/AppNavigation';
 
 function AppContent() {
-  const [currentView, setCurrentView] = useState<AppView>(() => {
-    try {
-      const search = new URLSearchParams(window.location.search);
-      const hash = window.location.hash.toLowerCase();
-      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
-
-      if (search.get('view') === 'landing' || hash === '#landing' || path === '/landing') return 'landing';
-      if (search.get('view') === 'dashboard' || hash === '#dashboard' || path === '/dashboard' || path === '/app') return 'dashboard';
-      if (search.get('view') === 'flashcards' || hash === '#flashcards' || path === '/flashcards') return 'flashcards';
-      if (search.get('view') === 'exam' || hash === '#exam' || path === '/exam') return 'exam';
-      if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet' || path === '/cheatsheet') return 'cheatsheet';
-      if (search.get('view') === 'codelab' || hash === '#codelab' || path === '/codelab') return 'codelab';
-    } catch {}
-    return 'landing';
-  });
+  const [currentView, setCurrentView] = useState<AppView>(() => getAppViewFromLocation(window.location));
   const [currentTrack, setCurrentTrack] = useState<CertificationTrack>(() => {
     try {
       const saved = localStorage.getItem('py_cert_track');
-      if (saved === 'pcep' || saved === 'pcap' || saved === 'pcpp' || saved === 'pced' || saved === 'pcad' || saved === 'pcet' || saved === 'pcat' || saved === 'pces' || saved === 'pcea' || saved === 'pcei') return saved;
+      if (saved && CERTIFICATION_IDS.includes(saved as CertificationTrack)) return saved as CertificationTrack;
     } catch {}
     return 'pcap';
   });
@@ -63,9 +46,32 @@ function AppContent() {
   const [selectedChapter, setSelectedChapter] = useState<string>('all');
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isCreateCardOpen, setIsCreateCardOpen] = useState<boolean>(false);
+  const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [reviewedCount, setReviewedCount] = useState<number>(0);
+  const [loadedTrackCards, setLoadedTrackCards] = useState<{ track: CertificationTrack; cards: Flashcard[] } | null>(null);
+  const [cardLoadError, setCardLoadError] = useState(false);
+  const [cardLoadAttempt, setCardLoadAttempt] = useState(0);
 
   const { user } = useAuth();
+  const needsCertificationCards = !['landing', 'cheatsheet', 'codelab'].includes(currentView);
+
+  useEffect(() => {
+    if (!needsCertificationCards) return;
+    let active = true;
+    setLoadedTrackCards(null);
+    setCardLoadError(false);
+    loadCertificationCards(currentTrack)
+      .then((cards) => {
+        if (active) setLoadedTrackCards({ track: currentTrack, cards });
+      })
+      .catch((error: unknown) => {
+        console.error(`Could not load ${currentTrack} flashcards:`, error);
+        if (active) setCardLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentTrack, needsCertificationCards, cardLoadAttempt]);
 
   // User-created flashcards with persistence & Firestore Cloud Sync
   const [userCards, setUserCards] = useState<Flashcard[]>(() => {
@@ -123,40 +129,25 @@ function AppContent() {
     }
   };
 
+  const handleOpenCreateCard = () => {
+    setEditingCard(null);
+    setIsCreateCardOpen(true);
+  };
+
+  const handleEditCustomCard = (card: Flashcard) => {
+    setEditingCard(card);
+    setIsCreateCardOpen(true);
+  };
+
   // Active pool of cards based on currentTrack
   const activeCards = useMemo(() => {
-    if (currentTrack === 'pcep') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcep');
-      return [...pcepStarterFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcpp') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcpp');
-      return [...pcppStarterFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pced') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pced');
-      return [...pcedStarterFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcad') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcad');
-      return [...pcadStarterFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcet') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcet');
-      return [...pcetAllFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcat') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcat');
-      return [...pcatAllFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pces') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pces');
-      return [...pcesAllFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcea') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcea');
-      return [...pceaAllFlashcards, ...trackUserCards];
-    } else if (currentTrack === 'pcei') {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcei');
-      return [...pceiAllFlashcards, ...trackUserCards];
-    } else {
-      const trackUserCards = userCards.filter((c) => c.track === 'pcap' || !c.track);
-      return [...pcapFlashcardsData, ...trackUserCards];
-    }
-  }, [currentTrack, userCards]);
+    const trackUserCards = userCards.filter((card) =>
+      currentTrack === 'pcap' ? card.track === 'pcap' || !card.track : card.track === currentTrack
+    );
+    const trackCards = loadedTrackCards?.track === currentTrack ? loadedTrackCards.cards : [];
+    return [...trackCards, ...trackUserCards];
+  }, [currentTrack, loadedTrackCards, userCards]);
+  const hasCurrentTrackCards = loadedTrackCards?.track === currentTrack;
 
   const handleSelectTrack = (track: CertificationTrack) => {
     setCurrentTrack(track);
@@ -193,66 +184,39 @@ function AppContent() {
     }
   }, [currentView, hasAcceptedLegal, openOnboarding]);
 
-  // Read SRS state count from localStorage
-  const updateReviewedCount = () => {
-    try {
-      const saved = localStorage.getItem('pcap_srs_state');
-      if (!saved) {
-        setReviewedCount(0);
-        return;
-      }
-      const parsed = JSON.parse(saved);
-      setReviewedCount(Object.keys(parsed).length);
-    } catch {
-      setReviewedCount(0);
-    }
+  // Read SRS state count from the active certification storage bucket.
+  const updateReviewedCount = (track: CertificationTrack = currentTrack) => {
+    const parsed = readTrackSrsState(track);
+    setReviewedCount(Object.keys(parsed).length);
   };
 
   useEffect(() => {
-    updateReviewedCount();
+    updateReviewedCount(currentTrack);
     // Poll/listen to storage changes
-    const handleStorage = () => updateReviewedCount();
+    const handleStorage = () => updateReviewedCount(currentTrack);
     window.addEventListener('storage', handleStorage);
+    window.addEventListener('pythor-study-activity', handleStorage);
 
     const handlePopState = () => {
-      try {
-        const search = new URLSearchParams(window.location.search);
-        const hash = window.location.hash.toLowerCase();
-        const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
-
-        if (search.get('view') === 'dashboard' || hash === '#dashboard' || path === '/dashboard' || path === '/app') {
-          setCurrentView('dashboard');
-        } else if (search.get('view') === 'flashcards' || hash === '#flashcards' || path === '/flashcards') {
-          setCurrentView('flashcards');
-        } else if (search.get('view') === 'exam' || hash === '#exam' || path === '/exam') {
-          setCurrentView('exam');
-        } else if (search.get('view') === 'cheatsheet' || hash === '#cheatsheet' || path === '/cheatsheet') {
-          setCurrentView('cheatsheet');
-        } else if (search.get('view') === 'codelab' || hash === '#codelab' || path === '/codelab') {
-          setCurrentView('codelab');
-        } else {
-          setCurrentView('landing');
-        }
-      } catch {}
+      setCurrentView(getAppViewFromLocation(window.location));
     };
     window.addEventListener('popstate', handlePopState);
 
     return () => {
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('pythor-study-activity', handleStorage);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [currentTrack]);
 
   const handleNavigate = (view: AppView, section?: string, chapter?: string) => {
     setCurrentView(view);
     try {
-      if (view === 'landing') {
-        window.history.pushState({}, '', '/');
-      } else {
-        window.history.pushState({}, '', `/?view=${view}`);
-      }
+      window.history.pushState({}, '', getAppViewUrl(view));
     } catch {}
-    if (section) {
+    if (view === 'review' || view === 'custom-cards') {
+      setSelectedSection('all');
+    } else if (section) {
       setSelectedSection(section);
     }
     if (chapter) {
@@ -264,31 +228,14 @@ function AppContent() {
   };
 
   const handleResetProgress = () => {
+    writeTrackSrsState(currentTrack, {});
     localStorage.removeItem('pcap_srs_state');
     setReviewedCount(0);
     window.dispatchEvent(new Event('storage'));
   };
 
-  const currentSyllabus =
-    currentTrack === 'pcep'
-      ? pcepSyllabusSections
-      : currentTrack === 'pcpp'
-      ? pcppSyllabusSections
-      : currentTrack === 'pced'
-      ? pcedSyllabusSections
-      : currentTrack === 'pcad'
-      ? pcadSyllabusSections
-      : currentTrack === 'pcet'
-      ? pcetSyllabusSections
-      : currentTrack === 'pcat'
-      ? pcatSyllabusSections
-      : currentTrack === 'pces'
-      ? pcesSyllabusSections
-      : currentTrack === 'pcea'
-      ? pceaSyllabusSections
-      : currentTrack === 'pcei'
-      ? pceiSyllabusSections
-      : pcapSyllabusSections;
+  const currentCertification = CERTIFICATION_BY_ID[currentTrack];
+  const currentSyllabus = currentCertification.syllabus;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500/20 selection:text-cyan-300">
@@ -297,10 +244,7 @@ function AppContent() {
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         currentView={currentView}
-        onSelectView={(v) => {
-          setCurrentView(v);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectView={(v) => handleNavigate(v)}
         selectedSection={selectedSection}
         onSelectSection={setSelectedSection}
         totalCards={activeCards.length}
@@ -309,7 +253,7 @@ function AppContent() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         currentTrack={currentTrack}
         onSelectTrack={handleSelectTrack}
-        onOpenCreateCard={() => setIsCreateCardOpen(true)}
+        onOpenCreateCard={handleOpenCreateCard}
         activeCards={activeCards}
       />
 
@@ -323,7 +267,13 @@ function AppContent() {
           onSelectTrack={handleSelectTrack}
         />
       ) : (
-        <>
+        <div className="py-app-shell">
+          <AppNavigation
+            currentView={currentView}
+            onNavigate={handleNavigate}
+            onOpenMore={() => setIsMenuOpen(true)}
+          />
+          <div className="py-app-workspace">
           {/* Top Navigation Bar with track switcher and Create Card */}
           <Navbar
             totalCards={activeCards.length}
@@ -336,20 +286,38 @@ function AppContent() {
             onOpenSettings={() => setIsSettingsOpen(true)}
             currentTrack={currentTrack}
             onSelectTrack={handleSelectTrack}
-            onOpenCreateCard={() => setIsCreateCardOpen(true)}
+            onOpenCreateCard={handleOpenCreateCard}
           />
 
           {/* Main Viewport Content */}
           <main className="flex-1 py-4">
+            {needsCertificationCards && !hasCurrentTrackCards && !cardLoadError && (
+              <div role="status" aria-live="polite" className="py-16 text-center text-[var(--py-color-text-muted)]">
+                {isFrench ? 'Chargement du programme…' : 'Loading certification content…'}
+              </div>
+            )}
+            {needsCertificationCards && cardLoadError && (
+              <div role="alert" className="mx-auto max-w-xl rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center">
+                <p className="text-red-200">
+                  {isFrench ? 'Impossible de charger les cartes de cette certification.' : 'Could not load this certification’s flashcards.'}
+                </p>
+                <button
+                  type="button"
+                  className="py-button py-button--secondary mt-4"
+                  onClick={() => setCardLoadAttempt((attempt) => attempt + 1)}
+                >
+                  {isFrench ? 'Réessayer' : 'Retry'}
+                </button>
+              </div>
+            )}
+            {(!needsCertificationCards || (hasCurrentTrackCards && !cardLoadError)) && (
+              <>
             {currentView === 'dashboard' && (
-              <DashboardView
+              <DashboardOverview
                 cards={activeCards}
                 onNavigate={handleNavigate}
-                reviewedCount={reviewedCount}
                 currentTrack={currentTrack}
-                onSelectTrack={handleSelectTrack}
-                onOpenCreateCard={() => setIsCreateCardOpen(true)}
-                onDeleteCustomCard={handleDeleteCustomCard}
+                onOpenCreateCard={handleOpenCreateCard}
               />
             )}
 
@@ -360,9 +328,53 @@ function AppContent() {
                 onSelectSection={setSelectedSection}
                 initialChapter={selectedChapter}
                 currentTrack={currentTrack}
-                onSelectTrack={handleSelectTrack}
-                onOpenCreateCard={() => setIsCreateCardOpen(true)}
+                onOpenCreateCard={handleOpenCreateCard}
                 onDeleteCard={handleDeleteCustomCard}
+                onEditCard={handleEditCustomCard}
+              />
+            )}
+
+            {currentView === 'review' && (
+              <FlashcardsSrsView
+                cards={activeCards}
+                selectedSection="all"
+                onSelectSection={setSelectedSection}
+                initialChapter={selectedChapter}
+                currentTrack={currentTrack}
+                onOpenCreateCard={handleOpenCreateCard}
+                onDeleteCard={handleDeleteCustomCard}
+                onEditCard={handleEditCustomCard}
+                dueOnly
+              />
+            )}
+
+            {currentView === 'custom-cards' && (
+              <FlashcardsSrsView
+                cards={activeCards}
+                selectedSection="all"
+                onSelectSection={setSelectedSection}
+                currentTrack={currentTrack}
+                onOpenCreateCard={handleOpenCreateCard}
+                onDeleteCard={handleDeleteCustomCard}
+                onEditCard={handleEditCustomCard}
+                customOnly
+              />
+            )}
+
+            {currentView === 'syllabus' && (
+              <ProgramView
+                cards={activeCards}
+                currentTrack={currentTrack}
+                onNavigate={handleNavigate}
+              />
+            )}
+
+            {currentView === 'statistics' && (
+              <StatisticsView
+                cards={activeCards}
+                customCards={userCards}
+                currentTrack={currentTrack}
+                onNavigate={handleNavigate}
               />
             )}
 
@@ -386,10 +398,12 @@ function AppContent() {
                 currentTrack={currentTrack}
               />
             )}
+              </>
+            )}
           </main>
 
           {/* Universal Footer Exam Blueprint Bar */}
-          <footer className="border-t border-slate-800/80 bg-slate-950/90 py-6 text-xs text-slate-400">
+          <footer className="hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-cyan-400" />
@@ -502,7 +516,8 @@ function AppContent() {
           </div>
         </div>
       </footer>
-        </>
+        </div>
+      </div>
       )}
 
       {/* Onboarding & Legal Disclaimer Modal - only rendered when inside the application */}
@@ -522,8 +537,12 @@ function AppContent() {
       {/* Create Flashcard Modal */}
       <CreateFlashcardModal
         isOpen={isCreateCardOpen}
-        onClose={() => setIsCreateCardOpen(false)}
+        onClose={() => {
+          setIsCreateCardOpen(false);
+          setEditingCard(null);
+        }}
         onCardCreated={handleAddCustomCard}
+        editingCard={editingCard}
         defaultTrack={currentTrack}
         defaultSection={selectedSection}
       />
