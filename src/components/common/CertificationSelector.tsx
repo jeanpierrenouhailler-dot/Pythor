@@ -23,13 +23,17 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
       value={value}
       onChange={(event) => onChange(event.target.value as CertificationTrack)}
       aria-label={label || (isFrench ? 'Certification active' : 'Active certification')}
-      className="min-w-0 max-w-full rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-2 text-sm font-semibold text-slate-100 outline-none transition-colors hover:border-cyan-500/60 focus-visible:ring-2 focus-visible:ring-cyan-400"
+      className="h-10 w-[clamp(7.5rem,24vw,13rem)] min-w-0 truncate rounded-lg border border-[var(--py-color-border)] bg-[var(--py-color-surface)] px-2 text-sm font-medium text-[var(--py-color-text)] outline-none transition-colors hover:border-[var(--py-color-primary)] focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)] sm:w-[15rem] sm:px-3"
     >
-      {CERTIFICATIONS.map(({ id, info, levelFr }) => (
-        <option key={id} value={id}>
-          {info.shortName} · {isFrench ? levelFr : info.level}
-        </option>
-      ))}
+      {CERTIFICATIONS.map(({ id, info, levelFr }) => {
+        const level = isFrench ? levelFr : info.level;
+        const compactLevel = level.length > 18 ? `${level.slice(0, 16)}…` : level;
+        return (
+          <option key={id} value={id}>
+            {info.shortName} · {compactLevel}
+          </option>
+        );
+      })}
     </select>
   </label>
 );

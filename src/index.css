@@ -592,6 +592,10 @@ html.light .hero-card {
       backdrop-filter: blur(16px);
     }
 
+    .py-bottom-nav.is-secondary-menu-open {
+      display: none;
+    }
+
     .py-bottom-nav .py-nav-item {
       min-height: 3.75rem;
       flex-direction: column;
