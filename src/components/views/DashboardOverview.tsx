@@ -88,7 +88,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [lastActivity, setLastActivity] = useState(readLastActivity);
   const certification = CERTIFICATION_BY_ID[currentTrack];
-  const srsStates = useMemo(() => readTrackSrsState(currentTrack), [currentTrack]);
+  const [srsStates, setSrsStates] = useState(() => readTrackSrsState(currentTrack));
   const stats = useMemo(() => countProgress(cards, srsStates), [cards, srsStates]);
   const totalChapters = certification.syllabus.reduce((count, section) => count + section.chapters.length, 0);
   const studiedChapters = certification.syllabus.reduce((count, section) => {
@@ -117,17 +117,25 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   useEffect(() => {
     const updateOnline = () => setIsOnline(navigator.onLine);
     const updateActivity = () => setLastActivity(readLastActivity());
+    const updateSrsStates = () => setSrsStates(readTrackSrsState(currentTrack));
     window.addEventListener('online', updateOnline);
     window.addEventListener('offline', updateOnline);
     window.addEventListener('pythor-study-activity', updateActivity);
+    window.addEventListener('pythor-study-activity', updateSrsStates);
+    window.addEventListener('storage', updateSrsStates);
     return () => {
       window.removeEventListener('online', updateOnline);
       window.removeEventListener('offline', updateOnline);
       window.removeEventListener('pythor-study-activity', updateActivity);
+      window.removeEventListener('pythor-study-activity', updateSrsStates);
+      window.removeEventListener('storage', updateSrsStates);
     };
-  }, []);
+  }, [currentTrack]);
 
-  useEffect(() => setLastActivity(readLastActivity()), [currentTrack]);
+  useEffect(() => {
+    setLastActivity(readLastActivity());
+    setSrsStates(readTrackSrsState(currentTrack));
+  }, [currentTrack]);
 
   const quickActions = [
     {

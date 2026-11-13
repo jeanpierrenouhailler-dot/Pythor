@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { Menu, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppView } from '../types';
 import { APP_ROUTES } from '../navigation/routes';
-import { PythorLogo } from './common/PythorLogo';
 import { useI18n } from '../context/I18nContext';
 
 interface AppNavigationProps {
   currentView: AppView;
   onNavigate: (view: AppView) => void;
   onOpenMore: () => void;
+  isMoreOpen: boolean;
 }
 
-export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNavigate, onOpenMore }) => {
+export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNavigate, onOpenMore, isMoreOpen }) => {
   const { isFrench } = useI18n();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const mobileItems = APP_ROUTES.filter(({ view }) =>
@@ -39,7 +39,6 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
     <>
       <aside className={`py-app-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
         <div className="py-sidebar-brand">
-          <PythorLogo size="sm" showText={!isCollapsed} />
           <button
             type="button"
             className="py-sidebar-toggle"
@@ -52,6 +51,9 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
               : (isFrench ? 'Réduire la navigation' : 'Collapse navigation')}
           >
             {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            <span className="sr-only">
+              {isFrench ? 'Navigation principale' : 'Main navigation'}
+            </span>
           </button>
         </div>
         <nav className="py-sidebar-routes" aria-label={isFrench ? 'Navigation principale' : 'Main navigation'}>
@@ -66,7 +68,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
         </button>
       </aside>
 
-      <nav className="py-bottom-nav" aria-label={isFrench ? 'Navigation principale' : 'Main navigation'}>
+      <nav className={`py-bottom-nav ${isMoreOpen ? 'is-secondary-menu-open' : ''}`} aria-label={isFrench ? 'Navigation principale' : 'Main navigation'}>
         {mobileItems.map(({ view, labelFr, labelEn, icon }) =>
           renderRoute(view, isFrench ? labelFr : labelEn, icon)
         )}

@@ -4,6 +4,7 @@ interface PythorLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showText?: boolean;
   showSubtitle?: boolean;
+  showBadge?: boolean;
   className?: string;
 }
 
@@ -11,6 +12,7 @@ export const PythorLogo: React.FC<PythorLogoProps> = ({
   size = 'md',
   showText = true,
   showSubtitle = false,
+  showBadge = true,
   className = '',
 }) => {
   const iconDimensions = {
@@ -72,12 +74,14 @@ export const PythorLogo: React.FC<PythorLogoProps> = ({
       {showText && (
         <div className="flex flex-col leading-tight">
           <div className="flex items-center space-x-1.5">
-            <span className={`${textSizes[size]} font-black tracking-tight text-white`}>
+            <span className={`${textSizes[size]} font-black tracking-tight text-[var(--py-color-text)]`}>
               Pythor
             </span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-              PWA
-            </span>
+            {showBadge && (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                PWA
+              </span>
+            )}
           </div>
           {showSubtitle && (
             <span className="text-[10px] font-medium text-slate-400 -mt-0.5">
