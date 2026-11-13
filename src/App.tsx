@@ -20,17 +20,19 @@ import {
   deleteUserCustomCard,
   subscribeUserCustomCards,
   syncUserProfile,
+  syncUserSrsReset,
 } from './services/firestoreService';
 import { LandingPageView } from './components/views/LandingPageView';
 import { OnboardingLegalModal } from './components/onboarding/OnboardingLegalModal';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
 import { NoviceModeProvider, useNoviceMode } from './context/NoviceModeContext';
 import { AppView, CertificationTrack, Flashcard } from './types';
-import { writeTrackSrsState } from './utils/srsStorage';
+import { completePendingTrackReset, resetTrackProgress } from './utils/srsStorage';
 import { getAppViewFromLocation, getAppViewUrl } from './navigation/routes';
 import { CERTIFICATION_IDS } from './data/certifications';
 import { loadCertificationCards } from './data/certificationDataLoader';
 import { AppNavigation } from './components/AppNavigation';
+import { mergeUserCards, readUserCards, writeUserCards } from './utils/userCardsStorage';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState<AppView>(() => getAppViewFromLocation(window.location));
@@ -72,23 +74,28 @@ function AppContent() {
   }, [currentTrack, needsCertificationCards, cardLoadAttempt]);
 
   // User-created flashcards with persistence & Firestore Cloud Sync
-  const [userCards, setUserCards] = useState<Flashcard[]>(() => {
-    try {
-      const saved = localStorage.getItem('py_user_cards');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [userCardsState, setUserCardsState] = useState<{
+    userId: string | null;
+    cards: Flashcard[];
+  }>(() => ({ userId: null, cards: readUserCards() }));
+  const userCardScope = user?.uid ?? null;
+  const userCards = userCardsState.userId === userCardScope
+    ? userCardsState.cards
+    : readUserCards(userCardScope);
+
+  useEffect(() => {
+    setUserCardsState({ userId: userCardScope, cards: readUserCards(userCardScope) });
+  }, [userCardScope]);
 
   // Real-time synchronization of custom flashcards from Firestore when logged in
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeUserCustomCards(user.uid, (cloudCards) => {
       if (Array.isArray(cloudCards)) {
-        setUserCards(cloudCards);
+        const mergedCards = mergeUserCards(readUserCards(user.uid), cloudCards);
+        setUserCardsState({ userId: user.uid, cards: mergedCards });
         try {
-          localStorage.setItem('py_user_cards', JSON.stringify(cloudCards));
+          writeUserCards(mergedCards, user.uid);
         } catch {}
       }
     });
@@ -96,12 +103,16 @@ function AppContent() {
   }, [user]);
 
   const handleAddCustomCard = (newCard: Flashcard) => {
-    setUserCards((prev) => {
-      const updated = [newCard, ...prev.filter((c) => c.id !== newCard.id)];
+    setUserCardsState((previous) => {
+      const prev = previous.userId === userCardScope ? previous.cards : readUserCards(userCardScope);
+      const updated = [
+        newCard,
+        ...prev.filter((card) => card.id !== newCard.id || card.track !== newCard.track),
+      ];
       try {
-        localStorage.setItem('py_user_cards', JSON.stringify(updated));
+        writeUserCards(updated, user?.uid);
       } catch {}
-      return updated;
+      return { userId: userCardScope, cards: updated };
     });
 
     if (user) {
@@ -112,16 +123,17 @@ function AppContent() {
   };
 
   const handleDeleteCustomCard = (id: string) => {
-    setUserCards((prev) => {
-      const updated = prev.filter((c) => c.id !== id);
+    setUserCardsState((previous) => {
+      const prev = previous.userId === userCardScope ? previous.cards : readUserCards(userCardScope);
+      const updated = prev.filter((card) => card.id !== id || card.track !== currentTrack);
       try {
-        localStorage.setItem('py_user_cards', JSON.stringify(updated));
+        writeUserCards(updated, user?.uid);
       } catch {}
-      return updated;
+      return { userId: userCardScope, cards: updated };
     });
 
     if (user) {
-      deleteUserCustomCard(user.uid, id).catch((err) => {
+      deleteUserCustomCard(user.uid, currentTrack, id).catch((err) => {
         console.warn('Could not delete card from Firestore:', err);
       });
     }
@@ -207,10 +219,18 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleResetProgress = () => {
-    writeTrackSrsState(currentTrack, {});
-    localStorage.removeItem('pcap_srs_state');
-    window.dispatchEvent(new Event('pythor-study-activity'));
+  const handleResetProgress = async (): Promise<'local' | 'synced' | 'pending'> => {
+    const track = currentTrack;
+    const operation = resetTrackProgress(track, user?.uid);
+    if (!operation || !user) return 'local';
+    try {
+      const generation = await syncUserSrsReset(user.uid, track, operation);
+      completePendingTrackReset(track, operation.operationId, generation);
+      return 'synced';
+    } catch (error) {
+      console.warn(`The ${track} SRS reset is pending cloud synchronization:`, error);
+      return 'pending';
+    }
   };
 
   return (
@@ -248,7 +268,6 @@ function AppContent() {
           <div className="py-app-workspace">
           <Navbar
             onNavigate={(view) => handleNavigate(view)}
-            onToggleMenu={() => setIsMenuOpen(true)}
             onOpenSettings={() => setIsSettingsOpen(true)}
             currentTrack={currentTrack}
             onSelectTrack={handleSelectTrack}
@@ -279,6 +298,7 @@ function AppContent() {
               <>
             {currentView === 'dashboard' && (
               <DashboardOverview
+                key={`${user?.uid ?? 'guest'}:${currentTrack}`}
                 cards={activeCards}
                 onNavigate={handleNavigate}
                 currentTrack={currentTrack}
@@ -288,6 +308,7 @@ function AppContent() {
 
             {currentView === 'flashcards' && (
               <FlashcardsSrsView
+                key={`${user?.uid ?? 'guest'}:${currentTrack}:flashcards`}
                 cards={activeCards}
                 selectedSection={selectedSection}
                 onSelectSection={setSelectedSection}
@@ -301,6 +322,7 @@ function AppContent() {
 
             {currentView === 'review' && (
               <FlashcardsSrsView
+                key={`${user?.uid ?? 'guest'}:${currentTrack}:review`}
                 cards={activeCards}
                 selectedSection="all"
                 onSelectSection={setSelectedSection}
@@ -315,6 +337,7 @@ function AppContent() {
 
             {currentView === 'custom-cards' && (
               <FlashcardsSrsView
+                key={`${user?.uid ?? 'guest'}:${currentTrack}:custom`}
                 cards={activeCards}
                 selectedSection="all"
                 onSelectSection={setSelectedSection}
@@ -328,6 +351,7 @@ function AppContent() {
 
             {currentView === 'syllabus' && (
               <ProgramView
+                key={`${user?.uid ?? 'guest'}:${currentTrack}`}
                 cards={activeCards}
                 currentTrack={currentTrack}
                 onNavigate={handleNavigate}
@@ -336,6 +360,7 @@ function AppContent() {
 
             {currentView === 'statistics' && (
               <StatisticsView
+                key={`${user?.uid ?? 'guest'}:${currentTrack}`}
                 cards={activeCards}
                 customCards={userCards}
                 currentTrack={currentTrack}

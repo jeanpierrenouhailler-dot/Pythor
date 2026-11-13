@@ -19,7 +19,7 @@ import { AppView, CertificationTrack, CardSRSData, Flashcard, LastStudyActivity 
 import { CERTIFICATION_BY_ID } from '../../data/certifications';
 import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
-import { readTrackSrsState } from '../../utils/srsStorage';
+import { getStudyActivityStorageKey, readTrackSrsState } from '../../utils/srsStorage';
 import { calculateSrsCardStats } from '../../utils/srsStats';
 import {
   ActionCard,
@@ -40,11 +40,9 @@ interface DashboardOverviewProps {
   onOpenCreateCard: () => void;
 }
 
-const LAST_ACTIVITY_KEY = 'py_last_study_activity';
-
-function readLastActivity(): LastStudyActivity | null {
+function readLastActivity(userId?: string): LastStudyActivity | null {
   try {
-    const stored = localStorage.getItem(LAST_ACTIVITY_KEY);
+    const stored = localStorage.getItem(getStudyActivityStorageKey(userId));
     if (!stored) return null;
     const activity = JSON.parse(stored) as LastStudyActivity;
     if (
@@ -86,7 +84,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const { user, syncState } = useAuth();
   const { isFrench } = useI18n();
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
-  const [lastActivity, setLastActivity] = useState(readLastActivity);
+  const [lastActivity, setLastActivity] = useState(() => readLastActivity(user?.uid));
   const certification = CERTIFICATION_BY_ID[currentTrack];
   const [srsStates, setSrsStates] = useState(() => readTrackSrsState(currentTrack));
   const stats = useMemo(() => countProgress(cards, srsStates), [cards, srsStates]);
@@ -116,7 +114,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   useEffect(() => {
     const updateOnline = () => setIsOnline(navigator.onLine);
-    const updateActivity = () => setLastActivity(readLastActivity());
+    const updateActivity = () => setLastActivity(readLastActivity(user?.uid));
     const updateSrsStates = () => setSrsStates(readTrackSrsState(currentTrack));
     window.addEventListener('online', updateOnline);
     window.addEventListener('offline', updateOnline);
@@ -130,12 +128,12 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       window.removeEventListener('pythor-study-activity', updateSrsStates);
       window.removeEventListener('storage', updateSrsStates);
     };
-  }, [currentTrack]);
+  }, [currentTrack, user?.uid]);
 
   useEffect(() => {
-    setLastActivity(readLastActivity());
+    setLastActivity(readLastActivity(user?.uid));
     setSrsStates(readTrackSrsState(currentTrack));
-  }, [currentTrack]);
+  }, [currentTrack, user?.uid]);
 
   const quickActions = [
     {

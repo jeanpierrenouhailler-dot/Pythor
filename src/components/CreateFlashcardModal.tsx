@@ -130,8 +130,11 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
     }
 
     const prefix = track.toUpperCase();
+    const customId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const newCard: Flashcard = {
-      id: editingCard?.id ?? `${prefix}-CUSTOM-${Date.now().toString().slice(-6)}`,
+      id: editingCard?.id ?? `${prefix}-CUSTOM-${customId}`,
       track,
       cardType: `${prefix} Custom Card`,
       topic: topic.trim(),

@@ -40,9 +40,10 @@ Pour garantir l'information de chaque utilisateur sans nuire à la découverte d
 - **Données de certification :** métadonnées et programmes légers dans `src/data/metadata/`; les cartes sont chargées à la demande via `src/data/certificationDataLoader.ts`.
 - **Service Worker :** `public/sw.js` pré-cache le shell PWA et met en cache les ressources demandées. Les jeux de cartes sont disponibles hors ligne après leur premier chargement.
 - **Stockage Données :** Approche *Local-First* :
-  - `localStorage` pour les préférences, les cartes personnalisées et les états SRS isolés par certification.
-  - Firebase Firestore (optionnel) : synchronisation des profils, cartes, états SRS et tentatives d'examen lorsque l'utilisateur s'identifie.
-- **Tests :** Vitest (`npm test`), avec cas ciblés pour l'isolation des parcours, la fusion des états SRS et les volumes des jeux de cartes.
+  - `localStorage` pour les préférences et les données locales ; les cartes personnalisées, états SRS et activités sont isolés par compte, et les états SRS également par certification.
+  - Firebase Firestore (optionnel) : synchronisation des profils, cartes, états SRS et tentatives d'examen lorsque l'utilisateur s'identifie. Les états SRS sont séparés par parcours et génération ; les marqueurs de réinitialisation empêchent la restauration d'un état distant antérieur.
+  - Une réinitialisation hors ligne est conservée comme opération en attente et peut être synchronisée ultérieurement. Les anciennes clés locales générales restent dans l'espace invité et ne sont pas migrées automatiquement vers un compte dont elles ne peuvent être attribuées.
+- **Tests :** Vitest (`npm test`), avec cas ciblés pour l'isolation des comptes et parcours, la fusion des états SRS, la réinitialisation et les volumes des jeux de cartes.
 
 ### 3.2 Composants Clés d'Accompagnement Novice
 - `NoviceModeContext.tsx` : Fournisseur de contexte global gérant l'état du mode débutant, l'ouverture des fenêtres modales et la capture de l'événement d'installation PWA (`beforeinstallprompt`).
@@ -56,10 +57,10 @@ Pour garantir l'information de chaque utilisateur sans nuire à la découverte d
 ## 4. Périmètre Fonctionnel Actuel
 
 1. **Dix parcours, 4 700 cartes :** PCEP (400), PCAP (500), PCPP (500), PCED (400), PCAD (500), PCET (400), PCAT (600), PCES (400), PCEA (400) et PCEI (600).
-2. **Moteur cognitif SM-2 :** répétition espacée et progression indépendante par certification.
+2. **Moteur cognitif SM-2 :** répétition espacée et progression indépendante par certification et compte.
 3. **Navigation et vues :** tableau de bord, programme détaillé, flashcards/révisions, statistiques, examens, Code Lab et Cheatsheet.
 4. **Données réelles :** reprise de la dernière session, progression et cartes dues, statistiques de maîtrise, activité récente et tentatives d'examen.
-5. **Cartes personnalisées :** création, édition et suppression, avec stockage local et synchronisation facultative.
+5. **Cartes personnalisées :** création, édition et suppression, avec stockage local isolé par compte et synchronisation facultative.
 6. **PWA local-first :** thèmes clair/sombre, français/anglais, cache hors ligne des ressources consultées et synchronisation Firebase facultative.
 
 Les contrôles usuels sont `npm test`, `npm run lint` et `npm run build`.

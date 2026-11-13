@@ -47,12 +47,13 @@ service cloud.firestore {
         (!('selectedTrack' in data) || isValidTrack(data.selectedTrack));
     }
 
-    function isValidCustomCard(data) {
+    function isValidCustomCard(data, track, cardId) {
       return data.keys().hasAll(['id', 'userId', 'track', 'section', 'chapter', 'difficulty', 'question', 'createdAt', 'updatedAt']) &&
         data.keys().hasOnly(['id', 'userId', 'track', 'section', 'chapter', 'difficulty', 'question', 'codeSnippet', 'correctAnswer', 'explanation', 'tags', 'createdAt', 'updatedAt']) &&
-        data.id is string && isValidId(data.id) &&
+        data.id is string && data.id.size() <= 120 && isValidId(data.id) &&
+        isValidTrack(data.track) && data.track == track &&
+        cardId == track + '__' + data.id &&
         data.userId is string && data.userId.size() <= 128 &&
-        isValidTrack(data.track) &&
         data.section is string && data.section.size() <= 128 &&
         data.chapter is string && data.chapter.size() <= 128 &&
         data.difficulty in ['Beginner', 'Intermediate', 'Advanced', 'beginner', 'intermediate', 'advanced'] &&
@@ -63,17 +64,38 @@ service cloud.firestore {
         (!('tags' in data) || (data.tags is list && data.tags.size() <= 20));
     }
 
-    function isValidSrsItem(data) {
-      return data.keys().hasAll(['cardId', 'userId', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
-        data.keys().hasOnly(['cardId', 'userId', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
+    function isValidSrsItem(data, track, cardId) {
+      return data.keys().hasAll(['cardId', 'userId', 'track', 'generation', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
+        data.keys().hasOnly(['cardId', 'userId', 'track', 'generation', 'repetitions', 'interval', 'easeFactor', 'status', 'lastReviewed', 'dueDate', 'updatedAt']) &&
         data.cardId is string && isValidId(data.cardId) &&
         data.userId is string && data.userId.size() <= 128 &&
+        isValidTrack(data.track) && data.track == track &&
+        cardId == track + '__' + data.cardId &&
+        data.generation is number && data.generation >= 0 &&
         data.repetitions is number &&
         data.interval is number &&
         data.easeFactor is number &&
         data.status in ['new', 'learning', 'review', 'mastered'] &&
         data.lastReviewed is number &&
         data.dueDate is number;
+    }
+
+    function isValidSrsReset(data, userId, track) {
+      return data.keys().hasAll(['track', 'userId', 'generation', 'operationId', 'updatedAt']) &&
+        data.keys().hasOnly(['track', 'userId', 'generation', 'operationId', 'updatedAt']) &&
+        data.track == track && isValidTrack(data.track) &&
+        data.userId == userId &&
+        data.generation is number && data.generation > 0 &&
+        data.operationId is string && data.operationId.size() >= 1 && data.operationId.size() <= 128;
+    }
+
+    function isCurrentSrsGeneration(userId, track, generation) {
+      let resetPath = /databases/$(database)/documents/users/$(userId)/srsResets/$(track);
+      return (
+        !exists(resetPath) && generation == 0
+      ) || (
+        exists(resetPath) && get(resetPath).data.generation == generation
+      );
     }
 
     function isValidExamAttempt(data) {
@@ -120,18 +142,18 @@ service cloud.firestore {
         allow create: if isOwner(userId) &&
           isValidId(cardId) &&
           incoming().userId == userId &&
-          incoming().id == cardId &&
           incoming().createdAt == request.time &&
           incoming().updatedAt == request.time &&
-          isValidCustomCard(incoming());
+          isValidCustomCard(incoming(), incoming().track, cardId);
 
         allow update: if isOwner(userId) &&
           isValidId(cardId) &&
           incoming().userId == existing().userId &&
           incoming().id == existing().id &&
+          incoming().track == existing().track &&
           incoming().createdAt == existing().createdAt &&
           incoming().updatedAt == request.time &&
-          isValidCustomCard(incoming());
+          isValidCustomCard(incoming(), existing().track, cardId);
 
         allow delete: if isOwner(userId) && isValidId(cardId);
       }
@@ -143,18 +165,44 @@ service cloud.firestore {
         allow create: if isOwner(userId) &&
           isValidId(cardId) &&
           incoming().userId == userId &&
-          incoming().cardId == cardId &&
           incoming().updatedAt == request.time &&
-          isValidSrsItem(incoming());
+          isValidSrsItem(incoming(), incoming().track, cardId) &&
+          isCurrentSrsGeneration(userId, incoming().track, incoming().generation);
 
         allow update: if isOwner(userId) &&
           isValidId(cardId) &&
           incoming().userId == existing().userId &&
           incoming().cardId == existing().cardId &&
+          incoming().track == existing().track &&
           incoming().updatedAt == request.time &&
-          isValidSrsItem(incoming());
+          isValidSrsItem(incoming(), existing().track, cardId) &&
+          isCurrentSrsGeneration(userId, existing().track, incoming().generation);
 
         allow delete: if isOwner(userId) && isValidId(cardId);
+      }
+
+      // Generation markers make offline resets idempotent and prevent old states from returning.
+      match /srsResets/{track} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+          isValidTrack(track) &&
+          incoming().updatedAt == request.time &&
+          isValidSrsReset(incoming(), userId, track);
+
+        allow update: if isOwner(userId) &&
+          isValidTrack(track) &&
+          incoming().updatedAt == request.time &&
+          isValidSrsReset(incoming(), userId, track) &&
+          (
+            incoming().generation > existing().generation ||
+            (
+              incoming().generation == existing().generation &&
+              incoming().operationId == existing().operationId
+            )
+          );
+
+        allow delete: if false;
       }
 
       // 4. Exam Attempt Historical Records (Immutable)

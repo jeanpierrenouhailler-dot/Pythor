@@ -66,7 +66,7 @@ Vos révisions SRS, cartes personnalisées et préférences sont d'abord conserv
 
 ---
 
-Les cartes sont chargées à la demande par certification afin de limiter le JavaScript initial. La progression SRS et les statistiques sont isolées par parcours.
+Les cartes sont chargées à la demande par certification afin de limiter le JavaScript initial. La progression SRS et les statistiques sont isolées par parcours et par compte. Une réinitialisation ne concerne que le parcours choisi ; hors ligne, elle est mise en attente et synchronisée à la reconnexion. Les anciennes données locales restent dans l'espace invité et ne sont pas automatiquement attribuées à un compte, car leur propriétaire historique ne peut pas être déterminé.
 
 ### 🧠 2. Moteur de Répétition Espacée (Algorithme SM-2)
 - **Calcul scientifique de l'oubli :** Facteur de facilité (*Ease Factor*), intervalle de répétition et compteur de répétitions consécutives.

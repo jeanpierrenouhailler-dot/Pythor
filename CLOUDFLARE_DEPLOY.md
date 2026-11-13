@@ -86,4 +86,3 @@ Le fichier `firebase-applet-config.json` est volontairement exclu de Git (`.giti
    - `VITE_FIREBASE_DATABASE_ID`
 2. Dans la **Console Firebase** > **Authentication** > **Settings** > **Authorized domains**, vérifiez que `pythor.swinux.ch` (et `pythor.pages.dev` si utilisé) sont bien ajoutés à la liste des domaines autorisés.
 3. Redéployez le projet Cloudflare Pages pour que Vite intègre ces variables au build.
-

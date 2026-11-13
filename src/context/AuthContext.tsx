@@ -8,9 +8,22 @@ import {
   isFirebaseConfigured,
   User,
 } from '../lib/firebase';
-import { syncUserProfile, saveUserCustomCard, saveUserSrsItem } from '../services/firestoreService';
+import {
+  syncUserProfile,
+  saveUserCustomCard,
+  saveUserSrsItem,
+  syncUserSrsReset,
+} from '../services/firestoreService';
 import { Flashcard } from '../types';
-import { flattenTrackSrsStates, readAllTrackSrsStates } from '../utils/srsStorage';
+import {
+  CERTIFICATION_TRACKS,
+  completePendingTrackReset,
+  readAllTrackSrsStates,
+  readPendingTrackResets,
+  readTrackSrsGeneration,
+  setSrsStorageUserId,
+} from '../utils/srsStorage';
+import { readUserCards } from '../utils/userCardsStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -21,7 +34,7 @@ interface AuthContextType {
   authError: string | null;
   clearAuthError: () => void;
   syncState: 'idle' | 'syncing' | 'synced' | 'error';
-  syncLocalStorageToCloud: () => Promise<void>;
+  syncLocalStorageToCloud: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,9 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
 
   // Push local cards and SRS progress to Firestore on login
-  const syncLocalStorageToCloud = useCallback(async () => {
-    if (!auth.currentUser || !isFirebaseConfigured) return;
+  const syncLocalStorageToCloud = useCallback(async (): Promise<boolean> => {
+    if (!auth.currentUser || !isFirebaseConfigured) return false;
     const uid = auth.currentUser.uid;
+    setSrsStorageUserId(uid);
     setSyncState('syncing');
     let syncHadErrors = false;
 
@@ -88,55 +102,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
 
       // 2. Sync Local Custom Flashcards
-      try {
-        const localCardsRaw = localStorage.getItem('py_user_cards');
-        if (localCardsRaw) {
-          const localCards: Flashcard[] = JSON.parse(localCardsRaw);
-          if (Array.isArray(localCards) && localCards.length > 0) {
-            const results = await Promise.allSettled(localCards.map((card) => saveUserCustomCard(uid, card)));
-            results.forEach((result) => {
-              if (result.status === 'rejected') {
-                syncHadErrors = true;
-                console.warn('Could not sync a local custom card:', result.reason);
-              }
-            });
+      const localCards: Flashcard[] = readUserCards(uid);
+      if (localCards.length > 0) {
+        const results = await Promise.allSettled(localCards.map((card) => saveUserCustomCard(uid, card)));
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            syncHadErrors = true;
+            console.warn('Could not sync a local custom card:', result.reason);
           }
-        }
-      } catch (err) {
-        syncHadErrors = true;
-        console.warn('Could not sync local custom cards:', err);
+        });
       }
 
-      // 3. Sync Local SRS State
-      try {
-        const localSrs = flattenTrackSrsStates(readAllTrackSrsStates());
-        const entries = Object.entries(localSrs);
-        if (entries.length > 0) {
-          const results = await Promise.allSettled(
-            entries.map(([cardId, srsData]) => saveUserSrsItem(uid, cardId, srsData)),
-          );
-          results.forEach((result) => {
-            if (result.status === 'rejected') {
-              syncHadErrors = true;
-              console.warn('Could not sync a local SRS item:', result.reason);
-            }
-          });
+      // Apply reset markers before uploading progress so stale remote data cannot return.
+      const pendingResets = readPendingTrackResets();
+      for (const track of CERTIFICATION_TRACKS) {
+        const operation = pendingResets[track];
+        if (!operation) continue;
+        try {
+          const generation = await syncUserSrsReset(uid, track, operation);
+          completePendingTrackReset(track, operation.operationId, generation);
+        } catch (err) {
+          syncHadErrors = true;
+          console.warn(`Could not sync the ${track} SRS reset:`, err);
         }
+      }
+
+      // 3. Sync local SRS state per certification to prevent cross-track ID collisions.
+      try {
+        const localSrs = readAllTrackSrsStates();
+        const writes = CERTIFICATION_TRACKS.flatMap((track) =>
+          Object.entries(localSrs[track]).map(([cardId, srsData]) =>
+            saveUserSrsItem(uid, track, cardId, srsData, readTrackSrsGeneration(track)),
+          ),
+        );
+        const results = await Promise.allSettled(writes);
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            syncHadErrors = true;
+            console.warn('Could not sync a local SRS item:', result.reason);
+          }
+        });
       } catch (err) {
         syncHadErrors = true;
         console.warn('Could not sync local SRS state:', err);
       }
 
       setSyncState(syncHadErrors ? 'error' : 'synced');
+      return !syncHadErrors;
     } catch (err: any) {
       console.error('Error syncing local storage to Firestore:', err);
       setSyncState('error');
+      return false;
     }
   }, []);
 
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setSrsStorageUserId(currentUser?.uid ?? null);
       setUser(currentUser);
       setLoading(false);
 

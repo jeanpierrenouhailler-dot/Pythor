@@ -13,7 +13,7 @@ interface HamburgerMenuProps {
   onSelectView: (view: AppView) => void;
   selectedSection: string;
   onSelectSection: (section: string) => void;
-  onResetProgress: () => void;
+  onResetProgress: () => Promise<'local' | 'synced' | 'pending'>;
   currentTrack: CertificationTrack;
   activeCards: Flashcard[];
 }
@@ -29,8 +29,18 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   currentTrack,
   activeCards,
 }) => {
-  const { user, isSigningIn, signInWithGoogle, signOut, authError, clearAuthError, syncState, syncLocalStorageToCloud } = useAuth();
+  const {
+    user,
+    isSigningIn,
+    signInWithGoogle,
+    signOut,
+    authError,
+    clearAuthError,
+    syncState,
+    syncLocalStorageToCloud,
+  } = useAuth();
   const { isFrench } = useI18n();
+  const [resetStatus, setResetStatus] = React.useState<'local' | 'synced' | 'pending' | 'failed' | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
@@ -88,8 +98,12 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
         syncing: 'Synchronisation…',
         syncError: 'Erreur de synchronisation',
         reset: 'Réinitialiser la progression SRS',
-        confirmReset: 'Réinitialiser l’historique de répétition espacée de cette certification ?',
-        study: 'Étudier',
+        confirmReset: `Réinitialiser la progression SRS de ${certification.info.code} ? Seule cette certification sera réinitialisée ; ses cartes personnalisées et les autres parcours seront conservés. Si vous êtes connecté, le reset sera synchronisé. Hors ligne, il restera en attente et l’ancienne progression ne sera pas restaurée.`,
+        resetLocal: `Progression SRS de ${certification.info.code} réinitialisée sur cet appareil.`,
+        resetSynced: `Progression SRS de ${certification.info.code} réinitialisée et synchronisée.`,
+        resetPending: `Progression SRS de ${certification.info.code} réinitialisée localement ; synchronisation en attente. Utilisez « Synchroniser maintenant » pour réessayer.`,
+        resetFailed: `Impossible de confirmer la réinitialisation de ${certification.info.code}. Vérifiez la progression avant de réessayer.`,
+        accountError: 'Erreur de compte',
         cards: 'cartes',
       }
     : {
@@ -106,8 +120,12 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
         syncing: 'Syncing…',
         syncError: 'Sync error',
         reset: 'Reset SRS progress',
-        confirmReset: 'Reset the spaced-repetition history for this certification?',
-        study: 'Study',
+        confirmReset: `Reset the SRS progress for ${certification.info.code}? Only this certification will be reset; its custom cards and all other tracks will be preserved. If you are signed in, the reset will sync. Offline, it will remain queued and old progress will not be restored.`,
+        resetLocal: `${certification.info.code} SRS progress reset on this device.`,
+        resetSynced: `${certification.info.code} SRS progress reset and synchronized.`,
+        resetPending: `${certification.info.code} SRS progress was reset locally; cloud sync is pending. Use “Sync now” to retry.`,
+        resetFailed: `Could not confirm the ${certification.info.code} reset. Check the progress before trying again.`,
+        accountError: 'Account error',
         cards: 'cards',
       };
 
@@ -119,9 +137,15 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
 
   const handleReset = () => {
     if (window.confirm(copy.confirmReset)) {
-      onResetProgress();
-      onClose();
+      void onResetProgress()
+        .then(setResetStatus)
+        .catch(() => setResetStatus('failed'));
     }
+  };
+
+  const handleManualSync = async () => {
+    const succeeded = await syncLocalStorageToCloud();
+    if (resetStatus === 'pending') setResetStatus(succeeded ? 'synced' : 'pending');
   };
 
   const syncStatus = syncState === 'synced'
@@ -223,18 +247,35 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               {copy.account}
             </h3>
             <div className="rounded-xl border border-[var(--py-color-border)] p-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Cloud className="h-4 w-4 shrink-0 text-[var(--py-color-primary)]" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate">{user?.email ?? copy.guest}</span>
+              <div className="flex items-start gap-2 text-sm">
+                <Cloud className="mt-0.5 h-4 w-4 shrink-0 text-[var(--py-color-primary)]" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{user?.displayName || user?.email || copy.guest}</span>
+                  {user?.displayName && user.email && (
+                    <span className="block truncate text-xs text-[var(--py-color-text-muted)]">{user.email}</span>
+                  )}
+                </span>
                 {syncStatus && <span className="text-xs text-[var(--py-color-text-muted)]">{syncStatus}</span>}
               </div>
+              {authError && (
+                <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">
+                  <span className="min-w-0 flex-1">{copy.accountError}: {authError}</span>
+                  <button
+                    type="button"
+                    className="shrink-0 underline"
+                    onClick={clearAuthError}
+                  >
+                    {isFrench ? 'Fermer' : 'Dismiss'}
+                  </button>
+                </div>
+              )}
               <div className="mt-3 flex flex-wrap gap-2">
                 {user ? (
                   <>
                     <button
                       type="button"
                       className="min-h-10 rounded-lg border border-[var(--py-color-border)] px-3 text-sm hover:bg-[var(--py-color-surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)]"
-                      onClick={() => void syncLocalStorageToCloud()}
+                      onClick={() => void handleManualSync()}
                       disabled={syncState === 'syncing'}
                     >
                       {copy.sync}
@@ -288,6 +329,14 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             {copy.reset}
           </button>
+          {resetStatus && (
+            <p role="status" aria-live="polite" className="rounded-lg border border-[var(--py-color-border)] p-3 text-sm text-[var(--py-color-text-muted)]">
+              {resetStatus === 'local' ? copy.resetLocal
+                : resetStatus === 'synced' ? copy.resetSynced
+                  : resetStatus === 'failed' ? copy.resetFailed
+                    : copy.resetPending}
+            </p>
+          )}
         </div>
       </div>
     </div>
