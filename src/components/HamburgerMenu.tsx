@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { BookOpen, Cloud, LogOut, RotateCcw, X } from 'lucide-react';
+import { AlertCircle, BookOpen, Cloud, LogOut, RotateCcw, X } from 'lucide-react';
 import { AppView, CertificationTrack, Flashcard } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
@@ -29,7 +29,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   currentTrack,
   activeCards,
 }) => {
-  const { user, signInWithGoogle, signOut, syncState, syncLocalStorageToCloud } = useAuth();
+  const { user, isSigningIn, signInWithGoogle, signOut, authError, clearAuthError, syncState, syncLocalStorageToCloud } = useAuth();
   const { isFrench } = useI18n();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -251,13 +251,32 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 ) : (
                   <button
                     type="button"
-                    className="min-h-10 rounded-lg border border-[var(--py-color-border)] px-3 text-sm hover:bg-[var(--py-color-surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)]"
+                    className="min-h-10 rounded-lg border border-[var(--py-color-border)] px-3 text-sm hover:bg-[var(--py-color-surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)] disabled:opacity-60"
                     onClick={() => void signInWithGoogle()}
+                    disabled={isSigningIn}
                   >
-                    {copy.signIn}
+                    {isSigningIn ? (isFrench ? 'Connexion en cours…' : 'Signing in…') : copy.signIn}
                   </button>
                 )}
               </div>
+              {authError && (
+                <div
+                  role="alert"
+                  className="mt-3 flex items-start gap-2 rounded-lg border border-[var(--py-color-danger)]/40 bg-[var(--py-color-danger)]/10 p-2.5 text-xs text-[var(--py-color-danger)]"
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="leading-relaxed">{authError}</p>
+                    <button
+                      type="button"
+                      onClick={clearAuthError}
+                      className="mt-1 font-semibold underline hover:opacity-80"
+                    >
+                      {isFrench ? 'Fermer' : 'Dismiss'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
