@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   firebaseSignOut,
   onAuthStateChanged,
+  isFirebaseConfigured,
   User,
 } from '../lib/firebase';
 import {
@@ -27,6 +28,7 @@ import { readUserCards } from '../utils/userCardsStorage';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isSigningIn: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   authError: string | null;
@@ -37,15 +39,54 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function formatAuthErrorMessage(err: unknown): string {
+  const code = typeof err === 'object' && err !== null && 'code' in err ? String((err as { code?: unknown }).code) : '';
+  const message = err instanceof Error ? err.message : String(err || '');
+  const isFrench = typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('fr');
+
+  switch (code) {
+    case 'auth/popup-closed-by-user':
+      return isFrench
+        ? 'La fenêtre de connexion Google a été fermée avant la fin. Veuillez réessayer.'
+        : 'Sign-in window was closed before completing. Please try again.';
+    case 'auth/popup-blocked':
+      return isFrench
+        ? 'Votre navigateur a bloqué la fenêtre de connexion Google. Autorisez les pop-ups pour ce site et réessayez.'
+        : 'Your browser blocked the Google sign-in popup. Please allow popups for this site and try again.';
+    case 'auth/unauthorized-domain': {
+      const host = typeof window !== 'undefined' ? window.location.hostname : '';
+      return isFrench
+        ? `Le domaine « ${host} » n'est pas encore autorisé dans Firebase Authentication (Authorized domains).`
+        : `Domain "${host}" is not listed in Firebase Authentication authorized domains.`;
+    }
+    case 'auth/operation-not-allowed':
+      return isFrench
+        ? 'La connexion Google n’est pas activée dans la console Firebase Authentication.'
+        : 'Google sign-in provider is not enabled in Firebase Authentication.';
+    case 'auth/api-key-not-valid':
+    case 'auth/invalid-api-key':
+      return isFrench
+        ? 'La clé API Firebase configurée est invalide ou a été révoquée.'
+        : 'Configured Firebase API key is invalid or revoked.';
+    case 'auth/network-request-failed':
+      return isFrench
+        ? 'Impossible de contacter les serveurs Google/Firebase. Vérifiez votre connexion Internet.'
+        : 'Network error while contacting Google/Firebase. Please check your connection.';
+    default:
+      return message || (isFrench ? 'Échec de l’authentification avec Google.' : 'Failed to authenticate with Google.');
+  }
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSigningIn, setIsSigningIn] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced' | 'error'>('idle');
 
   // Push local cards and SRS progress to Firestore on login
   const syncLocalStorageToCloud = useCallback(async (): Promise<boolean> => {
-    if (!auth.currentUser) return false;
+    if (!auth.currentUser || !isFirebaseConfigured) return false;
     const uid = auth.currentUser.uid;
     setSrsStorageUserId(uid);
     setSyncState('syncing');
@@ -135,25 +176,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = useCallback(async () => {
     setAuthError(null);
+
+    if (!isFirebaseConfigured) {
+      const isFrench = typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('fr');
+      setAuthError(
+        isFrench
+          ? 'La synchronisation Google/Firebase n’est pas configurée sur cet environnement (variables VITE_FIREBASE_* manquantes).'
+          : 'Google/Firebase Sign-In is not configured for this environment (missing VITE_FIREBASE_* variables).'
+      );
+      return;
+    }
+
+    setIsSigningIn(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      if (result.user) {
-        await syncUserProfile(
-          result.user.uid,
-          result.user.email || '',
-          result.user.displayName,
-          result.user.photoURL
-        );
-      }
+      await signInWithPopup(auth, googleProvider);
+      // Profile & cloud sync are triggered automatically by onAuthStateChanged
     } catch (err: any) {
       console.error('Sign-in error:', err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setAuthError('Sign-in window was closed. Please try again.');
-      } else if (err.code === 'auth/cancelled-popup-request') {
+      if (err?.code === 'auth/cancelled-popup-request') {
         // Ignore duplicate popup cancel
       } else {
-        setAuthError(err.message || 'Failed to authenticate with Google.');
+        setAuthError(formatAuthErrorMessage(err));
       }
+    } finally {
+      setIsSigningIn(false);
     }
   }, []);
 
@@ -163,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await firebaseSignOut(auth);
     } catch (err: any) {
       console.error('Sign-out error:', err);
-      setAuthError(err.message || 'Failed to sign out.');
+      setAuthError(formatAuthErrorMessage(err));
     }
   }, []);
 
@@ -175,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     () => ({
       user,
       loading,
+      isSigningIn,
       signInWithGoogle,
       signOut,
       authError,
@@ -182,7 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       syncState,
       syncLocalStorageToCloud,
     }),
-    [user, loading, signInWithGoogle, signOut, authError, clearAuthError, syncState, syncLocalStorageToCloud]
+    [user, loading, isSigningIn, signInWithGoogle, signOut, authError, clearAuthError, syncState, syncLocalStorageToCloud]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

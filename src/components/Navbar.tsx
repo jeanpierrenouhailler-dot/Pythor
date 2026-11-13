@@ -3,6 +3,7 @@ import { AppView, CertificationTrack } from '../types';
 import { PythorLogo } from './common/PythorLogo';
 import { CertificationSelector } from './common/CertificationSelector';
 import { PreferencesMenu } from './PreferencesMenu';
+import { UserAuthButton } from './UserAuthButton';
 import { useI18n } from '../context/I18nContext';
 
 interface NavbarProps {
@@ -40,6 +41,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             label={isFrench ? 'Certification active' : 'Active certification'}
             className="max-w-[min(13rem,42vw)] sm:max-w-[15rem]"
           />
+          <div className="hidden sm:block">
+            <UserAuthButton />
+          </div>
           <PreferencesMenu onOpenSettings={onOpenSettings} onNavigate={onNavigate} />
         </div>
       </div>

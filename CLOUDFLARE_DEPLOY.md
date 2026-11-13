@@ -69,3 +69,20 @@ Le dossier `public/` contient déjà les directives lues par Cloudflare Pages :
   - `X-Content-Type-Options: nosniff` & `X-Frame-Options: SAMEORIGIN` (sécurité).
   - Cache Service Worker (`/sw.js`) avec `must-revalidate` (mises à jour instantanées de la PWA).
   - Cache immuable d'un an pour les ressources hashées de `/assets/*`.
+
+---
+
+## 6. Activer la Connexion Google & la Synchronisation Firebase en Production
+
+Le fichier `firebase-applet-config.json` est volontairement exclu de Git (`.gitignore`) pour éviter d'exposer vos clés sur GitHub. Pour que la connexion Google fonctionne sur `pythor.swinux.ch` :
+
+1. Dans **Cloudflare Pages** > votre projet > **Settings** > **Environment variables**, ajoutez les variables suivantes (disponibles dans la console Firebase de votre projet) :
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_DATABASE_ID`
+2. Dans la **Console Firebase** > **Authentication** > **Settings** > **Authorized domains**, vérifiez que `pythor.swinux.ch` (et `pythor.pages.dev` si utilisé) sont bien ajoutés à la liste des domaines autorisés.
+3. Redéployez le projet Cloudflare Pages pour que Vite intègre ces variables au build.
