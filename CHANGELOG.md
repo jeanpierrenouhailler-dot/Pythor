@@ -14,13 +14,17 @@ Toutes les modifications notables apportées au projet **Pythor** sont document�
 
 ### ⚡ Performance et fiabilité
 - Séparation des métadonnées et des cartes ; chargement différé des dix jeux de cartes selon le parcours sélectionné.
-- Fusion SRS locale/Firestore qui conserve l'état le plus récent et protège les données locales contre les instantanés distants incomplets.
+- Isolation des états SRS et des cartes personnalisées par compte et par certification, avec des clés Firestore composées pour éviter les collisions entre parcours.
+- Réinitialisations SRS limitées au parcours choisi, avec marqueurs de génération distants et opérations en attente rejouables après une période hors ligne.
+- Fusion SRS locale/Firestore qui départage les états par répétitions puis date et protège les données locales contre les instantanés distants incomplets.
+- Les données locales historiques non attribuables restent dans l'espace invité ; aucune migration automatique vers un compte n'est effectuée.
 - Les échecs partiels de synchronisation sont désormais reflétés dans l'état de synchronisation.
+- Le thème enregistré est appliqué avant le premier rendu afin d'éviter un flash de thème au chargement.
 - Préservation des caches étrangers au service worker et correction du fallback de navigation hors ligne.
 - Les préférences de thème et de langue restent utilisables si `localStorage` est indisponible.
 
 ### 🧪 Vérification
-- Ajout de Vitest et de tests ciblés sur l'isolation des parcours, les statistiques SRS, la fusion des états et le nombre de cartes par certification.
+- Tests ciblés sur l'isolation des comptes/parcours, les statistiques SRS, la fusion des états et le nombre de cartes par certification.
 
 ---
 

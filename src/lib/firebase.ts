@@ -63,20 +63,8 @@ export enum OperationType {
 }
 
 export interface FirestoreErrorInfo {
-  error: string;
+  errorCode: string;
   operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  };
 }
 
 /**
@@ -85,25 +73,13 @@ export interface FirestoreErrorInfo {
 export function handleFirestoreError(
   error: unknown,
   operationType: OperationType,
-  path: string | null
+  _path: string | null,
 ): never {
-  const currentUser = auth.currentUser;
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    errorCode: error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+      ? error.code
+      : 'unknown',
     operationType,
-    path,
-    authInfo: {
-      userId: currentUser?.uid || null,
-      email: currentUser?.email || null,
-      emailVerified: currentUser?.emailVerified || null,
-      isAnonymous: currentUser?.isAnonymous || null,
-      tenantId: currentUser?.tenantId || null,
-      providerInfo:
-        currentUser?.providerData?.map((p) => ({
-          providerId: p.providerId,
-          email: p.email,
-        })) || [],
-    },
   };
 
   console.error('Firestore Error:', JSON.stringify(errInfo));

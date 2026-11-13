@@ -6,10 +6,19 @@ import {
   collection,
   onSnapshot,
   serverTimestamp,
+  runTransaction,
   Unsubscribe,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Flashcard, CardSRSData, UserExamAttemptRecord, CertificationTrack } from '../types';
+import { CERTIFICATION_TRACKS, isSrsStateNewer, SrsResetOperation } from '../utils/srsStorage';
+
+export interface TrackSrsSnapshot {
+  generation: number;
+  states: Record<string, CardSRSData>;
+}
+
+export type UserSrsSnapshot = Partial<Record<CertificationTrack, TrackSrsSnapshot>>;
 
 /**
  * Clean and sanitize string identifier for Firestore document key
@@ -78,16 +87,20 @@ export async function saveUserCustomCard(
   userId: string,
   card: Flashcard
 ): Promise<void> {
-  const docId = sanitizeDocId(card.id);
+  if (!/^[a-zA-Z0-9_-]{1,120}$/.test(card.id)) {
+    throw new Error(`Invalid custom card id: ${card.id}`);
+  }
+  const track = card.track || 'pcap';
+  const docId = `${track}__${card.id}`;
   const path = `users/${userId}/customCards/${docId}`;
   try {
     const cardRef = doc(db, 'users', userId, 'customCards', docId);
     const snap = await getDoc(cardRef);
 
     const basePayload: Record<string, any> = {
-      id: docId,
+      id: card.id,
       userId,
-      track: card.track || 'pcap',
+      track,
       section: (card.section || 'Section 1').slice(0, 128),
       chapter: (card.chapter || 'Custom').slice(0, 128),
       difficulty: card.difficulty || 'Intermediate',
@@ -125,13 +138,18 @@ export async function saveUserCustomCard(
  */
 export async function deleteUserCustomCard(
   userId: string,
+  track: CertificationTrack,
   cardId: string
 ): Promise<void> {
-  const docId = sanitizeDocId(cardId);
+  const docId = `${track}__${sanitizeDocId(cardId)}`;
+  const legacyDocId = sanitizeDocId(cardId);
   const path = `users/${userId}/customCards/${docId}`;
   try {
     const cardRef = doc(db, 'users', userId, 'customCards', docId);
-    await deleteDoc(cardRef);
+    await Promise.all([
+      deleteDoc(cardRef),
+      ...(legacyDocId === docId ? [] : [deleteDoc(doc(db, 'users', userId, 'customCards', legacyDocId))]),
+    ]);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -150,9 +168,10 @@ export function subscribeUserCustomCards(
   return onSnapshot(
     colRef,
     (snapshot) => {
-      const cards: Flashcard[] = snapshot.docs.map((docSnap) => {
+      const cardsByTrackAndId = new Map<string, Flashcard>();
+      snapshot.docs.forEach((docSnap) => {
         const d = docSnap.data();
-        return {
+        const card: Flashcard = {
           id: d.id,
           track: d.track,
           section: d.section,
@@ -166,8 +185,9 @@ export function subscribeUserCustomCards(
           tags: d.tags || [],
           isUserCreated: true,
         };
+        cardsByTrackAndId.set(`${card.track ?? 'pcap'}:${card.id}`, card);
       });
-      onCards(cards);
+      onCards([...cardsByTrackAndId.values()]);
     },
     (error) => {
       handleFirestoreError(error, OperationType.LIST, path);
@@ -180,16 +200,23 @@ export function subscribeUserCustomCards(
  */
 export async function saveUserSrsItem(
   userId: string,
+  track: CertificationTrack,
   cardId: string,
-  srsData: CardSRSData
+  srsData: CardSRSData,
+  generation: number,
 ): Promise<void> {
-  const docId = sanitizeDocId(cardId);
+  if (!/^[a-zA-Z0-9_-]{1,120}$/.test(cardId)) {
+    throw new Error(`Invalid SRS card id: ${cardId}`);
+  }
+  const docId = `${track}__${cardId}`;
   const path = `users/${userId}/srsProgress/${docId}`;
   try {
     const srsRef = doc(db, 'users', userId, 'srsProgress', docId);
     const payload = {
-      cardId: docId,
+      cardId,
       userId,
+      track,
+      generation,
       repetitions: Number(srsData.repetitions) || 0,
       interval: Number(srsData.interval) || 1,
       easeFactor: Number(srsData.easeFactor) || 2.5,
@@ -204,37 +231,129 @@ export async function saveUserSrsItem(
   }
 }
 
+export async function syncUserSrsReset(
+  userId: string,
+  track: CertificationTrack,
+  operation: SrsResetOperation,
+): Promise<number> {
+  const path = `users/${userId}/srsResets/${track}`;
+  const resetRef = doc(db, 'users', userId, 'srsResets', track);
+  try {
+    return await runTransaction(db, async (transaction) => {
+      const snapshot = await transaction.get(resetRef);
+      const existing = snapshot.exists() ? snapshot.data() : undefined;
+      if (existing?.operationId === operation.operationId) {
+        return Number(existing.generation) || operation.generation;
+      }
+
+      const generation = Math.max(operation.generation, (Number(existing?.generation) || 0) + 1);
+      transaction.set(resetRef, {
+        track,
+        userId,
+        generation,
+        operationId: operation.operationId,
+        updatedAt: serverTimestamp(),
+      });
+      return generation;
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
 /**
  * Real-time listener for user SRS progress
  */
 export function subscribeUserSrsProgress(
   userId: string,
-  onProgress: (srsMap: Record<string, CardSRSData>) => void
+  onProgress: (snapshot: UserSrsSnapshot) => void,
 ): Unsubscribe {
-  const path = `users/${userId}/srsProgress`;
-  const colRef = collection(db, 'users', userId, 'srsProgress');
-
-  return onSnapshot(
-    colRef,
-    (snapshot) => {
-      const srsMap: Record<string, CardSRSData> = {};
-      snapshot.docs.forEach((docSnap) => {
-        const d = docSnap.data();
-        srsMap[d.cardId] = {
-          repetitions: d.repetitions,
-          interval: d.interval,
-          easeFactor: d.easeFactor,
-          status: d.status,
-          lastReviewed: d.lastReviewed,
-          dueDate: d.dueDate,
-        };
-      });
-      onProgress(srsMap);
-    },
-    (error) => {
-      handleFirestoreError(error, OperationType.LIST, path);
+  const progressPath = `users/${userId}/srsProgress`;
+  const resetsPath = `users/${userId}/srsResets`;
+  const progressRef = collection(db, 'users', userId, 'srsProgress');
+  const resetsRef = collection(db, 'users', userId, 'srsResets');
+  let progressSnapshot: UserSrsSnapshot | null = null;
+  let resetGenerations: Partial<Record<CertificationTrack, number>> | null = null;
+  const publish = () => {
+    if (!progressSnapshot || !resetGenerations) return;
+    const result: UserSrsSnapshot = {};
+    for (const track of CERTIFICATION_TRACKS) {
+      const progress = progressSnapshot[track] ?? { generation: 0, states: {} };
+      const generation = Math.max(resetGenerations[track] ?? 0, progress.generation);
+      result[track] = {
+        generation,
+        states: generation === progress.generation ? progress.states : {},
+      };
     }
+    onProgress(result);
+  };
+
+  const unsubscribeProgress = onSnapshot(
+    progressRef,
+    (snapshot) => {
+      const progress: UserSrsSnapshot = {};
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        const cardId = typeof data.cardId === 'string' ? data.cardId : '';
+        const track = CERTIFICATION_TRACKS.includes(data.track)
+          ? data.track as CertificationTrack
+          : CERTIFICATION_TRACKS.find((candidate) =>
+              cardId.toLowerCase().startsWith(candidate.toLowerCase()),
+            );
+        if (!track || !cardId) return;
+
+        const documentGeneration = Number(data.generation) || 0;
+        const current = progress[track] ?? { generation: documentGeneration, states: {} };
+        if (documentGeneration > current.generation) {
+          current.generation = documentGeneration;
+          current.states = {};
+        }
+        if (documentGeneration < current.generation) {
+          progress[track] = current;
+          return;
+        }
+        const nextState: CardSRSData = {
+          repetitions: data.repetitions,
+          interval: data.interval,
+          easeFactor: data.easeFactor,
+          status: data.status,
+          lastReviewed: data.lastReviewed,
+          dueDate: data.dueDate,
+        };
+        const previous = current.states[cardId];
+        if (!previous || isSrsStateNewer(nextState, previous) || (
+          nextState.repetitions === previous.repetitions
+          && nextState.lastReviewed === previous.lastReviewed
+        )) {
+          current.states[cardId] = nextState;
+        }
+        progress[track] = current;
+      });
+      progressSnapshot = progress;
+      publish();
+    },
+    (error) => handleFirestoreError(error, OperationType.LIST, progressPath),
   );
+  const unsubscribeResets = onSnapshot(
+    resetsRef,
+    (snapshot) => {
+      const generations: Partial<Record<CertificationTrack, number>> = {};
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (CERTIFICATION_TRACKS.includes(data.track)) {
+          generations[data.track as CertificationTrack] = Number(data.generation) || 0;
+        }
+      });
+      resetGenerations = generations;
+      publish();
+    },
+    (error) => handleFirestoreError(error, OperationType.LIST, resetsPath),
+  );
+
+  return () => {
+    unsubscribeProgress();
+    unsubscribeResets();
+  };
 }
 
 /**

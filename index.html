@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pythor - Studio de Préparation aux Certifications Python & PWA</title>
     <meta name="description" content="Studio interactif d'entraînement aux 10 certifications Python Institute (PCEP, PCAP, PCPP, PCED, PCAD, PCET, PCAT, PCES, PCEA, PCEI) : 4 300+ flashcards, répétition espacée SM-2, examens chronométrés et Code Lab." />
+    <script>
+      try {
+        const theme = localStorage.getItem('pythor_theme');
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.classList.add(theme);
+        }
+      } catch {
+        // The app remains usable when browser storage is unavailable.
+      }
+    </script>
     
     <!-- PWA & Mobile Meta Tags -->
     <meta name="theme-color" content="#020617" />

@@ -28,10 +28,11 @@ import { useAuth } from '../../context/AuthContext';
 import { saveUserSrsItem, subscribeUserSrsProgress } from '../../services/firestoreService';
 import { InfoTooltip } from '../common/InfoTooltip';
 import {
-  persistSrsMapByTrack,
-  mergeSrsProgress,
+  reconcileTrackSrsProgress,
+  readTrackSrsGeneration,
   readAllTrackSrsStates,
   readTrackSrsState,
+  getStudyActivityStorageKey,
   writeAllTrackSrsStates,
 } from '../../utils/srsStorage';
 import { calculateSrsCardStats } from '../../utils/srsStats';
@@ -88,16 +89,17 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeUserSrsProgress(user.uid, (cloudSrs) => {
-      const localSrs = Object.values(readAllTrackSrsStates()).reduce(
-        (allStates, trackStates) => ({ ...allStates, ...trackStates }),
-        {} as Record<string, CardSRSData>,
+      const currentRemote = cloudSrs[currentTrack] ?? { generation: 0, states: {} };
+      const reconciled = reconcileTrackSrsProgress(
+        currentTrack,
+        currentRemote.generation,
+        currentRemote.states,
+        user.uid,
       );
-      const merged = mergeSrsProgress(localSrs, cloudSrs);
-      persistSrsMapByTrack(merged);
-      setSrsState(merged);
+      setSrsState(reconciled.states);
     });
     return () => unsubscribe();
-  }, [user]);
+  }, [user, currentTrack]);
 
   const saveSrsState = (newState: Record<string, CardSRSData>) => {
     setSrsState(newState);
@@ -165,7 +167,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
   useEffect(() => {
     if (!currentCard) return;
     try {
-      localStorage.setItem('py_last_study_activity', JSON.stringify({
+      localStorage.setItem(getStudyActivityStorageKey(user?.uid), JSON.stringify({
         track: currentTrack,
         cardId: currentCard.id,
         section: currentCard.section,
@@ -174,7 +176,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
       }));
       window.dispatchEvent(new Event('pythor-study-activity'));
     } catch {}
-  }, [currentCard?.id, currentTrack, currentCardLastReviewed]);
+  }, [currentCard?.id, currentTrack, currentCardLastReviewed, user?.uid]);
 
   const handleNext = useCallback(() => {
     if (filteredCards.length === 0) return;
@@ -252,7 +254,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
     });
 
     if (user) {
-      saveUserSrsItem(user.uid, cardId, updatedSrsItem).catch((err) => {
+      saveUserSrsItem(user.uid, currentTrack, cardId, updatedSrsItem, readTrackSrsGeneration(currentTrack)).catch((err) => {
         console.warn('Could not save SRS progress to Firestore:', err);
       });
     }
