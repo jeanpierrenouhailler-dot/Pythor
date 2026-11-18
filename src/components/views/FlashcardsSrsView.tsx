@@ -314,8 +314,9 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
         )}
 
         {/* Section Tabs Selector */}
-        <div className="flex flex-wrap items-center gap-1.5 pb-4 border-b border-slate-800/60">
+        <div data-demo-id="flashcards-sections" className="flex flex-wrap items-center gap-1.5 pb-4 border-b border-slate-800/60">
           <button
+            data-demo-id="flashcards-section-all"
             onClick={() => {
               onSelectSection('all');
               setSelectedChapter('all');
@@ -331,6 +332,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           {currentSyllabus.map((sec) => (
             <button
               key={sec.id}
+              data-demo-id={`flashcards-section-${sec.number}`}
               onClick={() => {
                 onSelectSection(`Section ${sec.number}`);
                 setSelectedChapter('all');
@@ -1736,6 +1738,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
           <div className="relative w-full sm:w-72">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
+              data-demo-id="flashcards-search"
               type="text"
               placeholder="Search code, topics, rules..."
               value={searchQuery}
@@ -1784,6 +1787,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
 
             {/* Shuffle Button */}
             <button
+              data-demo-id="flashcards-shuffle"
               onClick={handleShuffle}
               title="Shuffle card order"
               className="p-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors ml-auto sm:ml-0"
@@ -1868,6 +1872,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
 
           {/* Flip Container */}
           <div
+            data-demo-id="flashcard-card"
             onClick={handleFlip}
             className="relative min-h-[420px] sm:min-h-[460px] rounded-2xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8 cursor-pointer shadow-2xl transition-all duration-200 hover:border-slate-700 hover:shadow-cyan-950/20 group"
           >
@@ -1943,7 +1948,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
 
                   {/* Question Title */}
                   <div className="mt-5 space-y-2">
-                    <h2 className="text-lg sm:text-xl font-bold text-slate-100 leading-snug">
+                    <h2 data-demo-id="flashcard-question" className="text-lg sm:text-xl font-bold text-slate-100 leading-snug">
                       {currentCard.question}
                     </h2>
                   </div>
@@ -1951,6 +1956,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   {/* Code Snippet Box */}
                   {currentCard.codeSnippet && (
                     <div
+                      data-demo-id="flashcard-code"
                       onClick={(e) => e.stopPropagation()}
                       className="mt-4 relative rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs sm:text-sm text-slate-200 shadow-inner group/code"
                     >
@@ -2010,7 +2016,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                     <span>Interval: {currentCard.intervalDays || 1}d • Ease: {currentCard.factor || '2.5'}</span>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-cyan-400 font-medium group-hover:text-cyan-300">
+                  <div data-demo-id="flashcard-flip-btn" className="flex items-center space-x-2 text-cyan-400 font-medium group-hover:text-cyan-300">
                     <RotateCw className="w-4 h-4 transition-transform group-hover:rotate-180 duration-500" />
                     <span>Click or press Space to Reveal Answer</span>
                   </div>
@@ -2035,6 +2041,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   {/* Expected Output Terminal */}
                   {(currentCard.stdoutExpected || (currentCard.options && currentCard.correctAnswer !== undefined ? currentCard.options[Number(currentCard.correctAnswer)] : null)) && (
                     <div
+                      data-demo-id="flashcard-output"
                       onClick={(e) => e.stopPropagation()}
                       className="mt-4 rounded-xl border border-emerald-950/50 bg-slate-950 p-4 font-mono text-xs sm:text-sm text-emerald-400 shadow-inner"
                     >
@@ -2049,7 +2056,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                   )}
 
                   {/* Detailed Explanation Breakdown */}
-                  <div className="mt-5 space-y-2">
+                  <div data-demo-id="flashcard-explanation" className="mt-5 space-y-2">
                     <div className="flex items-center space-x-2">
                       <Brain className="w-4 h-4 text-cyan-400" />
                       <h3 className="text-base font-bold text-white tracking-tight">
@@ -2111,7 +2118,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div data-demo-id="flashcard-srs-bar" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button
                       onClick={() => handleRateSRS('again')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-medium text-xs transition-all shadow-sm group/btn"
@@ -2139,6 +2146,7 @@ export const FlashcardsSrsView: React.FC<FlashcardsSrsViewProps> = ({
                     </button>
 
                     <button
+                      data-demo-id="flashcard-rate-good"
                       onClick={() => handleRateSRS('good')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-medium text-xs transition-all shadow-sm group/btn"
                     >

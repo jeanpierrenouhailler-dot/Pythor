@@ -149,7 +149,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({ cards, customCar
           </p>
         )}
         {!allTrackCardsLoading && !allTrackCardsError && (
-        <div className="space-y-3">
+        <div data-demo-id="stats-mastery-list" className="space-y-3">
           {CERTIFICATIONS.map(({ id, info, nameFr }) => {
             const certificationCards = allTrackCards[id] ?? [];
             const trackCustomCards = customCards.filter((card) =>
@@ -164,7 +164,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({ cards, customCar
             }).length;
             const mastery = trackCards.length ? Math.round((mastered / trackCards.length) * 100) : 0;
             return (
-              <article key={id} className="py-surface p-4">
+              <article key={id} data-demo-id={`stats-track-${id}`} className="py-surface p-4">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h2 className="font-semibold">{id === currentTrack ? (isFrench ? nameFr : info.name) : `${info.code} · ${isFrench ? nameFr : info.name}`}</h2>
@@ -182,7 +182,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({ cards, customCar
         )}
       </section>
 
-      <section className="py-surface p-5 sm:p-6">
+      <section data-demo-id="stats-activity-chart" className="py-surface p-5 sm:p-6">
         <SectionHeader
           title={isFrench ? 'Activité de révision récente' : 'Recent review activity'}
           description={isFrench
@@ -206,7 +206,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({ cards, customCar
         </div>
       </section>
 
-      <section>
+      <section data-demo-id="stats-exam-results">
         <SectionHeader
           title={isFrench ? 'Résultats des examens' : 'Exam results'}
           description={isFrench ? 'Tentatives réellement enregistrées dans votre compte.' : 'Attempts actually recorded in your account.'}

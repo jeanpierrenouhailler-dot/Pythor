@@ -35,7 +35,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
       aria-modal="true"
       aria-labelledby="install-modal-title"
     >
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150">
+      <div data-demo-id="install-modal" className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-800/90 bg-slate-950 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
@@ -92,6 +92,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
           </button>
 
           <button
+            data-demo-id="install-tab-ios"
             onClick={() => setActiveTab('ios')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
               activeTab === 'ios'
@@ -242,6 +243,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({
             )}
 
             <button
+              data-demo-id="install-modal-close"
               onClick={onClose}
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition-colors"
             >

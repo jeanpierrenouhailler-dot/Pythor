@@ -75,6 +75,7 @@ interface ActionCardProps extends ClassNameProps {
   trailing?: ReactNode;
   onClick: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   'aria-label'?: string;
+  'data-demo-id'?: string;
 }
 
 export const ActionCard: React.FC<ActionCardProps> = ({

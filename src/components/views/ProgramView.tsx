@@ -38,7 +38,7 @@ export const ProgramView: React.FC<ProgramViewProps> = ({ cards, currentTrack, o
         }
       />
 
-      <section className="py-surface space-y-4 p-5">
+      <section data-demo-id="syllabus-progress" className="py-surface space-y-4 p-5">
         <SectionHeader
           title={isFrench ? 'Progression du programme' : 'Syllabus progress'}
           description={`${studiedChapters}/${totalChapters} ${isFrench ? 'chapitres étudiés' : 'chapters studied'}`}
@@ -52,7 +52,7 @@ export const ProgramView: React.FC<ProgramViewProps> = ({ cards, currentTrack, o
           cards.some((card) => card.section === sectionName && card.chapter === chapter.id && states[card.id]?.status !== undefined && states[card.id].status !== 'new'),
         ).length;
         return (
-          <section key={section.id} className="py-surface p-5">
+          <section key={section.id} data-demo-id={`syllabus-section-${section.number}`} className="py-surface p-5">
             <SectionHeader
               title={`${section.number}. ${section.title}`}
               description={`${section.weight} · ${section.description}`}
@@ -70,6 +70,7 @@ export const ProgramView: React.FC<ProgramViewProps> = ({ cards, currentTrack, o
                   <button
                     key={chapter.id}
                     type="button"
+                    data-demo-id={`syllabus-chapter-${chapter.id}`}
                     className="flex w-full items-center gap-4 py-4 text-left hover:bg-[var(--py-color-surface-raised)]"
                     onClick={() => onNavigate('flashcards', sectionName, chapter.id)}
                   >

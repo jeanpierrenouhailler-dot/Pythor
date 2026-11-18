@@ -1,0 +1,25 @@
+Maîtrisez les 10 certifications Python officielles avec Pythor, votre studio d'entraînement gratuit et 100 % utilisable hors-ligne.
+Dans ce tutoriel complet pas à pas, découvrez comment optimiser vos révisions grâce à la répétition espacée SM-2, au simulateur d'examen et aux outils pratiques intégrés.
+
+Au fil de la vidéo, vous apprenez à naviguer entre les 10 parcours de certification (de PCEP à PCPP en passant par la Data Science, le Testing, la Cybersécurité, l'Automatisation et l'IA), à exploiter le programme détaillé par chapitre, à réviser vos flashcards intelligentes avec évaluation SM-2, à suivre vos statistiques hebdomadaires et à vous tester en conditions chronométrées. Vous voyez également comment expérimenter les subtilités de Python dans le Code Lab, filtrer l'aide-mémoire, créer vos propres cartes et installer la PWA pour réviser sans connexion Internet.
+
+Fonctions présentées :
+• Tableau de bord multi-parcours et reprise au dernier chapitre étudié
+• Programme officiel détaillé et filtrage rapide par section et mots-clés
+• Flashcards interactives avec sortie console attendue, explications et algorithme SM-2
+• File dédiée aux révisions dues du jour et suivi statistique sur 7 jours
+• Simulateur d'examen chronométré par section ou sur tout le programme
+• Code Lab Python avec cas pratiques et sortie attendue expliquée
+• Aide-mémoire instantané (méthodes dunder, name mangling, hiérarchie des exceptions)
+• Création de cartes personnalisées, thème clair/sombre, guide PWA hors-ligne et synchronisation cloud optionnelle
+
+Accéder à l'application : [Lien de votre application]
+
+Chapitrage (horodatages générés dans video/output/tutoriel-fr.chapters.txt après le rendu) :
+00:00 Introduction
+--:-- Découverte et Tableau de bord
+--:-- Programme et Flashcards SM-2
+--:-- Révisions dues et Statistiques
+--:-- Simulateur d'examen chronométré
+--:-- Code Lab, Aide-mémoire et Cartes
+--:-- Préférences, Hors-ligne et Cloud

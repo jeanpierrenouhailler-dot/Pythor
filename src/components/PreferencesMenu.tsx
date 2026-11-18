@@ -161,6 +161,7 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
       <button
         ref={triggerRef}
         type="button"
+        data-demo-id="preferences-btn"
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--py-color-border)] text-[var(--py-color-text-muted)] transition-colors hover:bg-[var(--py-color-surface-raised)] hover:text-[var(--py-color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)]"
         aria-label={copy.open}
         aria-expanded={isOpen}
@@ -177,6 +178,7 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
         <div
           ref={menuRef}
           id="pythor-preferences-panel"
+          data-demo-id="preferences-panel"
           className="absolute right-0 top-[calc(100%+0.5rem)] z-[var(--py-z-dropdown)] w-[min(20rem,calc(100vw-1.5rem))] rounded-xl border border-[var(--py-color-border)] bg-[var(--py-color-surface)] p-3 text-[var(--py-color-text)] shadow-[var(--py-shadow-md)]"
           aria-label={copy.preferences}
         >
@@ -188,11 +190,11 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
               {copy.language}
             </h3>
             <div className="grid grid-cols-2 gap-1">
-              <button type="button" className={optionClass(lang === 'fr')} aria-pressed={lang === 'fr'} onClick={() => selectLanguage('fr')}>
+              <button type="button" data-demo-id="pref-lang-fr" className={optionClass(lang === 'fr')} aria-pressed={lang === 'fr'} onClick={() => selectLanguage('fr')}>
                 {copy.french}
                 {lang === 'fr' && <Check className="h-4 w-4" aria-hidden="true" />}
               </button>
-              <button type="button" className={optionClass(lang === 'en')} aria-pressed={lang === 'en'} onClick={() => selectLanguage('en')}>
+              <button type="button" data-demo-id="pref-lang-en" className={optionClass(lang === 'en')} aria-pressed={lang === 'en'} onClick={() => selectLanguage('en')}>
                 {copy.english}
                 {lang === 'en' && <Check className="h-4 w-4" aria-hidden="true" />}
               </button>
@@ -205,12 +207,12 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
               {copy.appearance}
             </h3>
             <div className="grid grid-cols-2 gap-1">
-              <button type="button" className={optionClass(theme === 'light')} aria-pressed={theme === 'light'} onClick={() => selectTheme('light')}>
+              <button type="button" data-demo-id="pref-theme-light" className={optionClass(theme === 'light')} aria-pressed={theme === 'light'} onClick={() => selectTheme('light')}>
                 <Sun className="h-4 w-4" aria-hidden="true" />
                 <span className="flex-1 text-left">{copy.light}</span>
                 {theme === 'light' && <Check className="h-4 w-4" aria-hidden="true" />}
               </button>
-              <button type="button" className={optionClass(theme === 'dark')} aria-pressed={theme === 'dark'} onClick={() => selectTheme('dark')}>
+              <button type="button" data-demo-id="pref-theme-dark" className={optionClass(theme === 'dark')} aria-pressed={theme === 'dark'} onClick={() => selectTheme('dark')}>
                 <Moon className="h-4 w-4" aria-hidden="true" />
                 <span className="flex-1 text-left">{copy.dark}</span>
                 {theme === 'dark' && <Check className="h-4 w-4" aria-hidden="true" />}
@@ -222,7 +224,7 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
             <h3 id="preferences-application" className="px-2 pb-1 text-xs font-medium text-[var(--py-color-text-muted)]">
               {copy.application}
             </h3>
-            <button type="button" className={`${optionClass(false)} w-full`} disabled={isInstalled} onClick={installApp}>
+            <button type="button" data-demo-id="pref-install-btn" className={`${optionClass(false)} w-full`} disabled={isInstalled} onClick={installApp}>
               <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left">{isInstalled ? copy.installed : isInstallable ? copy.install : copy.installGuide}</span>
               {isInstalled && <Check className="h-4 w-4" aria-hidden="true" />}
@@ -246,7 +248,7 @@ export const PreferencesMenu: React.FC<PreferencesMenuProps> = ({ onOpenSettings
               <ChevronDown className="h-4 w-4 shrink-0 rotate-[-90deg]" aria-hidden="true" />
               <span className="flex-1 text-left">{copy.landing}</span>
             </button>
-            <button type="button" className={`${optionClass(false)} w-full`} aria-pressed={isNoviceMode} onClick={toggleNovice}>
+            <button type="button" data-demo-id="pref-novice-btn" className={`${optionClass(false)} w-full`} aria-pressed={isNoviceMode} onClick={toggleNovice}>
               <Lightbulb className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left">{copy.novice}</span>
               <span className="text-xs">{isNoviceMode ? 'On' : 'Off'}</span>

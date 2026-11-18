@@ -177,6 +177,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           <button
             ref={closeButtonRef}
             type="button"
+            data-demo-id="menu-close-btn"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--py-color-text-muted)] hover:bg-[var(--py-color-surface-raised)] hover:text-[var(--py-color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)]"
             onClick={onClose}
             aria-label={copy.close}
@@ -193,6 +194,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 <button
                   key={view}
                   type="button"
+                  data-demo-id={`menu-nav-${view}`}
                   className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--py-color-focus)] ${
                     currentView === view
                       ? 'bg-[var(--py-color-surface-raised)] text-[var(--py-color-primary)]'
@@ -246,7 +248,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             <h3 id="secondary-menu-account" className="mb-2 px-2 text-xs font-medium text-[var(--py-color-text-muted)]">
               {copy.account}
             </h3>
-            <div className="rounded-xl border border-[var(--py-color-border)] p-3">
+            <div data-demo-id="menu-account-card" className="rounded-xl border border-[var(--py-color-border)] p-3">
               <div className="flex items-start gap-2 text-sm">
                 <Cloud className="mt-0.5 h-4 w-4 shrink-0 text-[var(--py-color-primary)]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">

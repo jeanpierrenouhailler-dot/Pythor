@@ -20,6 +20,7 @@ export const CertificationSelector: React.FC<CertificationSelectorProps> = ({
   <label className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
     {label && <span className="sr-only">{label}</span>}
     <select
+      data-demo-id="cert-selector"
       value={value}
       onChange={(event) => onChange(event.target.value as CertificationTrack)}
       aria-label={label || (isFrench ? 'Certification active' : 'Active certification')}

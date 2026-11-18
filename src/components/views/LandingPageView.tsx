@@ -350,7 +350,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-6">
             {/* Pill Badge */}
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-cyan-500/30 text-cyan-300 text-xs font-semibold shadow-sm shadow-cyan-500/10">
+            <div data-demo-id="landing-hero-badge" className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-cyan-500/30 text-cyan-300 text-xs font-semibold shadow-sm shadow-cyan-500/10">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
               <span>
                 {isFrench
@@ -388,6 +388,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
+                data-demo-id="landing-launch-btn"
                 onClick={() => onOpenApp('dashboard')}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
@@ -436,7 +437,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
           </div>
 
           {/* Key Metric Numbers Bar */}
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div data-demo-id="landing-hero-metrics" className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
               <span className="block text-3xl font-black text-cyan-400">10</span>
               <span className="text-xs text-slate-400 mt-1 block">

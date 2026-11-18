@@ -10,3 +10,11 @@ coverage/
 # Firebase configuration (contains web client API keys flagged by GitHub secret scanner)
 firebase-applet-config.json
 firebase_applet_config.xml
+
+# video-studio — fichiers générés
+video/audio/
+video/cache/
+video/recordings/
+video/build/
+video/output/
+

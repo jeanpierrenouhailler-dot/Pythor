@@ -376,6 +376,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               {scopeOptions.map((opt) => (
                 <button
                   key={opt.id}
+                  data-demo-id={`exam-scope-${opt.id.replace(/\s+/g, '-').toLowerCase()}`}
                   onClick={() => setSelectedSectionFilter(opt.id)}
                   className={`p-3 rounded-xl text-left border text-xs font-medium transition-all ${
                     selectedSectionFilter === opt.id
@@ -408,6 +409,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
               {[10, 20, 30].map((count) => (
                 <button
                   key={count}
+                  data-demo-id={`exam-count-${count}`}
                   onClick={() => setQuestionCount(count)}
                   className={`py-3 px-4 rounded-xl border text-sm font-semibold transition-all ${
                     questionCount === count
@@ -444,6 +446,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           </div>
 
           <button
+            data-demo-id="exam-start-btn"
             onClick={handleStartExam}
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={cards.length === 0}
@@ -697,7 +700,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1.5 text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+          <div data-demo-id="exam-timer" className="flex items-center space-x-1.5 text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
             <Clock className="w-3.5 h-3.5" />
             <span>{formatTime(secondsElapsed)}</span>
             <InfoTooltip
@@ -711,6 +714,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
           </div>
 
           <button
+            data-demo-id="exam-finish-btn"
             onClick={handleFinishExam}
             className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
           >
@@ -721,6 +725,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
       {/* Progress Bar */}
       <div
+        data-demo-id="exam-progress"
         className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden"
         role="progressbar"
         aria-label={isFrench ? 'Progression de l’examen' : 'Exam progress'}
@@ -785,6 +790,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
             return (
               <button
                 key={idx}
+                data-demo-id={`exam-option-${idx}`}
                 onClick={() => handleSelectOption(option)}
                 className={`w-full text-left p-3.5 rounded-xl border font-mono text-xs sm:text-sm transition-all flex items-start space-x-3 ${
                   isSelected
@@ -814,7 +820,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
             <span>{isFrench ? 'Précédente' : 'Previous'}</span>
           </button>
 
-          <span className="text-xs font-mono text-slate-500">
+          <span data-demo-id="exam-answered-count" className="text-xs font-mono text-slate-500">
             {isFrench
               ? `Répondues : ${Object.keys(userAnswers).length} / ${examCards.length}`
               : `Answered: ${Object.keys(userAnswers).length} / ${examCards.length}`}
@@ -822,6 +828,7 @@ export const ExamSimulatorView: React.FC<ExamSimulatorViewProps> = ({
 
           {currentIndex < examCards.length - 1 ? (
             <button
+              data-demo-id="exam-next-btn"
               onClick={() => setCurrentIndex((prev) => prev + 1)}
               className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors flex items-center space-x-1.5"
             >

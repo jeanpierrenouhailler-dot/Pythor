@@ -18,12 +18,13 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
     view === 'dashboard' || view === 'flashcards' || view === 'exam'
   );
 
-  const renderRoute = (view: AppView, label: string, Icon: typeof APP_ROUTES[number]['icon']) => {
+  const renderRoute = (view: AppView, label: string, Icon: typeof APP_ROUTES[number]['icon'], prefix: 'desktop' | 'mobile') => {
     const isActive = currentView === view;
     return (
       <button
         key={view}
         type="button"
+        data-demo-id={`nav-${prefix}-${view}`}
         onClick={() => onNavigate(view)}
         className={`py-nav-item ${isActive ? 'is-active' : ''}`}
         aria-current={isActive ? 'page' : undefined}
@@ -58,10 +59,10 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
         </div>
         <nav className="py-sidebar-routes" aria-label={isFrench ? 'Navigation principale' : 'Main navigation'}>
           {APP_ROUTES.map(({ view, labelFr, labelEn, icon }) =>
-            renderRoute(view, isFrench ? labelFr : labelEn, icon)
+            renderRoute(view, isFrench ? labelFr : labelEn, icon, 'desktop')
           )}
         </nav>
-        <button type="button" className="py-nav-item py-sidebar-more" onClick={onOpenMore}
+        <button type="button" data-demo-id="nav-desktop-more" className="py-nav-item py-sidebar-more" onClick={onOpenMore}
           title={isCollapsed ? (isFrench ? 'Plus' : 'More') : undefined}>
           <Menu className="h-5 w-5 shrink-0" aria-hidden="true" />
           <span className="py-nav-label">{isFrench ? 'Plus' : 'More'}</span>
@@ -70,9 +71,9 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({ currentView, onNav
 
       <nav className={`py-bottom-nav ${isMoreOpen ? 'is-secondary-menu-open' : ''}`} aria-label={isFrench ? 'Navigation principale' : 'Main navigation'}>
         {mobileItems.map(({ view, labelFr, labelEn, icon }) =>
-          renderRoute(view, isFrench ? labelFr : labelEn, icon)
+          renderRoute(view, isFrench ? labelFr : labelEn, icon, 'mobile')
         )}
-        <button type="button" className="py-nav-item" onClick={onOpenMore}
+        <button type="button" data-demo-id="nav-mobile-more" className="py-nav-item" onClick={onOpenMore}
           aria-label={isFrench ? 'Plus de destinations' : 'More destinations'}>
           <Menu className="h-5 w-5" aria-hidden="true" />
           <span className="py-nav-label">{isFrench ? 'Plus' : 'More'}</span>

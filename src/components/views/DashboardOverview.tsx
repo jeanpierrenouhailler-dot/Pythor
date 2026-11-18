@@ -191,7 +191,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         actions={<Badge tone="primary">{progressPercent}% {isFrench ? 'étudié' : 'studied'}</Badge>}
       />
 
-      <section className="py-surface grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <section data-demo-id="dashboard-resume-card" className="py-surface grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge tone={hasStarted ? 'primary' : 'neutral'}>
@@ -220,6 +220,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
             <PrimaryButton
+              data-demo-id="dashboard-resume-btn"
               onClick={() => onNavigate('flashcards', resumeSection, resumeChapter)}
               disabled={cards.length === 0}
             >
@@ -230,6 +231,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </PrimaryButton>
             <button
               type="button"
+              data-demo-id="dashboard-syllabus-btn"
               className="py-button py-button--secondary"
               onClick={() => onNavigate('syllabus')}
             >
@@ -257,7 +259,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       ) : (
         <section>
           <SectionHeader title={isFrench ? 'Votre progression' : 'Your progress'} />
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div data-demo-id="dashboard-stats-grid" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard label={isFrench ? 'Cartes maîtrisées' : 'Mastered cards'} value={stats.mastered} icon={<CheckCircle2 size={20} />} />
             <StatCard label={isFrench ? 'À réviser' : 'Due for review'} value={stats.due} icon={<RotateCcw size={20} />} detail={isFrench ? 'Selon votre répétition espacée' : 'Based on spaced repetition'} />
             <StatCard label={isFrench ? 'En apprentissage' : 'Learning'} value={stats.learning} icon={<Layers size={20} />} />
@@ -272,6 +274,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           {quickActions.map((action) => (
             <ActionCard
               key={action.view}
+              data-demo-id={`dashboard-action-${action.view}`}
               title={action.title}
               description={action.description}
               icon={action.icon}
@@ -280,6 +283,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             />
           ))}
           <ActionCard
+            data-demo-id="dashboard-create-card-btn"
             title={isFrench ? 'Créer une carte' : 'Create a card'}
             description={isFrench ? 'Ajouter une carte à votre collection' : 'Add a card to your collection'}
             icon={<Plus size={20} />}

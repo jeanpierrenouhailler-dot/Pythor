@@ -651,6 +651,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
             return (
               <button
                 key={exp.id}
+                data-demo-id={`codelab-exp-${exp.id}`}
                 onClick={() => {
                   setActiveExp(exp);
                   setHasRun(true);
@@ -694,6 +695,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
 
                 <div className="flex items-center space-x-1">
                   <button
+                    data-demo-id="codelab-run-btn"
                     onClick={handleRun}
                     disabled={isRunning}
                     className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5"
@@ -717,7 +719,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
             </div>
 
             {/* Terminal Console Output */}
-            <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 space-y-2">
+            <div data-demo-id="codelab-console" className="rounded-xl bg-slate-950 border border-slate-800 p-4 space-y-2">
               <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
                 <div className="flex items-center space-x-2">
                   <Terminal className="w-3.5 h-3.5 text-cyan-400" />
@@ -736,7 +738,7 @@ Standardized Mean: ~0.0, Standardized Std: ~1.0`,
             </div>
 
             {/* Conceptual Breakdown & PCAP/PCPP Rule */}
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-2">
+            <div data-demo-id="codelab-explanation" className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-2">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <strong className="text-slate-200">{isFrench ? 'Comment Python traite cet exemple :' : 'How Python handles this example:'}</strong>

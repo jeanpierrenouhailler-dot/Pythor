@@ -89,6 +89,7 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
               <span className="sr-only">{isFrench ? 'Rechercher dans l’aide-mémoire' : 'Search the cheatsheet'}</span>
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
               <input
+                data-demo-id="cheatsheet-search"
                 type="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -126,7 +127,7 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
           <span className="text-xs text-slate-500">{filteredDunders.length} {isFrench ? 'entrées' : 'entries'}</span>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg">
+        <div data-demo-id="cheatsheet-dunder-table" className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px]">
               <tr>
@@ -177,7 +178,7 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
       </section>
 
       {/* Section 2: Name Mangling & Access Mechanics */}
-      <section className="space-y-3">
+      <section data-demo-id="cheatsheet-mangling" className="space-y-3">
         <div className="flex items-center space-x-2">
           <ShieldAlert className="w-4 h-4 text-amber-400" />
           <h2 className="text-base font-bold text-slate-100">
@@ -209,7 +210,7 @@ export const CheatsheetView: React.FC<CheatsheetViewProps> = ({ onNavigate }) =>
       </section>
 
       {/* Section 3: Built-in Exception Hierarchy (PCAP Core) */}
-      <section className="space-y-3">
+      <section data-demo-id="cheatsheet-exceptions" className="space-y-3">
         <div className="flex items-center space-x-2">
           <Layers className="w-4 h-4 text-purple-400" />
           <h2 className="text-base font-bold text-slate-100">

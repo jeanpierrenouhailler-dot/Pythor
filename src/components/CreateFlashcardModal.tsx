@@ -295,6 +295,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
                 {isFrench ? 'Sujet / Titre de la carte *' : 'Topic / Card Title *'}
               </label>
               <input
+                data-demo-id="create-card-topic"
                 type="text"
                 placeholder={
                   track === 'pcep'
@@ -327,6 +328,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
               {isFrench ? 'Question d’examen *' : 'Exam Question *'}
             </label>
             <textarea
+              data-demo-id="create-card-question"
               rows={2}
               placeholder="e.g. What is the output produced by the following Python code snippet?"
               value={question}
@@ -343,6 +345,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
                 <Code2 className="w-3.5 h-3.5 text-slate-500" />
               </label>
               <textarea
+                data-demo-id="create-card-code"
                 rows={4}
                 placeholder={`x = [1, 2, 3]\nprint(x[::-1])`}
                 value={codeSnippet}
@@ -356,6 +359,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
                 {isFrench ? 'Sortie attendue (STDOUT)' : 'Expected Output (STDOUT)'}
               </label>
               <textarea
+                data-demo-id="create-card-stdout"
                 rows={4}
                 placeholder="[3, 2, 1]"
                 value={stdoutExpected}
@@ -371,6 +375,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
               {isFrench ? 'Explication détaillée *' : 'Detailed Explanation & Core Concept *'}
             </label>
             <textarea
+              data-demo-id="create-card-explanation"
               rows={3}
               placeholder={
                 isFrench
@@ -400,6 +405,7 @@ export const CreateFlashcardModal: React.FC<CreateFlashcardModalProps> = ({
                 {isFrench ? 'Annuler' : 'Cancel'}
               </button>
               <button
+                data-demo-id="create-card-submit"
                 type="submit"
                 className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all flex items-center space-x-1.5"
               >
